@@ -19,13 +19,13 @@ public class MainMenuScreen extends Stage implements Screen {
     final public MyPuzzle game;
 
     public MainMenuScreen(final MyPuzzle game) {
-        super(new FitViewport(game.SCREENSIZEX, game.SCREENSIZEY));
+        super(new FitViewport(MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY));
         Gdx.input.setInputProcessor(this);
 
         this.game = game;
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, game.SCREENSIZEX, game.SCREENSIZEY);
+        camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
 
 //        TextButton btn = new TextButton("Play", skin, "default");
 //        btn.setBounds(game.SCREENSIZEX / 2 - 90, game.SCREENSIZEY - 300, 180, 50);
@@ -41,7 +41,7 @@ public class MainMenuScreen extends Stage implements Screen {
         final TextButton button = new TextButton("Click me", game.skin, "default");
         button.setWidth(200f);
         button.setHeight(20f);
-        button.setPosition(game.SCREENSIZEX/2f - 100f, game.SCREENSIZEY/2f - 10f);
+        button.setPosition(MyPuzzle.SCREENSIZEX/2f - 100f, MyPuzzle.SCREENSIZEY/2f - 10f);
         button.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){

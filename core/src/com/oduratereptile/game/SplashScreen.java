@@ -21,9 +21,9 @@ public class SplashScreen implements Screen {
         this.game = game;
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, game.SCREENSIZEX, game.SCREENSIZEY);
-        x = (game.SCREENSIZEX - game.img.getWidth())/2.0f;
-        y = (game.SCREENSIZEY - game.img.getHeight())/2.0f;
+        camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
+        x = (MyPuzzle.SCREENSIZEX - game.img.getWidth())/2.0f;
+        y = (MyPuzzle.SCREENSIZEY - game.img.getHeight())/2.0f;
     }
 
     @Override

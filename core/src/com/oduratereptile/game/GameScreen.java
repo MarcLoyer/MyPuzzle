@@ -17,7 +17,7 @@ public class GameScreen implements Screen {
         this.game = game;
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, game.SCREENSIZEX, game.SCREENSIZEY);
+        camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
     }
 
     @Override
