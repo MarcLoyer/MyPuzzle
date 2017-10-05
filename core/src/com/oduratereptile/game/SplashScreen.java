@@ -28,7 +28,7 @@ public class SplashScreen implements Screen {
 
     @Override
     public void show() {
-        game.manager.load("atlas.atlas", TextureAtlas.class);
+//        game.manager.load("atlas.atlas", TextureAtlas.class);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class SplashScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
 
         if (game.manager.update()) {
-            game.atlas = game.manager.get("atlas.atlas", TextureAtlas.class);
+//            game.atlas = game.manager.get("atlas.atlas", TextureAtlas.class);
 
             game.setScreen(new MainMenuScreen(game));
         }

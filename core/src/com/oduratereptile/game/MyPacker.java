@@ -6,12 +6,15 @@ import com.badlogic.gdx.tools.texturepacker.TexturePacker;
  * Created by Marc on 10/3/2017.
  */
 
-// TODO: add code to generate the skin
-//    - need a font
-//    - need one 9-patch for text buttons
-//    - need a nice round button
-//      - is there a way to add various icons onto a single round button?
-//    - everything should be gray, so that everything can be tinted.
+// UPDATE: this program is not currently useful! All the ui textures are now built into the skin
+//    Also, the skinComposer program works great and is the easiest way to build skins.
+
+// NODO: add code to generate the skin
+// Useful links:
+//    https://github.com/libgdx/libgdx/wiki/Skin (wiki page)
+//    https://github.com/czyzby/gdx-skins (sample skins)
+//    http://pimentoso.blogspot.com/2013/04/libgdx-scene2d-skin-quick-tutorial.html (example/tutorial)
+
 
 public class MyPacker {
     public static void main (String[] args) throws Exception {

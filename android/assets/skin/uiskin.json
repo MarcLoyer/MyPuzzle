@@ -1,0 +1,130 @@
+{
+com.badlogic.gdx.graphics.g2d.BitmapFont: {
+	large: {
+		file: large.fnt
+	}
+	medium: {
+		file: medium.fnt
+	}
+	small: {
+		file: small.fnt
+	}
+}
+com.badlogic.gdx.graphics.Color: {
+	black: {
+		r: 0
+		g: 0
+		b: 0
+		a: 1
+	}
+	blue: {
+		r: 0
+		g: 0
+		b: 1
+		a: 1
+	}
+	cyan: {
+		r: 0
+		g: 1
+		b: 1
+		a: 1
+	}
+	green: {
+		r: 0
+		g: 1
+		b: 0
+		a: 1
+	}
+	grey: {
+		r: 0.3764706
+		g: 0.3764706
+		b: 0.3764706
+		a: 1
+	}
+	purple: {
+		r: 1
+		g: 0
+		b: 1
+		a: 1
+	}
+	red: {
+		r: 1
+		g: 0
+		b: 0
+		a: 1
+	}
+	white: {
+		r: 1
+		g: 1
+		b: 1
+		a: 1
+	}
+	yellow: {
+		r: 1
+		g: 1
+		b: 0
+		a: 1
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
+	imagebutton-blue: {
+		name: imagebutton
+		color: blue
+	}
+	imagebuttonpressed-blue: {
+		name: imagebuttonpressed
+		color: blue
+	}
+	textbutton-blue: {
+		name: textbutton
+		color: blue
+	}
+	textbuttonpressed-blue: {
+		name: textbuttonpressed
+		color: blue
+	}
+	leftarrow-grey: {
+		name: leftarrow
+		color: grey
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
+	default: {
+		imageUp: leftarrow
+		imageDown: leftarrow-grey
+		up: imagebutton
+		down: imagebuttonpressed
+	}
+	blue: {
+		imageUp: leftarrow
+		imageDown: leftarrow-grey
+		up: imagebutton-blue
+		down: imagebuttonpressed-blue
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+	default: {
+		font: medium
+		fontColor: black
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+	default: {
+		font: medium
+		fontColor: black
+		downFontColor: grey
+	}
+	blue: {
+		font: medium
+		fontColor: white
+		downFontColor: grey
+		up: textbutton-blue
+		down: textbuttonpressed-blue
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {
+	default: {
+		label: default
+	}
+}
+}

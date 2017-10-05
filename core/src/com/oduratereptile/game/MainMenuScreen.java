@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -27,29 +29,30 @@ public class MainMenuScreen extends Stage implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
 
-//        TextButton btn = new TextButton("Play", skin, "default");
-//        btn.setBounds(game.SCREENSIZEX / 2 - 90, game.SCREENSIZEY - 300, 180, 50);
-//        btn.addListener(new ClickListener() {
-//            public void clicked(InputEvent event, float x, float y) {
-//                game.clink.play(game.volumeSounds);
-//                game.setScreen(new GameScreen(game));
-//                dispose();
-//            }
-//        });
-//        btn.getStyle().up = game.buttonBackground;
-//        addActor(btn);
-        final TextButton button = new TextButton("Click me", game.skin, "default");
-        button.setWidth(200f);
-        button.setHeight(20f);
-        button.setPosition(MyPuzzle.SCREENSIZEX/2f - 100f, MyPuzzle.SCREENSIZEY/2f - 10f);
+        final TextButton button = new TextButton("Click me", game.skin, "blue");
+        button.setWidth(300f);
+        button.setHeight(40f);
+        button.setPosition(MyPuzzle.SCREENSIZEX/2f - 150f, MyPuzzle.SCREENSIZEY/2f - 20f);
         button.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
                 button.setText("You clicked the button");
             }
         });
-
         addActor(button);
+
+        ImageButton ibutton = new ImageButton(game.skin, "blue");
+        ibutton.setWidth(60f);
+        ibutton.setHeight(60f);
+        ibutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 80f, MyPuzzle.SCREENSIZEY/2f - 160f);
+        ibutton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+                game.setScreen(new GameScreen(game));
+                dispose();
+            }
+        });
+        addActor(ibutton);
     }
 
     @Override
@@ -77,7 +80,7 @@ public class MainMenuScreen extends Stage implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        getViewport().update(width, height, true);
     }
 
     @Override
