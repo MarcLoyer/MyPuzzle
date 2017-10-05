@@ -25,11 +25,6 @@ public class GameScreen extends HudScreen {
     }
 
     @Override
-    public void show() {
-
-    }
-
-    @Override
     public void render(float delta) {
         super.render(delta);
 

@@ -64,7 +64,7 @@ public class HudScreen implements Screen {
 
         table_root.row();
 
-        status = new Label("... test ...", game.skin);
+        status = new Label("", game.skin);
         status.setAlignment(Align.center);
         table_root.add(status).colspan(2).expandX().fillX();
 
