@@ -4,63 +4,140 @@ size: 2048,2048
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-imagebutton
+btnPressedRedArrowLeft
   rotate: false
-  xy: 1, 37
-  size: 250, 250
-  orig: 250, 250
+  xy: 1029, 1133
+  size: 50, 50
+  orig: 50, 50
   offset: 0, 0
   index: -1
-imagebuttonpressed
+btnPressedRedDefault
   rotate: false
-  xy: 515, 551
-  size: 250, 250
-  orig: 250, 250
+  xy: 1, 53
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnPressedRedMenu
+  rotate: false
+  xy: 103, 105
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnPressedRedMute
+  rotate: false
+  xy: 515, 567
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnPressedRedPlay
+  rotate: false
+  xy: 617, 619
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnPressedRedStop
+  rotate: false
+  xy: 1029, 1081
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnPressedRedUnmute
+  rotate: false
+  xy: 1081, 1133
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnRedArrowLeft
+  rotate: false
+  xy: 1, 1
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnRedDefault
+  rotate: false
+  xy: 53, 53
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnRedMenu
+  rotate: false
+  xy: 155, 105
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnRedMute
+  rotate: false
+  xy: 515, 515
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnRedPlay
+  rotate: false
+  xy: 567, 567
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnRedStop
+  rotate: false
+  xy: 669, 619
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnRedUnmute
+  rotate: false
+  xy: 1029, 1029
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+btnpressedredtext
+  rotate: false
+  xy: 1, 105
+  size: 100, 50
+  split: 20, 12, 20, 12
+  pad: 0, 0, 0, 0
+  orig: 100, 50
+  offset: 0, 0
+  index: -1
+btnredtext
+  rotate: false
+  xy: 515, 619
+  size: 100, 50
+  split: 12, 20, 12, 20
+  pad: 0, 0, 0, 0
+  orig: 100, 50
   offset: 0, 0
   index: -1
 large
   rotate: false
-  xy: 1, 803
+  xy: 1, 671
   size: 512, 512
   orig: 512, 512
   offset: 0, 0
   index: -1
-leftarrow
-  rotate: false
-  xy: 1029, 1065
-  size: 250, 250
-  orig: 250, 250
-  offset: 0, 0
-  index: -1
 medium
   rotate: false
-  xy: 1, 289
+  xy: 1, 157
   size: 512, 512
   orig: 512, 512
   offset: 0, 0
   index: -1
 small
   rotate: false
-  xy: 515, 803
+  xy: 515, 671
   size: 512, 512
   orig: 512, 512
-  offset: 0, 0
-  index: -1
-textbutton
-  rotate: false
-  xy: 1, 1
-  size: 67, 34
-  split: 9, 11, 9, 11
-  pad: 0, 0, 0, 0
-  orig: 67, 34
-  offset: 0, 0
-  index: -1
-textbuttonpressed
-  rotate: false
-  xy: 253, 253
-  size: 67, 34
-  split: 10, 9, 10, 10
-  pad: 0, 0, 0, 0
-  orig: 67, 34
   offset: 0, 0
   index: -1

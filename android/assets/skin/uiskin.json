@@ -23,10 +23,10 @@ com.badlogic.gdx.graphics.Color: {
 		b: 1
 		a: 1
 	}
-	cyan: {
-		r: 0
-		g: 1
-		b: 1
+	darkgrey: {
+		r: 0.2509804
+		g: 0.2509804
+		b: 0.2509804
 		a: 1
 	}
 	green: {
@@ -36,15 +36,15 @@ com.badlogic.gdx.graphics.Color: {
 		a: 1
 	}
 	grey: {
-		r: 0.3764706
-		g: 0.3764706
-		b: 0.3764706
+		r: 0.5019608
+		g: 0.5019608
+		b: 0.5019608
 		a: 1
 	}
-	purple: {
-		r: 1
-		g: 0
-		b: 1
+	lightgrey: {
+		r: 0.76862746
+		g: 0.76862746
+		b: 0.76862746
 		a: 1
 	}
 	red: {
@@ -59,47 +59,45 @@ com.badlogic.gdx.graphics.Color: {
 		b: 1
 		a: 1
 	}
-	yellow: {
-		r: 1
-		g: 1
-		b: 0
-		a: 1
-	}
 }
-com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
-	imagebutton-blue: {
-		name: imagebutton
-		color: blue
-	}
-	imagebuttonpressed-blue: {
-		name: imagebuttonpressed
-		color: blue
-	}
-	textbutton-blue: {
-		name: textbutton
-		color: blue
-	}
-	textbuttonpressed-blue: {
-		name: textbuttonpressed
-		color: blue
-	}
-	leftarrow-grey: {
-		name: leftarrow
-		color: grey
-	}
-}
-com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
+com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 	default: {
-		imageUp: leftarrow
-		imageDown: leftarrow-grey
-		up: imagebutton
-		down: imagebuttonpressed
+		up: btnRedDefault
+		down: btnPressedRedDefault
 	}
-	blue: {
-		imageUp: leftarrow
-		imageDown: leftarrow-grey
-		up: imagebutton-blue
-		down: imagebuttonpressed-blue
+	leftarrow: {
+		up: btnRedArrowLeft
+		down: btnPressedRedArrowLeft
+	}
+	mute: {
+		up: btnRedMute
+		down: btnPressedRedMute
+	}
+	menu: {
+		up: btnRedMenu
+		down: btnPressedRedMenu
+	}
+	unmute: {
+		up: btnRedUnmute
+		down: btnPressedRedUnmute
+	}
+	play: {
+		up: btnRedPlay
+		down: btnPressedRedPlay
+	}
+	stop: {
+		up: btnRedStop
+		down: btnPressedRedStop
+	}
+	playcheck: {
+		up: btnRedPlay
+		down: btnRedStop
+		checked: btnRedStop
+	}
+	mutecheck: {
+		up: btnRedMute
+		down: btnRedUnmute
+		checked: btnRedUnmute
 	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
@@ -107,19 +105,22 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 		font: medium
 		fontColor: black
 	}
+	white: {
+		font: medium
+		fontColor: white
+	}
+	grey: {
+		font: medium
+		fontColor: grey
+	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: {
 		font: medium
-		fontColor: black
-		downFontColor: grey
-	}
-	blue: {
-		font: medium
 		fontColor: white
 		downFontColor: grey
-		up: textbutton-blue
-		down: textbuttonpressed-blue
+		up: btnredtext
+		down: btnpressedredtext
 	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {

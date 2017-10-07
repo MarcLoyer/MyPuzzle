@@ -71,6 +71,14 @@ public class HudScreen implements Screen {
         table_root.row();
     }
 
+    public void debugHUD(boolean enable) {
+        stage.setDebugAll(enable);
+    }
+
+    public void debugHUD() {
+        debugHUD(true);
+    }
+
     public enum Corner {UL, UR, LL, LR, ROOT};
 
     public <T extends Actor> Cell<T> HUDadd(Corner corner, T actor) {
