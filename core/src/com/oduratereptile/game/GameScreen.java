@@ -20,7 +20,7 @@ public class GameScreen extends HudScreen {
     public OrthographicCamera camera;
 
     public Texture puzzleImg = null;
-
+    public Puzzle puzzle;
 
 
     public GameScreen(final MyPuzzle game) {
@@ -47,7 +47,10 @@ public class GameScreen extends HudScreen {
     }
 
     public void getPuzzleImage() {
-        puzzleImg = new Texture(Gdx.files.internal("monumentValley.JPG"));
+        // TODO: the big image doesn't display properly on my phone!
+//        puzzleImg = new Texture(Gdx.files.internal("monumentValley.JPG")); // big: 5000x3000
+        puzzleImg = new Texture(Gdx.files.internal("klimt.JPG")); // small: 500x300
+        puzzle = new Puzzle(this);
     }
 
     @Override
