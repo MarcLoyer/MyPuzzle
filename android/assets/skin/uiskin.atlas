@@ -1,110 +1,110 @@
 
 uiskin.png
-size: 2048,2048
+size: 1024,1024
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
 btnPressedRedArrowLeft
   rotate: false
-  xy: 1029, 1133
+  xy: 515, 669
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnPressedRedDefault
   rotate: false
-  xy: 1, 53
+  xy: 617, 721
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnPressedRedMenu
   rotate: false
-  xy: 103, 105
+  xy: 1, 439
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnPressedRedMute
   rotate: false
-  xy: 515, 567
+  xy: 103, 491
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnPressedRedPlay
   rotate: false
-  xy: 617, 619
+  xy: 515, 617
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnPressedRedStop
   rotate: false
-  xy: 1029, 1081
+  xy: 567, 669
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnPressedRedUnmute
   rotate: false
-  xy: 1081, 1133
+  xy: 669, 721
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedArrowLeft
   rotate: false
-  xy: 1, 1
+  xy: 1, 387
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedDefault
   rotate: false
-  xy: 53, 53
+  xy: 53, 439
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedMenu
   rotate: false
-  xy: 155, 105
+  xy: 155, 491
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedMute
   rotate: false
-  xy: 515, 515
+  xy: 515, 565
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedPlay
   rotate: false
-  xy: 567, 567
+  xy: 567, 617
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedStop
   rotate: false
-  xy: 669, 619
+  xy: 619, 669
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedUnmute
   rotate: false
-  xy: 1029, 1029
+  xy: 721, 721
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnpressedredtext
   rotate: false
-  xy: 1, 105
+  xy: 515, 721
   size: 100, 50
   split: 20, 12, 20, 12
   pad: 0, 0, 0, 0
@@ -113,7 +113,7 @@ btnpressedredtext
   index: -1
 btnredtext
   rotate: false
-  xy: 515, 619
+  xy: 1, 491
   size: 100, 50
   split: 12, 20, 12, 20
   pad: 0, 0, 0, 0
@@ -122,22 +122,22 @@ btnredtext
   index: -1
 large
   rotate: false
-  xy: 1, 671
-  size: 512, 512
-  orig: 512, 512
+  xy: 1, 643
+  size: 512, 128
+  orig: 512, 128
   offset: 0, 0
   index: -1
 medium
   rotate: false
-  xy: 1, 157
-  size: 512, 512
-  orig: 512, 512
+  xy: 1, 577
+  size: 512, 64
+  orig: 512, 64
   offset: 0, 0
   index: -1
 small
   rotate: false
-  xy: 515, 671
-  size: 512, 512
-  orig: 512, 512
+  xy: 1, 543
+  size: 512, 32
+  orig: 512, 32
   offset: 0, 0
   index: -1

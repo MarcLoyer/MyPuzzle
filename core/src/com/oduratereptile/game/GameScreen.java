@@ -2,7 +2,6 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import static com.oduratereptile.game.HudScreen.Corner.*;
 
@@ -24,7 +23,10 @@ public class GameScreen extends HudScreen {
                 dispose();
             }
         });
-        getTable(LR).add(button).width(40f).height(40f);
+        getTable(LR).add(button);
+
+        button = new Button(game.skin, "menu");
+        HUDadd(UL, button);
     }
 
     @Override

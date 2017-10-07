@@ -32,7 +32,7 @@ public class MainMenuScreen extends Stage implements Screen {
 
         final TextButton textbutton = new TextButton("Click me", game.skin);
         textbutton.setWidth(300f);
-        textbutton.setHeight(40f);
+//        textbutton.setHeight(40f);
         textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 150f, MyPuzzle.SCREENSIZEY/2f - 20f);
         textbutton.addListener(new ClickListener(){
             @Override
