@@ -4,10 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import static com.oduratereptile.game.HudScreen.Corner.*;
 
@@ -25,6 +26,7 @@ public class GameScreen extends HudScreen {
     public GameScreen(final MyPuzzle game) {
         super(game);
         camera = new OrthographicCamera();
+        addInputController(new GestureDetector(new OrthoGestureListener(this)));
 
         debugHUD(false);
 
@@ -46,16 +48,14 @@ public class GameScreen extends HudScreen {
 
     public void getPuzzleImage() {
         puzzleImg = new Texture(Gdx.files.internal("monumentValley.JPG"));
-//        Gdx.app.error("image", "image size = " + puzzleImg.getWidth() + " x " + puzzleImg.getHeight());
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.2f, 0, 0, 1); // TODO: I changed the background color just to tell the difference from the MainMenuScreen
+        Gdx.gl.glClearColor(0.2f, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 //    next steps:
-//        (1) add ortho camera and panning/zoom (add a Pixmap for testing)
 //        (2) Catmull-Rom splines <-- actually, this is a separate class
 //        (3) "load an image" dialog
 //        (4) "invite a friend" dialog
@@ -76,10 +76,7 @@ public class GameScreen extends HudScreen {
 
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
-//        Gdx.app.error("setup", "w = " + w);
-//        Gdx.app.error("setup", "h = " + h);
-        camera.setToOrtho(false, 5000, 5000 * h / w);
-//        Gdx.app.error("setup", "camera size = " + camera.viewportWidth + " x " + camera.viewportHeight);
+        camera.setToOrtho(false, 5000, 5000 * h / w); // TODO: set the width proportional to the puzzleImg width
     }
 
     @Override

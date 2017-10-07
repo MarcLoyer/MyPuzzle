@@ -1,6 +1,8 @@
 package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -21,6 +23,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 public class HudScreen implements Screen {
     final public MyPuzzle game;
 
+    public InputMultiplexer inputControllerMultiplexer;
+
     public Stage stage;
     public Table table_root;
     public Table table_ul;
@@ -33,11 +37,16 @@ public class HudScreen implements Screen {
         this.game = game;
 
         build_hud();
+        inputControllerMultiplexer = new InputMultiplexer(stage);
+        Gdx.input.setInputProcessor(inputControllerMultiplexer);
+    }
+
+    public void addInputController(InputProcessor inputProcessor) {
+        inputControllerMultiplexer.addProcessor(inputProcessor);
     }
 
     public void build_hud() {
         stage = new Stage(new FitViewport(MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY));
-        Gdx.input.setInputProcessor(stage); // TODO: change this to input multiplexer
 //        stage.setDebugAll(true);
 
         table_root = new Table();
@@ -64,7 +73,7 @@ public class HudScreen implements Screen {
 
         table_root.row();
 
-        status = new Label("", game.skin);
+        status = new Label("", game.skin, "white");
         status.setAlignment(Align.center);
         table_root.add(status).colspan(2).expandX().fillX();
 
