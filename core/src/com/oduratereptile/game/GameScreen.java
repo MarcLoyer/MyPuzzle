@@ -4,10 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import static com.oduratereptile.game.HudScreen.Corner.*;
@@ -22,6 +24,8 @@ public class GameScreen extends HudScreen {
     public Texture puzzleImg = null;
     public Puzzle puzzle;
 
+    public Button menu;
+    public Table popup;
 
     public GameScreen(final MyPuzzle game) {
         super(game);
@@ -30,6 +34,7 @@ public class GameScreen extends HudScreen {
 
         debugHUD(false);
 
+        // Create a button to go back to the mainmenu
         Button button = new Button(game.skin, "leftarrow");
         button.addListener(new ClickListener(){
             @Override
@@ -40,17 +45,50 @@ public class GameScreen extends HudScreen {
         });
         getTable(LR).add(button);
 
-        button = new Button(game.skin, "menu");
-        HUDadd(UL, button);
+        // Create a popup menu
+        popup = new Table();
+        popup.top();
+        popup.setWidth(200);
+        popup.setHeight(200);
+
+        // TODO: add option menu implementations
+        button = new TextButton("Load new image", game.skin);
+        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("thing 1", game.skin);
+        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("thing 2", game.skin);
+        popup.add(button).expandX().fillX().row();
+
+        popup.setVisible(false);
+
+        // Create a button to bring up the popup menu
+        menu = new Button(game.skin, "menu");
+        HUDadd(UL, menu);
+        menu.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+                Vector2 loc = menu.localToStageCoordinates(new Vector2(menu.getWidth()/2f, menu.getHeight()/2f));
+                loc.sub(0, popup.getHeight());
+                popup.setPosition(loc.x, loc.y);
+                popup.setVisible(!popup.isVisible());
+            }
+        });
+        stage.addActor(popup);
 
         getPuzzleImage();
     }
+
+    public float worldWidth = 1000;
 
     public void getPuzzleImage() {
         // TODO: the big image doesn't display properly on my phone!
 //        puzzleImg = new Texture(Gdx.files.internal("monumentValley.JPG")); // big: 5000x3000
         puzzleImg = new Texture(Gdx.files.internal("klimt.JPG")); // small: 500x300
         puzzle = new Puzzle(this);
+        worldWidth = puzzleImg.getWidth();
+        updateCameraViewport();
     }
 
     @Override
@@ -77,9 +115,13 @@ public class GameScreen extends HudScreen {
     public void resize(int width, int height) {
         super.resize(width, height);
 
+        updateCameraViewport();
+    }
+
+    public void updateCameraViewport() {
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
-        camera.setToOrtho(false, 5000, 5000 * h / w); // TODO: set the width proportional to the puzzleImg width
+        camera.setToOrtho(false, worldWidth, worldWidth * h / w);
     }
 
     @Override
