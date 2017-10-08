@@ -2,9 +2,11 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.loaders.SkinLoader;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 /**
  * Created by Marc on 10/3/2017.
@@ -29,6 +31,7 @@ public class SplashScreen implements Screen {
     @Override
     public void show() {
 //        game.manager.load("atlas.atlas", TextureAtlas.class);
+        game.manager.load("skin/uiskin.json", Skin.class);
     }
 
     @Override
@@ -41,6 +44,7 @@ public class SplashScreen implements Screen {
 
         if (game.manager.update()) {
 //            game.atlas = game.manager.get("atlas.atlas", TextureAtlas.class);
+            game.skin = game.manager.get("skin/uiskin.json", Skin.class);
 
             game.setScreen(new MainMenuScreen(game));
         }

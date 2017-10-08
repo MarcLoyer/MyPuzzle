@@ -18,7 +18,7 @@ import com.badlogic.gdx.tools.texturepacker.TexturePacker;
 
 public class MyPacker {
     public static void main (String[] args) throws Exception {
-        //TODO: delete existing atlas files first
+        //NODO: delete existing atlas files first (everything is in the skin now. I never run this packer)
         TexturePacker.process("../../AssetDevelopment/MyPuzzle/PackImages", "android/assets", "atlas");
     }
 }

@@ -22,7 +22,6 @@ public class MyPuzzle extends Game {
 	public void create () {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
-		skin = new Skin(Gdx.files.internal("skin/uiskin.json")); // TODO: move this to the asset manager
         manager = new AssetManager();
 
 		setScreen(new SplashScreen(this));
@@ -37,7 +36,6 @@ public class MyPuzzle extends Game {
 	public void dispose () {
 		batch.dispose();
 		img.dispose();
-		skin.dispose(); // TODO: move to assetmanager
         manager.dispose();
 	}
 }
