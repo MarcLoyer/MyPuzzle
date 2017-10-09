@@ -2,12 +2,14 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
@@ -163,12 +165,20 @@ public class Puzzle {
         splineImg.setColor(1f, 1f, 1f, 1f);
         for (Vector2 [] path: rowLine) {
             for (int i=1; i<pointsPerSpline; i++) {
-                splineImg.drawLine((int)path[i-1].x, (int)path[i-1].y, (int)path[i].x, (int)path[i].y);
+                int x1 = (int)path[i-1].x;
+                int y1 = splineImg.getHeight() - (int)path[i-1].y;
+                int x2 = (int)path[i].x;
+                int y2 = splineImg.getHeight() - (int)path[i].y;
+                splineImg.drawLine(x1, y1, x2, y2);
             }
         }
         for (Vector2 [] path: colLine) {
             for (int i=1; i<pointsPerSpline; i++) {
-                splineImg.drawLine((int)path[i-1].x, (int)path[i-1].y, (int)path[i].x, (int)path[i].y);
+                int x1 = (int)path[i-1].x;
+                int y1 = splineImg.getHeight() - (int)path[i-1].y;
+                int x2 = (int)path[i].x;
+                int y2 = splineImg.getHeight() - (int)path[i].y;
+                splineImg.drawLine(x1, y1, x2, y2);
             }
         }
         splineImgTex = new Texture(splineImg);
@@ -184,12 +194,17 @@ public class Puzzle {
 
     public Pixmap pieceImg;
     public Texture pieceImgTex;
+    public Vector2 pieceImgTexLocation = new Vector2();
+
+    public Vector2 debugPos = new Vector2();
+    public Vector2 debugSize = new Vector2();
+    public Vector2 debugMid = new Vector2();
 
     public void generatePieces() {
         int i=0;
         int j=0;
 
-        Vector2 pos = new Vector2(j*colSpacing, i*rowSpacing);
+        Vector2 pos = new Vector2((float)j*colSpacing, (float)i*rowSpacing);
         Vector2 size = new Vector2(colSpacing, rowSpacing);
         Vector2 mid = new Vector2(colSpacing/2.0f, rowSpacing/2.0f);
         if (i != 0) {
@@ -208,11 +223,38 @@ public class Puzzle {
         if (j != (numCols-1)) {
             size.x += colSpacing/2.0f;
         }
+        Gdx.app.error("debug", "pos  = " + pos.toString());
+        Gdx.app.error("debug", "size = " + size.toString());
+        Gdx.app.error("debug", "mid  = " + mid.toString());
+        debugPos = pos.cpy();
+        debugSize = size.cpy();
+        debugMid = mid.cpy();
+
         // TODO: possible bug - rounding of row and col Spacing might cause bit dropouts
         pieceImg = new Pixmap((int)size.x, (int)size.y, Pixmap.Format.RGBA8888);
-        pieceImg.drawPixmap(puzzleImg, 0, 0, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        // TODO: bug!! y-axis is reversed in Pixmaps
+        pieceImg.drawPixmap(puzzleImg, 0, 0, (int)pos.x, puzzleImg.getHeight() - (int)pos.y - (int)size.y, (int)size.x, (int)size.y);
+        pieceImg.setBlending(Pixmap.Blending.None);
+
+        // clear alpha across the whole image, then floodfill starting in the middle
+        Color color = new Color();
+        for (int x=0; x<pieceImg.getWidth(); x++) {
+            for (int y=0; y<pieceImg.getHeight(); y++) {
+                pieceImg.drawPixel(x, y, pieceImg.getPixel(x, y) & 0xFFFFFF00);
+            }
+        }
+
+        ArrayList<GridPoint2> flood = new ArrayList<GridPoint2>();
+        GridPoint2 pixel;
+
+        flood.add(new GridPoint2((int)mid.x, (int)mid.y));
+        while (!flood.isEmpty()) {
+            pixel = flood.remove(0);
+            setColor(pixel, pieceImg);
+            addNieghbors(pixel, pieceImg, new GridPoint2((int)pos.x, (int)pos.y), flood);
+        }
+
         pieceImgTex = new Texture(pieceImg);
+        pieceImgTexLocation.set(pos.x, pos.y);
 
         // TODO: use a Pixmap instead of a Texture for puzzleImg because:
         //  - Pixmap has methods for resampling, thus allowing large images to work
@@ -231,12 +273,39 @@ public class Puzzle {
 //        }
     }
 
+    public void setColor(GridPoint2 pixel, Pixmap p) {
+        p.drawPixel(pixel.x, pixel.y, p.getPixel(pixel.x, pixel.y) | 0x000000FF);
+    }
+
+    public void addNieghbors(GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
+        // we check the four neighboring pixels. If they have already been fixed for color or
+        // if they are on a Catmull-Rom spline then we don't add them.
+        GridPoint2 tmp = pixel.cpy();
+        tmp.x--; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x++;
+        tmp.x++; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x--;
+        tmp.y--; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y++;
+        tmp.y++; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y--;
+    }
+
+    private boolean needToAdd(GridPoint2 pix, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
+        if ((pix.x<0)||(pix.x>=p.getWidth())) return false;
+        if ((pix.y<0)||(pix.y>=p.getHeight())) return false;
+        if (flood.contains(pix)) return false;
+        if ((p.getPixel(pix.x, pix.y) & 0x000000FF) == 0x000000FF) return false;
+        GridPoint2 pix2 = new GridPoint2(loc.x, splineImg.getHeight() - loc.y - p.getHeight());
+        pix2.add(pix);
+        if (splineImg.getPixel(pix2.x, pix2.y) == 0xFFFFFFFF) {
+            setColor(pix, p);
+            return false;
+        }
+        return true;
+    }
 
     public void render(SpriteBatch batch, float delta) {
         if (displayImage) batch.draw(puzzleImgTex, 0,0);
 
         // DEBUG code...
-        batch.draw(pieceImgTex, 0,0);
+        batch.draw(pieceImgTex, pieceImgTexLocation.x, pieceImgTexLocation.y);
 
         if (displaySplineImage) batch.draw(splineImgTex, 0,0);
 
@@ -247,6 +316,15 @@ public class Puzzle {
             for (int i=0; i<numRows-1; i++) drawRowSpline(i);
             for (int i=0; i<numCols-1; i++) drawColSpline(i);
         }
+
+        // DBUG code...
+        sr.begin(ShapeRenderer.ShapeType.Line);
+        sr.setColor(0,1,0,1);
+        sr.rect(debugPos.x, debugPos.y, debugSize.x, debugSize.y);
+        sr.end();
+        sr.begin(ShapeRenderer.ShapeType.Filled);
+        sr.circle(debugMid.x, debugMid.y, 3);
+        sr.end();
 
         batch.begin();
     }

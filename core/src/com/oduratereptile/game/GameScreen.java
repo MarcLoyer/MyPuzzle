@@ -51,9 +51,6 @@ public class GameScreen extends HudScreen {
         popup.setHeight(200);
 
         // TODO: add option menu implementations
-        button = new TextButton("Load new image", game.skin);
-        popup.add(button).expandX().fillX().row();
-
         button = new TextButton("display image", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
@@ -66,6 +63,14 @@ public class GameScreen extends HudScreen {
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
                 puzzle.displaySplines = !puzzle.displaySplines;
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("display spline image", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                puzzle.displaySplineImage = !puzzle.displaySplineImage;
             }
         });
         popup.add(button).expandX().fillX().row();
