@@ -106,7 +106,7 @@ public class GameScreen extends HudScreen {
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
-        game.batch.draw(puzzleImg, 0,0);
+        puzzle.render(game.batch, delta);
         game.batch.end();
         super.render(delta);
     }

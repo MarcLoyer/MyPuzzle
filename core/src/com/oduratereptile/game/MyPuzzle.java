@@ -6,10 +6,12 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class MyPuzzle extends Game {
 	SpriteBatch batch;
+	ShapeRenderer shapeRenderer;
 	Texture img;
     TextureAtlas atlas;
 	Skin skin;
@@ -21,6 +23,7 @@ public class MyPuzzle extends Game {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
+		shapeRenderer = new ShapeRenderer();
 		img = new Texture("badlogic.jpg");
         manager = new AssetManager();
 
@@ -35,6 +38,7 @@ public class MyPuzzle extends Game {
 	@Override
 	public void dispose () {
 		batch.dispose();
+		shapeRenderer.dispose();
 		img.dispose();
         manager.dispose();
 	}
