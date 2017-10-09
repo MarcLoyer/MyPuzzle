@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.Vector2;
@@ -31,8 +30,9 @@ public class Puzzle {
 //    public ArrayList<PuzzleGroup> puzzleGroup;
     public BoundingBox puzzleBounds = new BoundingBox();
 
-    public boolean displayImage = true;
-    public boolean displaySplines = true;
+    public boolean displayImage = false;
+    public boolean displaySplines = false;
+    public boolean displaySplineImage = false;
 
 
     public Puzzle(GameScreen gameScreen) {
@@ -64,6 +64,9 @@ public class Puzzle {
     public Vector2[][] colControlPoints;
     public CatmullRomSpline<Vector2> [] colSpline;
     public Vector2[][] colLine;
+
+    public Pixmap splineImg;
+    public Texture splineImgTex;
 
     // shape parameters
     private static final float A = 0.15f;
@@ -152,6 +155,23 @@ public class Puzzle {
                 colSpline[i].valueAt(colLine[i][j], (float)j/(float)(pointsPerSpline-1));
             }
         }
+
+        // Create a pixmap of the splines
+        splineImg = new Pixmap(puzzleImg.getWidth(), puzzleImg.getHeight(), Pixmap.Format.RGBA8888);
+        splineImg.setColor(0,0,0,0);
+        splineImg.fill();
+        splineImg.setColor(1f, 1f, 1f, 1f);
+        for (Vector2 [] path: rowLine) {
+            for (int i=1; i<pointsPerSpline; i++) {
+                splineImg.drawLine((int)path[i-1].x, (int)path[i-1].y, (int)path[i].x, (int)path[i].y);
+            }
+        }
+        for (Vector2 [] path: colLine) {
+            for (int i=1; i<pointsPerSpline; i++) {
+                splineImg.drawLine((int)path[i-1].x, (int)path[i-1].y, (int)path[i].x, (int)path[i].y);
+            }
+        }
+        splineImgTex = new Texture(splineImg);
     }
 
     public float randR(float max) {
@@ -202,6 +222,8 @@ public class Puzzle {
 
     public void render(SpriteBatch batch, float delta) {
         if (displayImage) batch.draw(puzzleImgTex, 0,0);
+        if (displaySplineImage) batch.draw(splineImgTex, 0,0);
+
         batch.end();
 
         sr.setProjectionMatrix(gameScreen.camera.combined);
