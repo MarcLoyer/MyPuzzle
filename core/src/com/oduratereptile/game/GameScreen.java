@@ -21,7 +21,6 @@ import static com.oduratereptile.game.HudScreen.Corner.*;
 public class GameScreen extends HudScreen {
     public OrthographicCamera camera;
 
-    public Texture puzzleImg = null;
     public Puzzle puzzle;
 
     public Button menu;
@@ -84,10 +83,14 @@ public class GameScreen extends HudScreen {
 
     public void getPuzzleImage() {
         // TODO: the big image doesn't display properly on my phone!
-//        puzzleImg = new Texture(Gdx.files.internal("monumentValley.JPG")); // big: 5000x3000
-        puzzleImg = new Texture(Gdx.files.internal("klimt.JPG")); // small: 500x300
+        String picture1 = "monumentValley.JPG"; // big: 5000x3000
+        String picture2 = "klimt.JPG"; // small: 500x300
+
         puzzle = new Puzzle(this);
-        worldWidth = puzzleImg.getWidth();
+        puzzle.setPicture(Gdx.files.internal(picture2));
+        puzzle.createPieces(10, 10);
+
+        worldWidth = puzzle.puzzleImg.getWidth();
         updateCameraViewport();
     }
 

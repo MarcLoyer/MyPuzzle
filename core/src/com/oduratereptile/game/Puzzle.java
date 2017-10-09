@@ -1,13 +1,19 @@
 package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.utils.BufferUtils;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -17,7 +23,7 @@ import java.util.Random;
 
 public class Puzzle {
     public GameScreen gameScreen;
-    public Texture puzzleImg;
+    public Pixmap puzzleImg;
     public ShapeRenderer sr;
     public Random rand = new Random();
 
@@ -25,14 +31,26 @@ public class Puzzle {
 //    public ArrayList<PuzzleGroup> puzzleGroup;
     public BoundingBox puzzleBounds = new BoundingBox();
 
+    public boolean displayImage = true;
+    public boolean displaySplines = true;
 
 
     public Puzzle(GameScreen gameScreen) {
         this.gameScreen = gameScreen;
-        puzzleImg = gameScreen.puzzleImg;
         sr = gameScreen.game.shapeRenderer;
+    }
 
-        createPieces(10, 10);
+    public Texture puzzleImgTex;
+
+    public void setPicture(FileHandle fh) {
+        puzzleImg = new Pixmap(fh);
+
+        IntBuffer buffer = BufferUtils.newIntBuffer(16);
+        Gdx.gl.glGetIntegerv(GL20.GL_MAX_TEXTURE_SIZE, buffer);
+        int maxImageSize = buffer.get(0);
+        Gdx.app.error("debug", "Max image size for this device = " + maxImageSize);
+
+        puzzleImgTex = new Texture(puzzleImg); //TODO: split into regions if the Pixmap is too big, or maybe mipmaps?
     }
 
     public int numRows;
@@ -56,7 +74,7 @@ public class Puzzle {
     private static final float Br = 0.04f;
     private static final float Fr = 0.12f;
 
-    private void createPieces(int numRows, int numCols) {
+    public void createPieces(int numRows, int numCols) {
         this.numRows = numRows;
         rowSpacing = puzzleImg.getHeight() / (float)numRows;
 
@@ -69,7 +87,11 @@ public class Puzzle {
         //  - create separate texture for each piece (and add alpha mask to create the shape)
         //  - combine into an atlas
         //  - convert each texture into a texture region and create each piece
+        generateSplines();
+        generatePieces();
+    }
 
+    public void generateSplines() {
         int pointsPerPiece = 6;
         int pointsPerSpline = numCols*50;
 
@@ -140,13 +162,53 @@ public class Puzzle {
         return ((rand.nextFloat() * 2.0f * max) - max) * colSpacing;
     }
 
+    public void generatePieces() {
+        int i=0;
+        int j=0;
+
+        Vector2 pos = new Vector2(j*colSpacing, i*rowSpacing);
+        Vector2 size = new Vector2(colSpacing, rowSpacing);
+        if (i != 0) {
+            pos.y -= rowSpacing/2.0f;
+            size.y += rowSpacing/2.0f;
+        }
+        if (j != 0) {
+            pos.x -= colSpacing/2.0f;
+            size.x += colSpacing/2.0f;
+        }
+        if (i != (numRows-1)) {
+            size.y += rowSpacing/2.0f;
+        }
+        if (j != (numCols-1)) {
+            size.x += colSpacing/2.0f;
+        }
+        // TODO: use a Pixmap instead of a Texture for puzzleImg because:
+        //  - Pixmap has methods for resampling, thus allowing large images to work
+        //  - Pixmap allows bit banging of the data.
+        //  - Pixmap.drawPixmap() copies a region of a Pixmap
+        // The only thing Pixmap apparently doesn't allow is drawing to the screen (and maybe it does?)
+        //  https://github.com/mattdesl/lwjgl-basics/wiki/LibGDX-Textures
+        //  http://blog.gemserk.com/2012/01/04/modifying-textures-using-libgdx-pixmap-in-runtime-explained/
+        // Also, look into PixmapPacker:
+        //  https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/g2d/PixmapPacker.html
+
+//        for (int i=0; i<numRows; i++) {
+//            for (int j=0; j<numCols; j++) {
+//                //TODO: implement puzzle piece generation
+//            }
+//        }
+    }
+
+
     public void render(SpriteBatch batch, float delta) {
-        batch.draw(puzzleImg, 0,0);
+        if (displayImage) batch.draw(puzzleImgTex, 0,0);
         batch.end();
 
         sr.setProjectionMatrix(gameScreen.camera.combined);
-        for (int i=0; i<numRows-1; i++) drawRowSpline(i);
-        for (int i=0; i<numCols-1; i++) drawColSpline(i);
+        if (displaySplines) {
+            for (int i=0; i<numRows-1; i++) drawRowSpline(i);
+            for (int i=0; i<numCols-1; i++) drawColSpline(i);
+        }
 
         batch.begin();
     }
@@ -186,4 +248,9 @@ public class Puzzle {
     }
 
     // TODO: save and restore functions
+
+    public void dispose() {
+        puzzleImg.dispose();
+        puzzleImgTex.dispose();
+    }
 }

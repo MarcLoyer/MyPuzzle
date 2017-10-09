@@ -12,12 +12,17 @@ class PuzzlePiece extends Image {
     public int row;
     public int col;
 
+    public PuzzlePiece(int r, int c, TextureRegion img) {
+        super(img);
+        row = r;
+        col = c;
+    }
+
     public PuzzlePiece(int r, int c, Vector2 loc, float rot, TextureRegion img) {
         super(img);
         row = r;
         col = c;
         setPosition(loc.x, loc.y);
         setRotation(rot);
-
     }
 }
