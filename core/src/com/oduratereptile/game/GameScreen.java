@@ -54,10 +54,20 @@ public class GameScreen extends HudScreen {
         button = new TextButton("Load new image", game.skin);
         popup.add(button).expandX().fillX().row();
 
-        button = new TextButton("thing 1", game.skin);
+        button = new TextButton("display image", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                puzzle.displayImage = !puzzle.displayImage;
+            }
+        });
         popup.add(button).expandX().fillX().row();
 
-        button = new TextButton("thing 2", game.skin);
+        button = new TextButton("display splines", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                puzzle.displaySplines = !puzzle.displaySplines;
+            }
+        });
         popup.add(button).expandX().fillX().row();
 
         popup.setVisible(false);

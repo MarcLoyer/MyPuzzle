@@ -182,19 +182,25 @@ public class Puzzle {
         return ((rand.nextFloat() * 2.0f * max) - max) * colSpacing;
     }
 
+    public Pixmap pieceImg;
+    public Texture pieceImgTex;
+
     public void generatePieces() {
         int i=0;
         int j=0;
 
         Vector2 pos = new Vector2(j*colSpacing, i*rowSpacing);
         Vector2 size = new Vector2(colSpacing, rowSpacing);
+        Vector2 mid = new Vector2(colSpacing/2.0f, rowSpacing/2.0f);
         if (i != 0) {
             pos.y -= rowSpacing/2.0f;
             size.y += rowSpacing/2.0f;
+            mid.y += rowSpacing/2.0f;
         }
         if (j != 0) {
             pos.x -= colSpacing/2.0f;
             size.x += colSpacing/2.0f;
+            mid.x += colSpacing/2.0f;
         }
         if (i != (numRows-1)) {
             size.y += rowSpacing/2.0f;
@@ -202,6 +208,12 @@ public class Puzzle {
         if (j != (numCols-1)) {
             size.x += colSpacing/2.0f;
         }
+        // TODO: possible bug - rounding of row and col Spacing might cause bit dropouts
+        pieceImg = new Pixmap((int)size.x, (int)size.y, Pixmap.Format.RGBA8888);
+        pieceImg.drawPixmap(puzzleImg, 0, 0, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
+        // TODO: bug!! y-axis is reversed in Pixmaps
+        pieceImgTex = new Texture(pieceImg);
+
         // TODO: use a Pixmap instead of a Texture for puzzleImg because:
         //  - Pixmap has methods for resampling, thus allowing large images to work
         //  - Pixmap allows bit banging of the data.
@@ -222,6 +234,10 @@ public class Puzzle {
 
     public void render(SpriteBatch batch, float delta) {
         if (displayImage) batch.draw(puzzleImgTex, 0,0);
+
+        // DEBUG code...
+        batch.draw(pieceImgTex, 0,0);
+
         if (displaySplineImage) batch.draw(splineImgTex, 0,0);
 
         batch.end();
