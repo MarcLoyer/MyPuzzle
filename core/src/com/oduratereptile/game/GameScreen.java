@@ -89,6 +89,18 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
+        button = new TextButton("prev", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                if (--puzzle.debugI<0) {
+                    puzzle.debugI = 9;
+                    if (--puzzle.debugJ<0) puzzle.debugJ = 9;
+                }
+                puzzle.generatePieces();
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
         popup.setVisible(false);
 
         // Create a button to bring up the popup menu
@@ -129,7 +141,6 @@ public class GameScreen extends HudScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 //    next steps:
-//        (2) Catmull-Rom splines <-- actually, this is a separate class
 //        (3) "load an image" dialog
 //        (4) "invite a friend" dialog
 //        (5) "view full image" window

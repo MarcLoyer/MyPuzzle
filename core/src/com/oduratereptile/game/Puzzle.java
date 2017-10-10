@@ -259,14 +259,7 @@ public class Puzzle {
         pieceImgTex = new Texture(pieceImg);
         pieceImgTexLocation.set(pos.x, pos.y);
 
-        // TODO: use a Pixmap instead of a Texture for puzzleImg because:
-        //  - Pixmap has methods for resampling, thus allowing large images to work
-        //  - Pixmap allows bit banging of the data.
-        //  - Pixmap.drawPixmap() copies a region of a Pixmap
-        // The only thing Pixmap apparently doesn't allow is drawing to the screen (and maybe it does?)
-        //  https://github.com/mattdesl/lwjgl-basics/wiki/LibGDX-Textures
-        //  http://blog.gemserk.com/2012/01/04/modifying-textures-using-libgdx-pixmap-in-runtime-explained/
-        // Also, look into PixmapPacker:
+        // TODO: look into PixmapPacker:
         //  https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/g2d/PixmapPacker.html
 
 //        for (int i=0; i<numRows; i++) {
@@ -283,6 +276,7 @@ public class Puzzle {
     public void addNieghbors(GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
         // we check the four neighboring pixels. If they have already been fixed for color or
         // if they are on a Catmull-Rom spline then we don't add them.
+        // TODO: do the diagonals too - the intersection of splines can get missed with just the four.
         GridPoint2 tmp = pixel.cpy();
         tmp.x--; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x++;
         tmp.x++; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x--;
