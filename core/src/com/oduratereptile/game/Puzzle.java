@@ -199,10 +199,12 @@ public class Puzzle {
     public Vector2 debugPos = new Vector2();
     public Vector2 debugSize = new Vector2();
     public Vector2 debugMid = new Vector2();
+    public int debugI = 0;
+    public int debugJ = 0;
 
     public void generatePieces() {
-        int i=0;
-        int j=0;
+        int i=debugI;
+        int j=debugJ;
 
         Vector2 pos = new Vector2((float)j*colSpacing, (float)i*rowSpacing);
         Vector2 size = new Vector2(colSpacing, rowSpacing);
@@ -223,12 +225,13 @@ public class Puzzle {
         if (j != (numCols-1)) {
             size.x += colSpacing/2.0f;
         }
+        mid.y = size.y - mid.y;
         Gdx.app.error("debug", "pos  = " + pos.toString());
         Gdx.app.error("debug", "size = " + size.toString());
         Gdx.app.error("debug", "mid  = " + mid.toString());
         debugPos = pos.cpy();
         debugSize = size.cpy();
-        debugMid = mid.cpy();
+        debugMid = pos.cpy(); debugMid.y += size.y; debugMid.x += mid.x; debugMid.y -= mid.y;
 
         // TODO: possible bug - rounding of row and col Spacing might cause bit dropouts
         pieceImg = new Pixmap((int)size.x, (int)size.y, Pixmap.Format.RGBA8888);
