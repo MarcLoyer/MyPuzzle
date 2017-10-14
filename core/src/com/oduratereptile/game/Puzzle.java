@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
+import com.badlogic.gdx.utils.PerformanceCounter;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -74,6 +75,9 @@ public class Puzzle {
     public Pixmap splineImg;
     public Texture splineImgTex;
 
+    public PerformanceCounter pc = new PerformanceCounter("generatePieces");
+
+
     // shape parameters
     private static final float A = 0.15f;
     private static final float B = 0.17f;
@@ -97,7 +101,21 @@ public class Puzzle {
         //  - combine into an atlas
         //  - convert each texture into a texture region and create each piece
         generateSplines();
+        pc.start();
         generatePieces();
+        pc.stop();
+        pc.tick();
+        pc.tick();
+        Gdx.app.error("debug", pc.toString());
+        report(pc);
+    }
+
+    private void report(PerformanceCounter pc) {
+        Gdx.app.error("debug", pc.name);
+        Gdx.app.error("debug", "count   = " + pc.time.count);
+        Gdx.app.error("debug", "average = " + pc.time.average);
+        Gdx.app.error("debug", "max     = " + pc.time.max);
+        Gdx.app.error("debug", "min     = " + pc.time.min);
     }
 
     public void generateSplines() {
@@ -270,9 +288,6 @@ public class Puzzle {
 
         pieceImgTex = new Texture(pieceImg);
         pieceImgTexLocation.set(pos.x, pos.y);
-
-        // TODO: look into PixmapPacker:
-        //  https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/g2d/PixmapPacker.html
     }
 
     public void computePositions(Vector2 pos, Vector2 size, Vector2 mid, int i, int j) {

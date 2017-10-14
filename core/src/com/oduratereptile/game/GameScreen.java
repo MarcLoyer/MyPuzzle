@@ -104,7 +104,9 @@ public class GameScreen extends HudScreen {
 
         puzzle = new Puzzle(this);
         puzzle.setPicture(Gdx.files.internal(picture3));
-        puzzle.createPieces(3, 3);
+//        puzzle.createPieces(3, 3);
+//        puzzle.createPieces(5, 5);
+        puzzle.createPieces(10, 10);
 
         worldWidth = puzzle.puzzleImg.getWidth();
         updateCameraViewport();
