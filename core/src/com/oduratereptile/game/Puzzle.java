@@ -6,7 +6,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.PixmapPacker;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.GridPoint2;
@@ -27,6 +29,8 @@ public class Puzzle {
     public Pixmap puzzleImg;
     public ShapeRenderer sr;
     public Random rand = new Random();
+    public PixmapPacker packer = new PixmapPacker(1024, 1024, Pixmap.Format.RGBA8888, 2, true);
+    public TextureAtlas pieceAtlas = new TextureAtlas();
 
     public ArrayList<PuzzlePiece> puzzlePiece = new ArrayList<PuzzlePiece>();
 //    public ArrayList<PuzzleGroup> puzzleGroup;
@@ -203,12 +207,78 @@ public class Puzzle {
     public int debugJ = 0;
 
     public void generatePieces() {
-        int i=debugI;
-        int j=debugJ;
+        for (int i=0; i<numRows; i++) {
+            for (int j=0; j<numCols; j++) {
+                generatePiece(i, j);
+                String s = i + "," + j;
+                packer.pack(s, pieceImg);
+            }
+        }
 
-        Vector2 pos = new Vector2((float)j*colSpacing, (float)i*rowSpacing);
-        Vector2 size = new Vector2(colSpacing, rowSpacing);
-        Vector2 mid = new Vector2(colSpacing/2.0f, rowSpacing/2.0f);
+        packer.updateTextureAtlas(pieceAtlas, Texture.TextureFilter.Linear, Texture.TextureFilter.Linear, false);
+        // TODO: save the TextureAtlas
+
+        Vector2 pos = new Vector2();
+        Vector2 size = new Vector2();
+        Vector2 mid = new Vector2();
+        for (int i=0; i<numRows; i++) {
+            for (int j=0; j<numCols; j++) {
+                computePositions(pos, size, mid, i, j);
+                String s = i + "," + j;
+                pos.scl(2.0f);
+                puzzlePiece.add(new PuzzlePiece(i, j, pos, 0, pieceAtlas.findRegion(s)));
+            }
+        }
+    }
+
+    public void generatePiece(int i, int j) {
+        Vector2 pos = new Vector2();
+        Vector2 size = new Vector2();
+        Vector2 mid = new Vector2();
+        computePositions(pos, size, mid, i, j);
+
+//        Gdx.app.error("debug", "pos  = " + pos.toString());
+//        Gdx.app.error("debug", "size = " + size.toString());
+//        Gdx.app.error("debug", "mid  = " + mid.toString());
+//        debugPos = pos.cpy();
+//        debugSize = size.cpy();
+//        debugMid = pos.cpy(); debugMid.y += size.y; debugMid.x += mid.x; debugMid.y -= mid.y;
+
+        // TODO: possible bug - rounding of row and col Spacing might cause bit dropouts
+        pieceImg = new Pixmap((int)size.x, (int)size.y, Pixmap.Format.RGBA8888);
+        pieceImg.drawPixmap(puzzleImg, 0, 0, (int)pos.x, puzzleImg.getHeight() - (int)pos.y - (int)size.y, (int)size.x, (int)size.y);
+        pieceImg.setBlending(Pixmap.Blending.None);
+
+        // clear alpha across the whole image, then floodfill starting in the middle
+        Color color = new Color();
+        for (int x=0; x<pieceImg.getWidth(); x++) {
+            for (int y=0; y<pieceImg.getHeight(); y++) {
+                pieceImg.drawPixel(x, y, pieceImg.getPixel(x, y) & 0xFFFFFF00);
+            }
+        }
+
+        ArrayList<GridPoint2> flood = new ArrayList<GridPoint2>();
+        GridPoint2 pixel;
+        boolean includeBorder = ((i+j)%2==0);
+
+        flood.add(new GridPoint2((int)mid.x, (int)mid.y));
+        while (!flood.isEmpty()) {
+            pixel = flood.remove(0);
+            setColor(pixel, pieceImg);
+            addNieghbors(includeBorder, pixel, pieceImg, new GridPoint2((int)pos.x, (int)pos.y), flood);
+        }
+
+        pieceImgTex = new Texture(pieceImg);
+        pieceImgTexLocation.set(pos.x, pos.y);
+
+        // TODO: look into PixmapPacker:
+        //  https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/g2d/PixmapPacker.html
+    }
+
+    public void computePositions(Vector2 pos, Vector2 size, Vector2 mid, int i, int j) {
+        pos.set((float)j*colSpacing, (float)i*rowSpacing);
+        size.set(colSpacing, rowSpacing);
+        mid.set(colSpacing/2.0f, rowSpacing/2.0f);
         if (i != 0) {
             pos.y -= rowSpacing/2.0f;
             size.y += rowSpacing/2.0f;
@@ -226,73 +296,33 @@ public class Puzzle {
             size.x += colSpacing/2.0f;
         }
         mid.y = size.y - mid.y;
-        Gdx.app.error("debug", "pos  = " + pos.toString());
-        Gdx.app.error("debug", "size = " + size.toString());
-        Gdx.app.error("debug", "mid  = " + mid.toString());
-        debugPos = pos.cpy();
-        debugSize = size.cpy();
-        debugMid = pos.cpy(); debugMid.y += size.y; debugMid.x += mid.x; debugMid.y -= mid.y;
-
-        // TODO: possible bug - rounding of row and col Spacing might cause bit dropouts
-        pieceImg = new Pixmap((int)size.x, (int)size.y, Pixmap.Format.RGBA8888);
-        pieceImg.drawPixmap(puzzleImg, 0, 0, (int)pos.x, puzzleImg.getHeight() - (int)pos.y - (int)size.y, (int)size.x, (int)size.y);
-        pieceImg.setBlending(Pixmap.Blending.None);
-
-        // clear alpha across the whole image, then floodfill starting in the middle
-        Color color = new Color();
-        for (int x=0; x<pieceImg.getWidth(); x++) {
-            for (int y=0; y<pieceImg.getHeight(); y++) {
-                pieceImg.drawPixel(x, y, pieceImg.getPixel(x, y) & 0xFFFFFF00);
-            }
-        }
-
-        ArrayList<GridPoint2> flood = new ArrayList<GridPoint2>();
-        GridPoint2 pixel;
-
-        flood.add(new GridPoint2((int)mid.x, (int)mid.y));
-        while (!flood.isEmpty()) {
-            pixel = flood.remove(0);
-            setColor(pixel, pieceImg);
-            addNieghbors(pixel, pieceImg, new GridPoint2((int)pos.x, (int)pos.y), flood);
-        }
-
-        pieceImgTex = new Texture(pieceImg);
-        pieceImgTexLocation.set(pos.x, pos.y);
-
-        // TODO: look into PixmapPacker:
-        //  https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/g2d/PixmapPacker.html
-
-//        for (int i=0; i<numRows; i++) {
-//            for (int j=0; j<numCols; j++) {
-//                //TODO: implement puzzle piece generation
-//            }
-//        }
     }
 
     public void setColor(GridPoint2 pixel, Pixmap p) {
         p.drawPixel(pixel.x, pixel.y, p.getPixel(pixel.x, pixel.y) | 0x000000FF);
     }
 
-    public void addNieghbors(GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
+    public void addNieghbors(boolean includeBorder, GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
         // we check the four neighboring pixels. If they have already been fixed for color or
         // if they are on a Catmull-Rom spline then we don't add them.
         // TODO: do the diagonals too - the intersection of splines can get missed with just the four.
+        // oops - border lines drawn diagonally can cause the flood fill to escape!
         GridPoint2 tmp = pixel.cpy();
-        tmp.x--; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x++;
-        tmp.x++; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x--;
-        tmp.y--; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y++;
-        tmp.y++; if (needToAdd(tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y--;
+        tmp.x--; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x++;
+        tmp.x++; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x--;
+        tmp.y--; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y++;
+        tmp.y++; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y--;
     }
 
-    private boolean needToAdd(GridPoint2 pix, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
+    private boolean needToAdd(boolean includeBorder, GridPoint2 pix, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
         if ((pix.x<0)||(pix.x>=p.getWidth())) return false;
         if ((pix.y<0)||(pix.y>=p.getHeight())) return false;
         if (flood.contains(pix)) return false;
         if ((p.getPixel(pix.x, pix.y) & 0x000000FF) == 0x000000FF) return false;
         GridPoint2 pix2 = new GridPoint2(loc.x, splineImg.getHeight() - loc.y - p.getHeight());
         pix2.add(pix);
-        if (splineImg.getPixel(pix2.x, pix2.y) == 0xFFFFFFFF) {
-            setColor(pix, p);
+        if (splineImg.getPixel(pix2.x, pix2.y) == 0xFFFFFFFF) { // on the spline edge
+            if (includeBorder) setColor(pix, p);
             return false;
         }
         return true;
@@ -302,7 +332,11 @@ public class Puzzle {
         if (displayImage) batch.draw(puzzleImgTex, 0,0);
 
         // DEBUG code...
-        batch.draw(pieceImgTex, pieceImgTexLocation.x, pieceImgTexLocation.y);
+//        batch.draw(pieceImgTex, pieceImgTexLocation.x, pieceImgTexLocation.y);
+
+        for (PuzzlePiece p : puzzlePiece) {
+            p.draw(batch, 1);
+        }
 
         if (displaySplineImage) batch.draw(splineImgTex, 0,0);
 
@@ -365,5 +399,7 @@ public class Puzzle {
     public void dispose() {
         puzzleImg.dispose();
         puzzleImgTex.dispose();
+        packer.dispose();
+        pieceAtlas.dispose();
     }
 }

@@ -75,32 +75,6 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
-        button = new TextButton("next", game.skin);
-        button.addListener(new ClickListener(){
-            public void clicked(InputEvent event, float x, float y){
-                if (puzzle.debugI==9) {
-                    puzzle.debugJ = ++puzzle.debugJ % 10;
-                    puzzle.debugI = 0;
-                } else {
-                    puzzle.debugI++;
-                }
-                puzzle.generatePieces();
-            }
-        });
-        popup.add(button).expandX().fillX().row();
-
-        button = new TextButton("prev", game.skin);
-        button.addListener(new ClickListener(){
-            public void clicked(InputEvent event, float x, float y){
-                if (--puzzle.debugI<0) {
-                    puzzle.debugI = 9;
-                    if (--puzzle.debugJ<0) puzzle.debugJ = 9;
-                }
-                puzzle.generatePieces();
-            }
-        });
-        popup.add(button).expandX().fillX().row();
-
         popup.setVisible(false);
 
         // Create a button to bring up the popup menu
@@ -126,10 +100,11 @@ public class GameScreen extends HudScreen {
         // TODO: the big image doesn't display properly on my phone!
         String picture1 = "monumentValley.JPG"; // big: 5000x3000
         String picture2 = "klimt.JPG"; // small: 500x300
+        String picture3 = "oregonpath.JPG"; // tiny: 150x100
 
         puzzle = new Puzzle(this);
-        puzzle.setPicture(Gdx.files.internal(picture2));
-        puzzle.createPieces(10, 10);
+        puzzle.setPicture(Gdx.files.internal(picture3));
+        puzzle.createPieces(3, 3);
 
         worldWidth = puzzle.puzzleImg.getWidth();
         updateCameraViewport();
