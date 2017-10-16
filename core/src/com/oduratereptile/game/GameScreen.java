@@ -103,7 +103,7 @@ public class GameScreen extends HudScreen {
         String picture3 = "oregonpath.JPG"; // tiny: 150x100
 
         puzzle = new Puzzle(this);
-        puzzle.setPicture(Gdx.files.internal(picture3));
+        puzzle.setPicture(Gdx.files.internal(picture2));
 //        puzzle.createPieces(3, 3);
 //        puzzle.createPieces(5, 5);
         puzzle.createPieces(10, 10);

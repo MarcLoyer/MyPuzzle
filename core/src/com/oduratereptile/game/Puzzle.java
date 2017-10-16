@@ -181,25 +181,25 @@ public class Puzzle {
         }
 
         // Create a pixmap of the splines
-        splineImg = new Pixmap(puzzleImg.getWidth(), puzzleImg.getHeight(), Pixmap.Format.RGBA8888);
+        splineImg = new Pixmap(puzzleImg.getWidth(), puzzleImg.getHeight(), Pixmap.Format.RGBA8888); // use Alpha format - saves masking
         splineImg.setColor(0,0,0,0);
         splineImg.fill();
         splineImg.setColor(1f, 1f, 1f, 1f);
         for (Vector2 [] path: rowLine) {
             for (int i=1; i<pointsPerSpline; i++) {
-                int x1 = (int)path[i-1].x;
-                int y1 = splineImg.getHeight() - (int)path[i-1].y;
-                int x2 = (int)path[i].x;
-                int y2 = splineImg.getHeight() - (int)path[i].y;
+                int x1 = (int)(path[i-1].x + 0.5f);
+                int y1 = splineImg.getHeight() - (int)(path[i-1].y + 0.5f);
+                int x2 = (int)(path[i].x + 0.5f);
+                int y2 = splineImg.getHeight() - (int)(path[i].y + 0.5f);
                 splineImg.drawLine(x1, y1, x2, y2);
             }
         }
         for (Vector2 [] path: colLine) {
             for (int i=1; i<pointsPerSpline; i++) {
-                int x1 = (int)path[i-1].x;
-                int y1 = splineImg.getHeight() - (int)path[i-1].y;
-                int x2 = (int)path[i].x;
-                int y2 = splineImg.getHeight() - (int)path[i].y;
+                int x1 = (int)(path[i-1].x + 0.5f);
+                int y1 = splineImg.getHeight() - (int)(path[i-1].y + 0.5f);
+                int x2 = (int)(path[i].x + 0.5f);
+                int y2 = splineImg.getHeight() - (int)(path[i].y + 0.5f);
                 splineImg.drawLine(x1, y1, x2, y2);
             }
         }
