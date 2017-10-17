@@ -75,6 +75,25 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
+        button = new TextButton("toggle pieces", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                if (puzzle.displayAllPieces) {
+                    puzzle.displayAllPieces = false;
+                    puzzle.displayEvenPieces = true;
+                } else {
+                    if (puzzle.displayEvenPieces) {
+                        puzzle.displayEvenPieces = false;
+                    } else {
+                        puzzle.displayAllPieces = true;
+                    }
+                }
+
+//                puzzle.displayEvenPieces = !puzzle.displayEvenPieces;
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
         popup.setVisible(false);
 
         // Create a button to bring up the popup menu

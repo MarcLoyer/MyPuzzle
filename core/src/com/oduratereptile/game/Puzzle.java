@@ -40,6 +40,8 @@ public class Puzzle {
     public boolean displayImage = false;
     public boolean displaySplines = false;
     public boolean displaySplineImage = false;
+    public boolean displayEvenPieces = false;
+    public boolean displayAllPieces = true;
 
 
     public Puzzle(GameScreen gameScreen) {
@@ -243,7 +245,7 @@ public class Puzzle {
             for (int j=0; j<numCols; j++) {
                 computePositions(pos, size, mid, i, j);
                 String s = i + "," + j;
-                pos.scl(2.0f);
+//                pos.scl(2.0f);
                 puzzlePiece.add(new PuzzlePiece(i, j, pos, 0, pieceAtlas.findRegion(s)));
             }
         }
@@ -350,7 +352,13 @@ public class Puzzle {
 //        batch.draw(pieceImgTex, pieceImgTexLocation.x, pieceImgTexLocation.y);
 
         for (PuzzlePiece p : puzzlePiece) {
-            p.draw(batch, 1);
+            boolean isEven = ((p.col + p.row)%2 == 0);
+            if (displayAllPieces) {
+                p.draw(batch, 1);
+            } else {
+                if ((displayEvenPieces && isEven) || (!displayEvenPieces && !isEven))
+                    p.draw(batch, 1);
+            }
         }
 
         if (displaySplineImage) batch.draw(splineImgTex, 0,0);
