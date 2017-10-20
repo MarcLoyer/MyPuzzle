@@ -108,16 +108,7 @@ public class Puzzle {
         pc.stop();
         pc.tick();
         pc.tick();
-        Gdx.app.error("debug", pc.toString());
-        report(pc);
-    }
-
-    private void report(PerformanceCounter pc) {
-        Gdx.app.error("debug", pc.name);
-        Gdx.app.error("debug", "count   = " + pc.time.count);
-        Gdx.app.error("debug", "average = " + pc.time.average);
-        Gdx.app.error("debug", "max     = " + pc.time.max);
-        Gdx.app.error("debug", "min     = " + pc.time.min);
+        Gdx.app.error("debug", pc.name + ": " + pc.time.average);
     }
 
     public void generateSplines() {
@@ -235,7 +226,7 @@ public class Puzzle {
             }
         }
 
-        packer.updateTextureAtlas(pieceAtlas, Texture.TextureFilter.Linear, Texture.TextureFilter.Linear, false);
+        packer.updateTextureAtlas(pieceAtlas, Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest, false);
         // TODO: save the TextureAtlas
 
         Vector2 pos = new Vector2();
