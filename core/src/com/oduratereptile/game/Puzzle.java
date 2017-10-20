@@ -2,7 +2,6 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,6 +16,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.PerformanceCounter;
 
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Random;
@@ -251,6 +251,11 @@ public class Puzzle {
         }
     }
 
+//    private ByteBuffer pixelData;
+//    private int bufferSize;
+//    private int width;
+//    private int height;
+
     public void generatePiece(int i, int j) {
         Vector2 pos = new Vector2();
         Vector2 size = new Vector2();
@@ -269,13 +274,22 @@ public class Puzzle {
         pieceImg.drawPixmap(puzzleImg, 0, 0, (int)pos.x, puzzleImg.getHeight() - (int)pos.y - (int)size.y, (int)size.x, (int)size.y);
         pieceImg.setBlending(Pixmap.Blending.None);
 
+//        pixelData = pieceImg.getPixels();
+//        width = pieceImg.getWidth();
+//        height = pieceImg.getHeight();
+//        bufferSize = 4 * width * height;
+
         // clear alpha across the whole image, then floodfill starting in the middle
-        Color color = new Color();
         for (int x=0; x<pieceImg.getWidth(); x++) {
             for (int y=0; y<pieceImg.getHeight(); y++) {
                 pieceImg.drawPixel(x, y, pieceImg.getPixel(x, y) & 0xFFFFFF00);
             }
         }
+
+//        for (int x=3; x<bufferSize; x+=4) {
+//            pixelData.put(x, (byte)0);
+//        }
+
 
         ArrayList<GridPoint2> flood = new ArrayList<GridPoint2>();
         GridPoint2 pixel;
@@ -285,7 +299,8 @@ public class Puzzle {
         while (!flood.isEmpty()) {
             pixel = flood.remove(0);
             setColor(pixel, pieceImg);
-            addNieghbors(includeBorder, pixel, pieceImg, new GridPoint2((int)pos.x, (int)pos.y), flood);
+//            setAlpha(pixel, pixelData);
+            addNeighbors(includeBorder, pixel, pieceImg, new GridPoint2((int)pos.x, (int)pos.y), flood);
         }
 
         pieceImgTex = new Texture(pieceImg);
@@ -315,11 +330,21 @@ public class Puzzle {
         mid.y = size.y - mid.y;
     }
 
+//    public void setAlpha(GridPoint2 pixel, ByteBuffer b) {
+//        int x = 4*(pixel.x + pixel.y * width) + 3;
+//        b.put(x, (byte)255);
+//    }
+//
+//    public boolean isAlphaSet(GridPoint2 pixel, ByteBuffer b) {
+//        int x = 4*(pixel.x + pixel.y * width) + 3;
+//        return (b.get(x) != (byte)0);
+//    }
+
     public void setColor(GridPoint2 pixel, Pixmap p) {
         p.drawPixel(pixel.x, pixel.y, p.getPixel(pixel.x, pixel.y) | 0x000000FF);
     }
 
-    public void addNieghbors(boolean includeBorder, GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
+    public void addNeighbors(boolean includeBorder, GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
         // we check the four neighboring pixels. If they have already been fixed for color or
         // if they are on a Catmull-Rom spline then we don't add them.
         // TODO: do the diagonals too - the intersection of splines can get missed with just the four.
@@ -336,10 +361,12 @@ public class Puzzle {
         if ((pix.y<0)||(pix.y>=p.getHeight())) return false;
         if (flood.contains(pix)) return false;
         if ((p.getPixel(pix.x, pix.y) & 0x000000FF) == 0x000000FF) return false;
+//        if (isAlphaSet(pix, pixelData)) return false;
         GridPoint2 pix2 = new GridPoint2(loc.x, splineImg.getHeight() - loc.y - p.getHeight());
         pix2.add(pix);
         if (splineImg.getPixel(pix2.x, pix2.y) == 0xFFFFFFFF) { // on the spline edge
             if (includeBorder) setColor(pix, p);
+//            if (includeBorder) setAlpha(pix, pixelData);
             return false;
         }
         return true;
