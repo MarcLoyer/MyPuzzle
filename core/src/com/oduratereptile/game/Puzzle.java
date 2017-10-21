@@ -211,13 +211,11 @@ public class Puzzle {
     public Texture pieceImgTex;
     public Vector2 pieceImgTexLocation = new Vector2();
 
-    public Vector2 debugPos = new Vector2();
-    public Vector2 debugSize = new Vector2();
-    public Vector2 debugMid = new Vector2();
-    public int debugI = 0;
-    public int debugJ = 0;
+    public PuzzlePieceCoords [] debugCoords;
 
     public void generatePieces() {
+        debugCoords = new PuzzlePieceCoords[numCols*numRows];
+
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
                 generatePiece(i, j);
@@ -229,15 +227,12 @@ public class Puzzle {
         packer.updateTextureAtlas(pieceAtlas, Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest, false);
         // TODO: save the TextureAtlas
 
-        Vector2 pos = new Vector2();
-        Vector2 size = new Vector2();
-        Vector2 mid = new Vector2();
+        PuzzlePieceCoords coords;
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
-                computePositions(pos, size, mid, i, j);
+                coords = new PuzzlePieceCoords(i, j, puzzleImg, numRows, numCols);
                 String s = i + "," + j;
-//                pos.scl(2.0f);
-                puzzlePiece.add(new PuzzlePiece(i, j, pos, 0, pieceAtlas.findRegion(s)));
+                puzzlePiece.add(new PuzzlePiece(i, j, coords.pos, 0, pieceAtlas.findRegion(s)));
             }
         }
     }
@@ -248,21 +243,14 @@ public class Puzzle {
 //    private int height;
 
     public void generatePiece(int i, int j) {
-        Vector2 pos = new Vector2();
-        Vector2 size = new Vector2();
-        Vector2 mid = new Vector2();
-        computePositions(pos, size, mid, i, j);
+        PuzzlePieceCoords coords = new PuzzlePieceCoords(i, j, puzzleImg, numRows, numCols);
+//        coords.setInnerRect(colControlPoints, rowControlPoints, 6); // TODO: fix the hard-coded number here!
+        debugCoords[i*numCols+j] = coords;
 
-//        Gdx.app.error("debug", "pos  = " + pos.toString());
-//        Gdx.app.error("debug", "size = " + size.toString());
-//        Gdx.app.error("debug", "mid  = " + mid.toString());
-//        debugPos = pos.cpy();
-//        debugSize = size.cpy();
-//        debugMid = pos.cpy(); debugMid.y += size.y; debugMid.x += mid.x; debugMid.y -= mid.y;
-
-        // TODO: possible bug - rounding of row and col Spacing might cause bit dropouts
-        pieceImg = new Pixmap((int)size.x, (int)size.y, Pixmap.Format.RGBA8888);
-        pieceImg.drawPixmap(puzzleImg, 0, 0, (int)pos.x, puzzleImg.getHeight() - (int)pos.y - (int)size.y, (int)size.x, (int)size.y);
+        pieceImg = new Pixmap((int)coords.size.x, (int)coords.size.y, Pixmap.Format.RGBA8888);
+        pieceImg.drawPixmap(puzzleImg, 0, 0,
+                (int)coords.pos.x, puzzleImg.getHeight() - (int)coords.pos.y - (int)coords.size.y,
+                (int)coords.size.x, (int)coords.size.y);
         pieceImg.setBlending(Pixmap.Blending.None);
 
 //        pixelData = pieceImg.getPixels();
@@ -286,39 +274,45 @@ public class Puzzle {
         GridPoint2 pixel;
         boolean includeBorder = ((i+j)%2==0);
 
-        flood.add(new GridPoint2((int)mid.x, (int)mid.y));
+        flood.add(new GridPoint2((int)coords.mid.x, (int)coords.mid.y));
+//        initializeFlood(i, j, flood, coords, pieceImg);
         while (!flood.isEmpty()) {
             pixel = flood.remove(0);
             setColor(pixel, pieceImg);
 //            setAlpha(pixel, pixelData);
-            addNeighbors(includeBorder, pixel, pieceImg, new GridPoint2((int)pos.x, (int)pos.y), flood);
+            addNeighbors(includeBorder, pixel, pieceImg, new GridPoint2((int)coords.pos.x, (int)coords.pos.y), flood);
         }
 
         pieceImgTex = new Texture(pieceImg);
-        pieceImgTexLocation.set(pos.x, pos.y);
+        pieceImgTexLocation.set(coords.pos.x, coords.pos.y);
     }
 
-    public void computePositions(Vector2 pos, Vector2 size, Vector2 mid, int i, int j) {
-        pos.set((float)j*colSpacing, (float)i*rowSpacing);
-        size.set(colSpacing, rowSpacing);
-        mid.set(colSpacing/2.0f, rowSpacing/2.0f);
-        if (i != 0) {
-            pos.y -= rowSpacing/2.0f;
-            size.y += rowSpacing/2.0f;
-            mid.y += rowSpacing/2.0f;
+    public void initializeFlood(int i, int j, ArrayList<GridPoint2> flood, PuzzlePieceCoords coords, Pixmap p) {
+        // fill the rectangle...
+        //  (LL and UR are relative to pos, but assume y axis is up. Pixmap use y-axis down, so we
+        //   need to translate that.) We set pixels just inside the rectangle and add the pixels on
+        //   the edge of the rectangle to the flood fill.
+        GridPoint2 pnt1 = new GridPoint2(coords.bbLL);
+        GridPoint2 pnt2 = new GridPoint2(coords.bbUR);
+        pnt1.y = (int)coords.size.y - (int)coords.bbLL.y;
+        pnt2.y = (int)coords.size.y - (int)coords.bbUR.y;
+
+        // fill the inside of the rectangle...
+        for (int x=pnt1.x+1; x<pnt2.x; x++) {
+            for (int y=pnt1.y+1; y<pnt2.y; y++) {
+                setColor(x, y, p);
+            }
         }
-        if (j != 0) {
-            pos.x -= colSpacing/2.0f;
-            size.x += colSpacing/2.0f;
-            mid.x += colSpacing/2.0f;
+
+        // add points on the edge of the rectangle...
+        for (int x=pnt1.x; x<=pnt2.x; x++) {
+            flood.add(new GridPoint2(x, pnt1.y));
+            flood.add(new GridPoint2(x, pnt2.y));
         }
-        if (i != (numRows-1)) {
-            size.y += rowSpacing/2.0f;
+        for (int y=pnt1.y+1; y<pnt2.y; y++) {
+            flood.add(new GridPoint2(pnt1.x, y));
+            flood.add(new GridPoint2(pnt2.x, y));
         }
-        if (j != (numCols-1)) {
-            size.x += colSpacing/2.0f;
-        }
-        mid.y = size.y - mid.y;
     }
 
 //    public void setAlpha(GridPoint2 pixel, ByteBuffer b) {
@@ -333,6 +327,10 @@ public class Puzzle {
 
     public void setColor(GridPoint2 pixel, Pixmap p) {
         p.drawPixel(pixel.x, pixel.y, p.getPixel(pixel.x, pixel.y) | 0x000000FF);
+    }
+
+    public void setColor(int x, int y, Pixmap p) {
+        p.drawPixel(x, y, p.getPixel(x, y) | 0x000000FF);
     }
 
     public void addNeighbors(boolean includeBorder, GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
@@ -389,14 +387,18 @@ public class Puzzle {
             for (int i=0; i<numCols-1; i++) drawColSpline(i);
         }
 
-        // DBUG code...
-        sr.begin(ShapeRenderer.ShapeType.Line);
-        sr.setColor(0,1,0,1);
-        sr.rect(debugPos.x, debugPos.y, debugSize.x, debugSize.y);
-        sr.end();
-        sr.begin(ShapeRenderer.ShapeType.Filled);
-        sr.circle(debugMid.x, debugMid.y, 3);
-        sr.end();
+        // DEBUG code...
+//        sr.begin(ShapeRenderer.ShapeType.Line);
+//        for (PuzzlePieceCoords ppc: debugCoords) {
+//            sr.setColor(0,1,0,1);
+//            sr.rect(ppc.pos.x, ppc.pos.y, ppc.size.x, ppc.size.y);
+//            sr.setColor(1,1,0,1);
+//            sr.rect(ppc.pos.x + ppc.bbLL.x, ppc.pos.y + ppc.bbLL.y,
+//                    ppc.bbUR.x - ppc.bbLL.x, ppc.bbUR.y - ppc.bbLL.y);
+//            sr.begin(ShapeRenderer.ShapeType.Filled);
+//            sr.circle(ppc.mid.x, ppc.mid.y, 3);
+//        }
+//        sr.end();
 
         batch.begin();
     }
