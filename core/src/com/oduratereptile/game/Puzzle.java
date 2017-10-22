@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.PerformanceCounter;
+import com.badlogic.gdx.utils.PerformanceCounters;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -77,7 +78,7 @@ public class Puzzle {
     public Pixmap splineImg;
     public Texture splineImgTex;
 
-    public PerformanceCounter pc = new PerformanceCounter("generatePieces");
+    public PerformanceCounters pc = new PerformanceCounters();
 
 
     // shape parameters
@@ -102,19 +103,37 @@ public class Puzzle {
         //  - create separate texture for each piece (and add alpha mask to create the shape)
         //  - combine into an atlas
         //  - convert each texture into a texture region and create each piece
+
+        pc.add("generateSplines");
+        pc.add("generateSplineImage");
+        pc.add("generatePieces");
+        pc.add("  clear alpha");
+        pc.add("  flood fill");
+        pc.add("  create tecture");
+        pc.add("generate puzzle pieces");
+
+        pc.tick();
         generateSplines();
-        pc.start();
         generatePieces();
-        pc.stop();
         pc.tick();
-        pc.tick();
-        Gdx.app.error("debug", pc.name + ": " + pc.time.average);
+        perfmonReport();
+    }
+
+    public void perfmonReport() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Performance report:\n");
+        for (PerformanceCounter cntr: pc.counters) {
+            sb.append(String.format("  %-30s  %5.2f (%5.4f)\n", cntr.name, cntr.time.average, cntr.load.average));
+        }
+
+        Gdx.app.error("debug", sb.toString());
     }
 
     public void generateSplines() {
         int pointsPerPiece = 6;
         int pointsPerSpline = numCols*50;
 
+        pc.counters.get(0).start();
         rowControlPoints = new Vector2[numRows-1][numCols*pointsPerPiece+3];
         rowSpline = new CatmullRomSpline[numRows-1];
         rowLine = new Vector2[numRows-1][pointsPerSpline];
@@ -172,8 +191,10 @@ public class Puzzle {
                 colSpline[i].valueAt(colLine[i][j], (float)j/(float)(pointsPerSpline-1));
             }
         }
+        pc.counters.get(0).stop();
 
         // Create a pixmap of the splines
+        pc.counters.get(1).start();
         splineImg = new Pixmap(puzzleImg.getWidth(), puzzleImg.getHeight(), Pixmap.Format.RGBA8888); // use Alpha format - saves masking
         splineImg.setColor(0,0,0,0);
         splineImg.fill();
@@ -197,6 +218,7 @@ public class Puzzle {
             }
         }
         splineImgTex = new Texture(splineImg);
+        pc.counters.get(1).stop();
     }
 
     public float randR(float max) {
@@ -216,6 +238,7 @@ public class Puzzle {
     public void generatePieces() {
         debugCoords = new PuzzlePieceCoords[numCols*numRows];
 
+        pc.counters.get(2).start();
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
                 generatePiece(i, j);
@@ -223,7 +246,9 @@ public class Puzzle {
                 packer.pack(s, pieceImg);
             }
         }
+        pc.counters.get(2).stop();
 
+        pc.counters.get(6).start();
         packer.updateTextureAtlas(pieceAtlas, Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest, false);
         // TODO: save the TextureAtlas
 
@@ -235,6 +260,7 @@ public class Puzzle {
                 puzzlePiece.add(new PuzzlePiece(i, j, coords.pos, 0, pieceAtlas.findRegion(s)));
             }
         }
+        pc.counters.get(6).stop();
     }
 
 //    private ByteBuffer pixelData;
@@ -259,11 +285,13 @@ public class Puzzle {
 //        bufferSize = 4 * width * height;
 
         // clear alpha across the whole image, then floodfill starting in the middle
+        pc.counters.get(3).start();
         for (int x=0; x<pieceImg.getWidth(); x++) {
             for (int y=0; y<pieceImg.getHeight(); y++) {
                 pieceImg.drawPixel(x, y, pieceImg.getPixel(x, y) & 0xFFFFFF00);
             }
         }
+        pc.counters.get(3).stop();
 
 //        for (int x=3; x<bufferSize; x+=4) {
 //            pixelData.put(x, (byte)0);
@@ -274,6 +302,7 @@ public class Puzzle {
         GridPoint2 pixel;
         boolean includeBorder = ((i+j)%2==0);
 
+        pc.counters.get(4).start();
         flood.add(new GridPoint2((int)coords.mid.x, (int)coords.mid.y));
 //        initializeFlood(i, j, flood, coords, pieceImg);
         while (!flood.isEmpty()) {
@@ -282,9 +311,12 @@ public class Puzzle {
 //            setAlpha(pixel, pixelData);
             addNeighbors(includeBorder, pixel, pieceImg, new GridPoint2((int)coords.pos.x, (int)coords.pos.y), flood);
         }
+        pc.counters.get(4).stop();
 
+        pc.counters.get(5).start();
         pieceImgTex = new Texture(pieceImg);
         pieceImgTexLocation.set(coords.pos.x, coords.pos.y);
+        pc.counters.get(5).stop();
     }
 
     public void initializeFlood(int i, int j, ArrayList<GridPoint2> flood, PuzzlePieceCoords coords, Pixmap p) {
