@@ -10,14 +10,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.PerformanceCounter;
 import com.badlogic.gdx.utils.PerformanceCounters;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Random;
@@ -110,7 +108,7 @@ public class Puzzle {
         pc.add("generatePieces");
         pc.add("  clear alpha");
         pc.add("  flood fill");
-        pc.add("  create tecture");
+        pc.add("  create texture");
         pc.add("generate puzzle pieces");
 
         pc.tick();
@@ -264,14 +262,8 @@ public class Puzzle {
         pc.counters.get(6).stop();
     }
 
-//    private ByteBuffer pixelData;
-//    private int bufferSize;
-//    private int width;
-//    private int height;
-
     public void generatePiece(int i, int j) {
         PuzzlePieceCoords coords = new PuzzlePieceCoords(i, j, puzzleImg, numRows, numCols);
-//        coords.setInnerRect(colControlPoints, rowControlPoints, 6); // TODO: fix the hard-coded number here!
         debugCoords[i*numCols+j] = coords;
 
         pieceImg = new Pixmap((int)coords.size.x, (int)coords.size.y, Pixmap.Format.RGBA8888);
@@ -279,11 +271,6 @@ public class Puzzle {
                 (int)coords.pos.x, puzzleImg.getHeight() - (int)coords.pos.y - (int)coords.size.y,
                 (int)coords.size.x, (int)coords.size.y);
         pieceImg.setBlending(Pixmap.Blending.None);
-
-//        pixelData = pieceImg.getPixels();
-//        width = pieceImg.getWidth();
-//        height = pieceImg.getHeight();
-//        bufferSize = 4 * width * height;
 
         // clear alpha across the whole image, then floodfill starting in the middle
         pc.counters.get(3).start();
@@ -294,106 +281,17 @@ public class Puzzle {
         }
         pc.counters.get(3).stop();
 
-//        for (int x=3; x<bufferSize; x+=4) {
-//            pixelData.put(x, (byte)0);
-//        }
-
-
-//        ArrayList<GridPoint2> flood = new ArrayList<GridPoint2>();
-//        GridPoint2 pixel;
         boolean includeBorder = ((i+j)%2==0);
 
         pc.counters.get(4).start();
         puzzleFill.initialize(pieceImg, splineImg, coords, includeBorder);
         puzzleFill.fill((int)coords.mid.x, (int)coords.mid.y);
-//        flood.add(new GridPoint2((int)coords.mid.x, (int)coords.mid.y));
-////        initializeFlood(i, j, flood, coords, pieceImg);
-//        while (!flood.isEmpty()) {
-//            pixel = flood.remove(0);
-//            setColor(pixel, pieceImg);
-////            setAlpha(pixel, pixelData);
-//            addNeighbors(includeBorder, pixel, pieceImg, new GridPoint2((int)coords.pos.x, (int)coords.pos.y), flood);
-//        }
         pc.counters.get(4).stop();
 
         pc.counters.get(5).start();
         pieceImgTex = new Texture(pieceImg);
         pieceImgTexLocation.set(coords.pos.x, coords.pos.y);
         pc.counters.get(5).stop();
-    }
-
-    public void initializeFlood(int i, int j, ArrayList<GridPoint2> flood, PuzzlePieceCoords coords, Pixmap p) {
-        // fill the rectangle...
-        //  (LL and UR are relative to pos, but assume y axis is up. Pixmap use y-axis down, so we
-        //   need to translate that.) We set pixels just inside the rectangle and add the pixels on
-        //   the edge of the rectangle to the flood fill.
-        GridPoint2 pnt1 = new GridPoint2(coords.bbLL);
-        GridPoint2 pnt2 = new GridPoint2(coords.bbUR);
-        pnt1.y = (int)coords.size.y - (int)coords.bbLL.y;
-        pnt2.y = (int)coords.size.y - (int)coords.bbUR.y;
-
-        // fill the inside of the rectangle...
-        for (int x=pnt1.x+1; x<pnt2.x; x++) {
-            for (int y=pnt1.y+1; y<pnt2.y; y++) {
-                setColor(x, y, p);
-            }
-        }
-
-        // add points on the edge of the rectangle...
-        for (int x=pnt1.x; x<=pnt2.x; x++) {
-            flood.add(new GridPoint2(x, pnt1.y));
-            flood.add(new GridPoint2(x, pnt2.y));
-        }
-        for (int y=pnt1.y+1; y<pnt2.y; y++) {
-            flood.add(new GridPoint2(pnt1.x, y));
-            flood.add(new GridPoint2(pnt2.x, y));
-        }
-    }
-
-//    public void setAlpha(GridPoint2 pixel, ByteBuffer b) {
-//        int x = 4*(pixel.x + pixel.y * width) + 3;
-//        b.put(x, (byte)255);
-//    }
-//
-//    public boolean isAlphaSet(GridPoint2 pixel, ByteBuffer b) {
-//        int x = 4*(pixel.x + pixel.y * width) + 3;
-//        return (b.get(x) != (byte)0);
-//    }
-
-    public void setColor(GridPoint2 pixel, Pixmap p) {
-        p.drawPixel(pixel.x, pixel.y, p.getPixel(pixel.x, pixel.y) | 0x000000FF);
-    }
-
-    public void setColor(int x, int y, Pixmap p) {
-        p.drawPixel(x, y, p.getPixel(x, y) | 0x000000FF);
-    }
-
-    public void addNeighbors(boolean includeBorder, GridPoint2 pixel, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
-        // we check the four neighboring pixels. If they have already been fixed for color or
-        // if they are on a Catmull-Rom spline then we don't add them.
-        // TODO: do the diagonals too - the intersection of splines can get missed with just the four.
-        // oops - border lines drawn diagonally can cause the flood fill to escape!
-        GridPoint2 tmp = pixel.cpy();
-        tmp.x--; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x++;
-        tmp.x++; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.x--;
-        tmp.y--; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y++;
-        tmp.y++; if (needToAdd(includeBorder, tmp, p, loc, flood)) flood.add(tmp.cpy()); tmp.y--;
-    }
-
-    private boolean needToAdd(boolean includeBorder, GridPoint2 pix, Pixmap p, GridPoint2 loc, ArrayList<GridPoint2> flood) {
-        if ((pix.x<0)||(pix.x>=p.getWidth())) return false;
-        if ((pix.y<0)||(pix.y>=p.getHeight())) return false;
-        if (flood.contains(pix)) return false;
-        if ((p.getPixel(pix.x, pix.y) & 0x000000FF) == 0x000000FF) return false;
-//        if (isAlphaSet(pix, pixelData)) return false;
-        GridPoint2 pix2 = new GridPoint2(loc.x, splineImg.getHeight() - loc.y - p.getHeight());
-        pix2.add(pix);
-        if (splineImg.getPixel(pix2.x, pix2.y) == 0xFFFFFFFF) { // on the spline edge
-            if (includeBorder) setColor(pix, p);
-//            if (includeBorder) setAlpha(pix, pixelData);
-            return false;
-        }
-        return true;
     }
 
     public void render(SpriteBatch batch, float delta) {
