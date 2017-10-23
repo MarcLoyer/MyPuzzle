@@ -195,9 +195,10 @@ public class Puzzle {
         // Create a pixmap of the splines
         pc.counters.get(1).start();
         splineImg = new Pixmap(puzzleImg.getWidth(), puzzleImg.getHeight(), Pixmap.Format.RGBA8888); // use Alpha format - saves masking
+        splineImg.setBlending(Pixmap.Blending.None);
         splineImg.setColor(0,0,0,0);
         splineImg.fill();
-        splineImg.setColor(1f, 1f, 1f, 1f);
+        splineImg.setColor(1f, 1f, 1f, 0.6f);
         for (Vector2 [] path: rowLine) {
             for (int i=1; i<pointsPerSpline; i++) {
                 int x1 = (int)(path[i-1].x + 0.5f);

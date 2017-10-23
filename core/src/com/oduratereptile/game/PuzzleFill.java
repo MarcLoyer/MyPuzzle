@@ -69,7 +69,7 @@ public class PuzzleFill extends FloodFill {
         // check if the pixel is on the mask line
         GridPoint2 p = new GridPoint2((int)coords.pos.x, mask.getHeight() - (int)coords.pos.y - puzzleImg.getHeight());
         p.add(x, y);
-        if (mask.getPixel(p.x, p.y) == 0xFFFFFFFF) {
+        if (mask.getPixel(p.x, p.y) != 0) {
             if (includeBorder) setColor(x, y);
             return false;
         }

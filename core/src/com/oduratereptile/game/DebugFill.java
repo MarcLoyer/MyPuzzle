@@ -250,7 +250,7 @@ waitForStep("getNeighborScanlines()");
         if ((puzzleImg.getPixel(x, y) & 0x000000FF) == 0x000000FF) return false;
 
         // check if the pixel is on the mask line
-        if (mask.getPixel(x, y) == 0xFFFFFFFF) {
+        if (mask.getPixel(x, y) != 0) {
             if (includeBorder) setColor(x, y);
             return false;
         }
