@@ -31,6 +31,7 @@ public class Puzzle {
     public Pixmap puzzleImg;
     public ShapeRenderer sr;
     public Random rand = new Random();
+    public PuzzleFill puzzleFill = new PuzzleFill();
     public PixmapPacker packer = new PixmapPacker(1024, 1024, Pixmap.Format.RGBA8888, 2, true);
     public TextureAtlas pieceAtlas = new TextureAtlas();
 
@@ -298,19 +299,21 @@ public class Puzzle {
 //        }
 
 
-        ArrayList<GridPoint2> flood = new ArrayList<GridPoint2>();
-        GridPoint2 pixel;
+//        ArrayList<GridPoint2> flood = new ArrayList<GridPoint2>();
+//        GridPoint2 pixel;
         boolean includeBorder = ((i+j)%2==0);
 
         pc.counters.get(4).start();
-        flood.add(new GridPoint2((int)coords.mid.x, (int)coords.mid.y));
-//        initializeFlood(i, j, flood, coords, pieceImg);
-        while (!flood.isEmpty()) {
-            pixel = flood.remove(0);
-            setColor(pixel, pieceImg);
-//            setAlpha(pixel, pixelData);
-            addNeighbors(includeBorder, pixel, pieceImg, new GridPoint2((int)coords.pos.x, (int)coords.pos.y), flood);
-        }
+        puzzleFill.initialize(pieceImg, splineImg, coords, includeBorder);
+        puzzleFill.fill((int)coords.mid.x, (int)coords.mid.y);
+//        flood.add(new GridPoint2((int)coords.mid.x, (int)coords.mid.y));
+////        initializeFlood(i, j, flood, coords, pieceImg);
+//        while (!flood.isEmpty()) {
+//            pixel = flood.remove(0);
+//            setColor(pixel, pieceImg);
+////            setAlpha(pixel, pixelData);
+//            addNeighbors(includeBorder, pixel, pieceImg, new GridPoint2((int)coords.pos.x, (int)coords.pos.y), flood);
+//        }
         pc.counters.get(4).stop();
 
         pc.counters.get(5).start();
