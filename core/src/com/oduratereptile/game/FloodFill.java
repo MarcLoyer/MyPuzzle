@@ -33,8 +33,8 @@ public abstract class FloodFill {
 
         while ((curr = pop()) != null) {
             setColor(curr);
-            getNeighborScanlines(curr, curr.y+1);
-            getNeighborScanlines(curr, curr.y-1);
+            if ((y+1)<=maxY()) getNeighborScanlines(curr, curr.y+1);
+            if ((y-1)>=minY()) getNeighborScanlines(curr, curr.y-1);
             addToDone(curr);
         }
     }
@@ -85,8 +85,6 @@ public abstract class FloodFill {
     }
 
     private void getNeighborScanlines(ScanlineSegment curr, int y) {
-        // TODO: add maxX/minX checks
-
         // Check if the lower end of the scanline is already in the done list. If so, we
         // get the lowest x1 that hasn't been checked yet.
         int x1 = getNextX(curr.x1, y);
@@ -100,7 +98,10 @@ public abstract class FloodFill {
         // done list)
         if ((x1 == curr.x1) && (needsChanged)) {
             x1--;
-            while (needsToChange(x1, y)) x1--;
+            while (needsToChange(x1, y)) {
+                x1--;
+                if (x1<minX()) break;
+            }
             x1++;
         }
 
@@ -108,6 +109,7 @@ public abstract class FloodFill {
             // Expand x2 to the end of the segment
             while (needsToChange(x2, y) == needsChanged) {
                 x2++;
+                if (x2>maxX()) break;
                 if ((!needsChanged) && (x2 >= curr.x2)) break;
             }
             x2--;
@@ -121,6 +123,7 @@ public abstract class FloodFill {
 
             // Start building the next segment
             x1 = getNextX(x2 + 1, y);
+            if (x1>maxX()) break;
             needsChanged = needsToChange(x1, y);
             x2 = x1 + 1;
         }

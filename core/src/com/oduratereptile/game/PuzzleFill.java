@@ -36,9 +36,9 @@ public class PuzzleFill extends FloodFill {
         this.includeBorder = includeBorder;
 
         minX = 0;
-        maxX = puzzleImg.getWidth();
+        maxX = puzzleImg.getWidth()-1;
         minY = 0;
-        maxY = puzzleImg.getHeight();
+        maxY = puzzleImg.getHeight()-1;
     }
 
     @Override
