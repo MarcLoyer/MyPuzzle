@@ -63,13 +63,11 @@ public class Puzzle {
     }
 
     public int numRows;
-    public float rowSpacing;
     public Vector2[][] rowControlPoints;
     public CatmullRomSpline<Vector2> [] rowSpline;
     public Vector2[][] rowLine;
 
     public int numCols;
-    public float colSpacing;
     public Vector2[][] colControlPoints;
     public CatmullRomSpline<Vector2> [] colSpline;
     public Vector2[][] colLine;
@@ -91,12 +89,8 @@ public class Puzzle {
 
     public void createPieces(int numRows, int numCols) {
         this.numRows = numRows;
-        rowSpacing = puzzleImg.getHeight() / (float)numRows;
-
         this.numCols = numCols;
-        colSpacing = puzzleImg.getWidth() / (float)numCols;
 
-        // TODO: createPieces()
         //  - Catmull-Rom splines to define the shapes
         //  - divide into pieces
         //  - create separate texture for each piece (and add alpha mask to create the shape)
@@ -128,6 +122,34 @@ public class Puzzle {
         Gdx.app.error("debug", sb.toString());
     }
 
+    public float rowSpacing(int row) {
+        int minSpacing = puzzleImg.getHeight() / numRows;
+        int remainder = puzzleImg.getHeight() % numRows;
+        if (row < remainder) return minSpacing + 1;
+        return minSpacing;
+    }
+
+    public float rowOffset(int row) {
+        int minSpacing = puzzleImg.getHeight() / numRows;
+        int remainder = puzzleImg.getHeight() % numRows;
+        if (row < remainder) return (minSpacing + 1) * row;
+        return ((minSpacing + 1) * remainder) + (minSpacing * (row - remainder));
+    }
+
+    public float colSpacing(int col) {
+        int minSpacing = puzzleImg.getWidth() / numCols;
+        int remainder = puzzleImg.getWidth() % numCols;
+        if (col < remainder) return minSpacing + 1;
+        return minSpacing;
+    }
+
+    public float colOffset(int col) {
+        int minSpacing = puzzleImg.getWidth() / numCols;
+        int remainder = puzzleImg.getWidth() % numCols;
+        if (col < remainder) return (minSpacing + 1) * col;
+        return ((minSpacing + 1) * remainder) + (minSpacing * (col - remainder));
+    }
+
     public void generateSplines() {
         int pointsPerPiece = 6;
         int pointsPerSpline = numCols*50;
@@ -137,22 +159,22 @@ public class Puzzle {
         rowSpline = new CatmullRomSpline[numRows-1];
         rowLine = new Vector2[numRows-1][pointsPerSpline];
         for (int i=0; i<numRows-1; i++) {
-            float offset = ((float)i+1f)*rowSpacing;
-            rowControlPoints[i][0] = new Vector2(-colSpacing, offset);
+            float offset = rowOffset(i+1); // we're doing the spline above the piece
+            rowControlPoints[i][0] = new Vector2(-colSpacing(0), offset);
             for (int j=0; j<numCols; j++) {
-                float sign = (rand.nextBoolean())? rowSpacing: -rowSpacing;
+                float sign = (rand.nextBoolean())? rowSpacing(i): -rowSpacing(i);
 
-                if (j==0) rowControlPoints[i][1+j*pointsPerPiece] = new Vector2(j*colSpacing, offset + randR(Fr));
-                else      rowControlPoints[i][1+j*pointsPerPiece] = new Vector2(j*colSpacing + randC(Fr), offset + randR(Fr));
+                if (j==0) rowControlPoints[i][1+j*pointsPerPiece] = new Vector2(colOffset(j), offset + randR(Fr));
+                else      rowControlPoints[i][1+j*pointsPerPiece] = new Vector2(colOffset(j) + randC(Fr), offset + randR(Fr));
 
-                rowControlPoints[i][2+j*pointsPerPiece] = new Vector2((j + 0.5f - A)*colSpacing + randC(Ar), offset        + randR(Ar));
-                rowControlPoints[i][3+j*pointsPerPiece] = new Vector2((j + 0.5f - B)*colSpacing + randC(Br), offset+sign*C + randR(Br));
-                rowControlPoints[i][4+j*pointsPerPiece] = new Vector2((j + 0.5f    )*colSpacing + randC(Br), offset+sign*D + randR(Br));
-                rowControlPoints[i][5+j*pointsPerPiece] = new Vector2((j + 0.5f + B)*colSpacing + randC(Br), offset+sign*C + randR(Br));
-                rowControlPoints[i][6+j*pointsPerPiece] = new Vector2((j + 0.5f + A)*colSpacing + randC(Ar), offset        + randR(Ar));
+                rowControlPoints[i][2+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f - A)*colSpacing(j) + randC(Ar), offset        + randR(Ar));
+                rowControlPoints[i][3+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f - B)*colSpacing(j) + randC(Br), offset+sign*C + randR(Br));
+                rowControlPoints[i][4+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f    )*colSpacing(j) + randC(Br), offset+sign*D + randR(Br));
+                rowControlPoints[i][5+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f + B)*colSpacing(j) + randC(Br), offset+sign*C + randR(Br));
+                rowControlPoints[i][6+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f + A)*colSpacing(j) + randC(Ar), offset        + randR(Ar));
             }
-            rowControlPoints[i][1+numCols*pointsPerPiece] = new Vector2((float)(numCols)*colSpacing, offset + randR(Fr));
-            rowControlPoints[i][2+numCols*pointsPerPiece] = new Vector2((float)(numCols+1)*colSpacing, offset);
+            rowControlPoints[i][1+numCols*pointsPerPiece] = new Vector2((float)colOffset(numCols), offset + randR(Fr));
+            rowControlPoints[i][2+numCols*pointsPerPiece] = new Vector2((float)colOffset(numCols+1), offset);
 
             rowSpline[i] = new CatmullRomSpline<Vector2>(rowControlPoints[i], false);
 
@@ -166,22 +188,22 @@ public class Puzzle {
         colSpline = new CatmullRomSpline[numCols-1];
         colLine = new Vector2[numCols-1][pointsPerSpline];
         for (int i=0; i<numCols-1; i++) {
-            float offset = ((float)i+1f)*colSpacing;
-            colControlPoints[i][0] = new Vector2(offset, -rowSpacing);
+            float offset = colOffset(i+1); // we're doing the spline to the right of the piece
+            colControlPoints[i][0] = new Vector2(offset, -rowSpacing(0));
             for (int j=0; j<numRows; j++) {
-                float sign = (rand.nextBoolean())? colSpacing: -colSpacing;
+                float sign = (rand.nextBoolean())? colSpacing(i): -colSpacing(i);
 
-                if (j==0) colControlPoints[i][1+j*pointsPerPiece] = new Vector2(offset + randR(Fr), j*rowSpacing);
-                else      colControlPoints[i][1+j*pointsPerPiece] = new Vector2(offset + randR(Fr), j*rowSpacing + randC(Fr));
+                if (j==0) colControlPoints[i][1+j*pointsPerPiece] = new Vector2(offset + randC(Fr), rowOffset(j));
+                else      colControlPoints[i][1+j*pointsPerPiece] = new Vector2(offset + randC(Fr), rowOffset(j) + randC(Fr));
 
-                colControlPoints[i][2+j*pointsPerPiece] = new Vector2(offset        + randR(Ar), (j + 0.5f - A)*rowSpacing + randC(Ar));
-                colControlPoints[i][3+j*pointsPerPiece] = new Vector2(offset+sign*C + randR(Br), (j + 0.5f - B)*rowSpacing + randC(Br));
-                colControlPoints[i][4+j*pointsPerPiece] = new Vector2(offset+sign*D + randR(Br), (j + 0.5f    )*rowSpacing + randC(Br));
-                colControlPoints[i][5+j*pointsPerPiece] = new Vector2(offset+sign*C + randR(Br), (j + 0.5f + B)*rowSpacing + randC(Br));
-                colControlPoints[i][6+j*pointsPerPiece] = new Vector2(offset        + randR(Ar), (j + 0.5f + A)*rowSpacing + randC(Ar));
+                colControlPoints[i][2+j*pointsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f - A)*rowSpacing(j) + randC(Ar));
+                colControlPoints[i][3+j*pointsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f - B)*rowSpacing(j) + randC(Br));
+                colControlPoints[i][4+j*pointsPerPiece] = new Vector2(offset+sign*D + randC(Br), rowOffset(j) + (0.5f    )*rowSpacing(j) + randC(Br));
+                colControlPoints[i][5+j*pointsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f + B)*rowSpacing(j) + randC(Br));
+                colControlPoints[i][6+j*pointsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f + A)*rowSpacing(j) + randC(Ar));
             }
-            colControlPoints[i][1+numCols*pointsPerPiece] = new Vector2(offset + randR(Fr), (float)(numRows)*rowSpacing);
-            colControlPoints[i][2+numCols*pointsPerPiece] = new Vector2(offset, (float)(numRows+1)*rowSpacing);
+            colControlPoints[i][1+numCols*pointsPerPiece] = new Vector2(offset + randC(Fr), (float)rowOffset(numRows));
+            colControlPoints[i][2+numCols*pointsPerPiece] = new Vector2(offset, (float)rowOffset(numRows+1));
 
             colSpline[i] = new CatmullRomSpline<Vector2>(colControlPoints[i], false);
 
@@ -198,7 +220,7 @@ public class Puzzle {
         splineImg.setBlending(Pixmap.Blending.None);
         splineImg.setColor(0,0,0,0);
         splineImg.fill();
-        splineImg.setColor(1f, 1f, 1f, 0.6f);
+        splineImg.setColor(1f, 1f, 1f, 1f);
         for (Vector2 [] path: rowLine) {
             for (int i=1; i<pointsPerSpline; i++) {
                 int x1 = (int)(path[i-1].x + 0.5f);
@@ -222,11 +244,11 @@ public class Puzzle {
     }
 
     public float randR(float max) {
-        return ((rand.nextFloat() * 2.0f * max) - max) * rowSpacing;
+        return ((rand.nextFloat() * 2.0f * max) - max) * rowSpacing(0);
     }
 
     public float randC(float max) {
-        return ((rand.nextFloat() * 2.0f * max) - max) * colSpacing;
+        return ((rand.nextFloat() * 2.0f * max) - max) * colSpacing(0);
     }
 
     public Pixmap pieceImg;
