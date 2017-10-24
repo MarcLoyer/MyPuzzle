@@ -14,8 +14,6 @@ public class PuzzlePieceCoords {
     public float imageHeight;
     public int numRows;
     public int numCols;
-    public float colSpacing;
-    public float rowSpacing;
 
     public int row;
     public int col;
@@ -32,32 +30,67 @@ public class PuzzlePieceCoords {
         imageHeight = img.getHeight();
         this.numRows = numRows;
         this.numCols = numCols;
-        colSpacing = imageWidth/numCols;
-        rowSpacing = imageHeight/numRows;
 
         row = i;
         col = j;
 
-        pos = new Vector2((float)j*colSpacing, (float)i*rowSpacing);
-        size = new Vector2(colSpacing, rowSpacing);
-        mid = new Vector2(colSpacing/2.0f, rowSpacing/2.0f);
+        pos = new Vector2(colOffset(j), rowOffset(i));
+        size = new Vector2(colSpacing(j), rowSpacing(i));
+        mid = new Vector2(colSpacing(j)/2, rowSpacing(i)/2);
         if (i != 0) {
-            pos.y -= rowSpacing/2.0f;
-            size.y += rowSpacing/2.0f;
-            mid.y += rowSpacing/2.0f;
+            pos.y -= (int)(rowSpacing(i)/2); // Note: we really do want integer math here!
+            size.y += (int)(rowSpacing(i)/2);
+            mid.y += (int)(rowSpacing(i)/2);
         }
         if (j != 0) {
-            pos.x -= colSpacing/2.0f;
-            size.x += colSpacing/2.0f;
-            mid.x += colSpacing/2.0f;
+            pos.x -= (int)(colSpacing(j)/2); // here too!
+            size.x += (int)(colSpacing(j)/2);
+            mid.x += (int)(colSpacing(j)/2);
         }
         if (i != (numRows-1)) {
-            size.y += rowSpacing/2.0f;
+            size.y += (int)(rowSpacing(i)/2); // and here
         }
         if (j != (numCols-1)) {
-            size.x += colSpacing/2.0f;
+            size.x += (int)(colSpacing(j)/2); // and here
         }
         mid.y = size.y - mid.y;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("("+row+","+col+"):");
+        if (pos != null) sb.append(" pos="+pos.toString());
+        if (mid != null) sb.append(" mid="+mid.toString());
+        if (size != null) sb.append(" size="+size.toString());
+        return sb.toString();
+    }
+
+    public float rowSpacing(int row) {
+        int minSpacing = (int)imageHeight / numRows;
+        int remainder = (int)imageHeight % numRows;
+        if (row < remainder) return minSpacing + 1;
+        return minSpacing;
+    }
+
+    public float rowOffset(int row) {
+        int minSpacing = (int)imageHeight / numRows;
+        int remainder = (int)imageHeight % numRows;
+        if (row < remainder) return (minSpacing + 1) * row;
+        return ((minSpacing + 1) * remainder) + (minSpacing * (row - remainder));
+    }
+
+    public float colSpacing(int col) {
+        int minSpacing = (int)imageWidth/ numCols;
+        int remainder = (int)imageWidth % numCols;
+        if (col < remainder) return minSpacing + 1;
+        return minSpacing;
+    }
+
+    public float colOffset(int col) {
+        int minSpacing = (int)imageWidth/ numCols;
+        int remainder = (int)imageWidth % numCols;
+        if (col < remainder) return (minSpacing + 1) * col;
+        return ((minSpacing + 1) * remainder) + (minSpacing * (col - remainder));
     }
 
     /**
