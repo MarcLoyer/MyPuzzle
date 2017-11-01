@@ -42,8 +42,18 @@ public class DebugScreen extends HudScreen {
 
         debugHUD(false);
 
+        Button button = new Button(game.skin, "leftarrow");
+        button.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+                game.setScreen(new MainMenuScreen(game));
+                dispose();
+            }
+        });
+        getTable(LR).add(button);
+
         // Create a button to step the flood fill
-        Button button = new Button(game.skin, "play");
+        button = new Button(game.skin, "play");
         button.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){

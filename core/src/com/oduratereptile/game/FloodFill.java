@@ -8,8 +8,8 @@ import java.util.HashMap;
  */
 
 public abstract class FloodFill {
-    private ArrayList<ScanlineSegment> floodStack;
-    private HashMap<Integer, ArrayList<ScanlineSegment>> doneSegments;
+    ArrayList<ScanlineSegment> floodStack;
+    HashMap<Integer, ArrayList<ScanlineSegment>> doneSegments;
 
     public FloodFill() {
         floodStack = new ArrayList<ScanlineSegment>();
