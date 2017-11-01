@@ -30,30 +30,17 @@ public class MainMenuScreen extends Stage implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
 
-        final TextButton textbutton = new TextButton("Click me", game.skin);
-        textbutton.setWidth(300f);
-//        textbutton.setHeight(40f);
-        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 150f, MyPuzzle.SCREENSIZEY/2f - 20f);
+        final TextButton textbutton = new TextButton("Play", game.skin);
+        textbutton.setWidth(100f);
+        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 50f, MyPuzzle.SCREENSIZEY/2f - 20f);
         textbutton.addListener(new ClickListener(){
-            @Override
-            public void clicked(InputEvent event, float x, float y){
-                textbutton.setText("You clicked the button");
-            }
-        });
-        addActor(textbutton);
-
-        Button button = new Button(game.skin, "default");
-        button.setWidth(60f);
-        button.setHeight(60f);
-        button.setPosition(MyPuzzle.SCREENSIZEX/2f - 80f, MyPuzzle.SCREENSIZEY/2f - 160f);
-        button.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
                 game.setScreen(new GameScreen(game));
                 dispose();
             }
         });
-        addActor(button);
+        addActor(textbutton);
     }
 
     @Override
@@ -73,10 +60,6 @@ public class MainMenuScreen extends Stage implements Screen {
         draw();
         game.batch.end();
 
-//        if (Gdx.input.isTouched()) {
-//            game.setScreen(new GameScreen(game));
-//            dispose();
-//        }
     }
 
     @Override
