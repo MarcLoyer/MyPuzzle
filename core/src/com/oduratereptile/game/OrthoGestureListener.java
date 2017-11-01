@@ -12,12 +12,10 @@ import com.badlogic.gdx.math.Vector3;
  */
 
 public class OrthoGestureListener implements GestureListener {
-    GameScreen gameScreen;
     OrthographicCamera cam;
 
-    public OrthoGestureListener(GameScreen gameScreen) {
-        this.gameScreen = gameScreen;
-        this.cam = gameScreen.camera;
+    public OrthoGestureListener(OrthographicCamera cam) {
+        this.cam = cam;
     }
 
     public Vector2 camSize = new Vector2();

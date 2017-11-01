@@ -29,7 +29,7 @@ public class GameScreen extends HudScreen {
     public GameScreen(final MyPuzzle game) {
         super(game);
         camera = new OrthographicCamera();
-        addInputController(new GestureDetector(new OrthoGestureListener(this)));
+        addInputController(new GestureDetector(new OrthoGestureListener(camera)));
 
         debugHUD(false);
 

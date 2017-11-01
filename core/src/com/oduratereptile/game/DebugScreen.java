@@ -38,7 +38,7 @@ public class DebugScreen extends HudScreen {
     public DebugScreen(final MyPuzzle game, Pixmap image, Pixmap mask, PuzzlePieceCoords coords) {
         super(game);
         camera = new OrthographicCamera();
-        addInputController(new GestureDetector(new DebugOrthoGestureListener(this)));
+        addInputController(new GestureDetector(new OrthoGestureListener(camera)));
 
         debugHUD(false);
 
