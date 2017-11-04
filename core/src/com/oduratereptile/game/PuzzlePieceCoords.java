@@ -53,7 +53,14 @@ public class PuzzlePieceCoords {
         if (j != (numCols-1)) {
             size.x += (int)(colSpacing(j)/2); // and here
         }
-        mid.y = size.y - mid.y;
+        mid.y = size.y - mid.y; // y-axis down
+    }
+
+    // Corrects for y-axis-down
+    public Vector2 getMid() {
+        Vector2 rv = new Vector2(mid);
+        rv.y = size.y - rv.y;
+        return rv;
     }
 
     public String toString() {

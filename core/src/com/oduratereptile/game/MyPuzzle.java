@@ -6,7 +6,9 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class MyPuzzle extends Game {
@@ -17,6 +19,8 @@ public class MyPuzzle extends Game {
 	Skin skin;
     AssetManager manager;
 
+	OutlineShader outlineShader;
+
     final static public int SCREENSIZEX = 800;
     final static public int SCREENSIZEY = 480;
 
@@ -26,6 +30,9 @@ public class MyPuzzle extends Game {
 		shapeRenderer = new ShapeRenderer();
 		img = new Texture("badlogic.jpg");
         manager = new AssetManager();
+
+		outlineShader = new OutlineShader();
+
 
 		setScreen(new SplashScreen(this));
 	}

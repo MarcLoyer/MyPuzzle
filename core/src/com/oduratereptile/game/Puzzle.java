@@ -4,14 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PixmapPacker;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.PerformanceCounter;
 import com.badlogic.gdx.utils.PerformanceCounters;
@@ -24,7 +29,7 @@ import java.util.Random;
  * Created by Marc on 10/7/2017.
  */
 
-public class Puzzle {
+public class Puzzle extends OrthoGestureListener {
     public GameScreen gameScreen;
     public Pixmap puzzleImg;
     public ShapeRenderer sr;
@@ -45,6 +50,7 @@ public class Puzzle {
 
 
     public Puzzle(GameScreen gameScreen) {
+        super(gameScreen.camera);
         this.gameScreen = gameScreen;
         sr = gameScreen.game.shapeRenderer;
     }
@@ -266,6 +272,19 @@ public class Puzzle {
                 generatePiece(i, j);
                 String s = i + "," + j;
                 packer.pack(s, pieceImg);
+
+//                // DEBUG: save a couple pixmaps for use in ShaderLessons...
+//                if (Gdx.files.isLocalStorageAvailable()) {
+//                    if ((i == 0) && (j == 0)) {
+//                        gameScreen.setStatus("Local path: " + Gdx.files.getLocalStoragePath());
+//                        FileHandle fh = Gdx.files.local("piece_00.png");
+//                        PixmapIO.writePNG(fh, pieceImg);
+//                    }
+//                    if ((i == 1) && (j == 1)) {
+//                        FileHandle fh = Gdx.files.local("piece_11.png");
+//                        PixmapIO.writePNG(fh, pieceImg);
+//                    }
+//                }
             }
         }
         pc.counters.get(2).stop();
@@ -279,7 +298,7 @@ public class Puzzle {
             for (int j=0; j<numCols; j++) {
                 coords = new PuzzlePieceCoords(i, j, puzzleImg, numRows, numCols);
                 String s = i + "," + j;
-                puzzlePiece.add(new PuzzlePiece(i, j, coords.pos, 0, pieceAtlas.findRegion(s)));
+                puzzlePiece.add(new PuzzlePiece(i, j, coords, pieceAtlas.findRegion(s)));
             }
         }
         pc.counters.get(6).stop();
@@ -331,6 +350,10 @@ public class Puzzle {
                 if ((displayEvenPieces && isEven) || (!displayEvenPieces && !isEven))
                     p.draw(batch, 1);
             }
+        }
+
+        for (PuzzlePiece p: selectedPiece) {
+            p.drawHighlight(batch, 1.0f);
         }
 
         if (displaySplineImage) batch.draw(splineImgTex, 0,0);
@@ -392,6 +415,102 @@ public class Puzzle {
 
         sr.end();
     }
+
+    // I currently only select one piece at a time, but maybe in the future I'll
+    // do something more fancy...
+    public ArrayList<PuzzlePiece> selectedPiece = new ArrayList<PuzzlePiece>();
+
+    // use this to select/deselect pieces
+    @Override
+    public boolean tap(float x, float y, int count, int button) {
+        Vector3 c = cam.unproject(new Vector3(x,y,0));
+
+        // deselect any selected pieces
+        for (PuzzlePiece p: selectedPiece) {
+            p.select(false);
+        }
+        selectedPiece.clear();
+
+        // check if the tap location selects a new piece
+        for (PuzzlePiece p: puzzlePiece) {
+            if (hit(p, c.x, c.y)) {
+                p.select();
+                if (p.highlight==null) {
+                    generateHighlight(p);
+                }
+                selectedPiece.add(p);
+            }
+        }
+
+        return true;
+    }
+
+    public void generateHighlight(PuzzlePiece p) {
+        gameScreen.game.outlineShader.setup(((TextureRegionDrawable)p.getDrawable()).getRegion());
+        // TODO: bug - highlight is transposed!
+        p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
+//        p.highlight.flip(false, false);
+        //  true,  true:  top->right,  right->bottom
+        //  true,  false: top->bottom, right->left
+        //  false, true:  top->right,  right->top
+        //  false, false: top->left,   right->top
+    }
+
+    private boolean hit(PuzzlePiece p, float x, float y) {
+        float rad = Math.min(rowSpacing(p.row), colSpacing(p.col))/2.0f;
+        float rad2 = rad*rad;
+        Vector2 m = p.getMid();
+        float d2 = m.dst2(x,y);
+
+        return (d2 < rad2);
+    }
+
+    // use this to move the selected piece (or maybe drag and drop?)
+    @Override
+    public boolean pan(float x, float y, float deltaX, float deltaY) {
+        if (selectedPiece.size()==1) {
+            PuzzlePiece p = selectedPiece.get(0);
+            Vector3 c = cam.unproject(new Vector3(deltaX, deltaY, 0)).sub(cam.unproject(new Vector3(0, 0, 0)));
+            p.moveBy(c.x,c.y);
+        } else {
+            return super.pan(x,y,deltaX,deltaY);
+        }
+
+        return true;
+    }
+
+    public float initialRotation;
+
+    @Override
+    public boolean touchDown(float x, float y, int pointer, int button) {
+        if ((pointer==1) && (selectedPiece.size()==1)) {
+            initialRotation = selectedPiece.get(0).getRotation();
+        }
+
+        return super.touchDown(x,y,pointer, button);
+    }
+
+    // Use this to rotate a selected piece
+    @Override
+    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
+        if (selectedPiece.size()==1) {
+            PuzzlePiece p = selectedPiece.get(0);
+
+            Vector2 v1 = new Vector2(initialPointer2);
+            v1.sub(initialPointer1);
+
+            Vector2 v2 = new Vector2(pointer2);
+            v2.sub(pointer1);
+
+            float angle = ((float)Math.atan2(v1.x, v1.y) - (float)Math.atan2(v2.x, v2.y)) * MathUtils.radiansToDegrees;
+            p.setRotation(initialRotation - angle);
+        } else {
+            return super.pinch(initialPointer1, initialPointer2, pointer1, pointer2);
+        }
+
+        return true;
+    }
+
 
     // TODO: save and restore functions
 

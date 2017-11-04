@@ -29,7 +29,6 @@ public class GameScreen extends HudScreen {
     public GameScreen(final MyPuzzle game) {
         super(game);
         camera = new OrthographicCamera();
-        addInputController(new GestureDetector(new OrthoGestureListener(camera)));
 
         debugHUD(false);
 
@@ -119,6 +118,8 @@ public class GameScreen extends HudScreen {
         });
         stage.addActor(popup);
 
+        puzzle = new Puzzle(this);
+        addInputController(new GestureDetector(puzzle));
         getPuzzleImage();
     }
 
@@ -130,7 +131,6 @@ public class GameScreen extends HudScreen {
         String picture2 = "klimt.JPG"; // small: 500x300
         String picture3 = "oregonpath.JPG"; // tiny: 150x100
 
-        puzzle = new Puzzle(this);
         puzzle.setPicture(Gdx.files.internal(picture2));
 //        puzzle.createPieces(3, 3);
 //        puzzle.createPieces(5, 5);
