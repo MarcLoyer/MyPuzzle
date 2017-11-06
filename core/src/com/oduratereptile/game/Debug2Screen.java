@@ -47,7 +47,7 @@ public class Debug2Screen extends HudScreen {
         super(game);
         camera = new OrthographicCamera();
         addInputController(new GestureDetector(new OrthoGestureListener(camera)));
-        modelBatch = new ModelBatch();
+//        modelBatch = new ModelBatch();
 
         this.puzzle = puzzle;
 
@@ -225,12 +225,7 @@ public class Debug2Screen extends HudScreen {
         game.batch.end();
 
         // TODO: draw the mesh
-        sourceTex.bind();
-        shader.begin();
-        shader.setUniformMatrix("u_projTrans", game.batch.getProjectionMatrix());
-        shader.setUniformi("u_texture", 0);
-        mesh.render(shader, GL20.GL_TRIANGLES);
-        shader.end();
+        drawMesh(40+w, 60);
 
 //        // TODO: draw the model
 //        modelBatch.begin(camera);
@@ -245,8 +240,8 @@ public class Debug2Screen extends HudScreen {
         game.shapeRenderer.rect(20, 60, w, h);
         game.shapeRenderer.rect(40+w, 60, w, h);
         drawSplineShape(game.shapeRenderer, 20, 60);
-        drawSplineShape(game.shapeRenderer, 40+w, 60);
-        drawTriangles(game.shapeRenderer, 40+w, 60);
+//        drawSplineShape(game.shapeRenderer, 40+w, 60);
+        drawTriangles(game.shapeRenderer, 20, 60);
 //        mesh.render(shader, GL20.GL_TRIANGLES);
 
         game.shapeRenderer.end();
@@ -285,6 +280,17 @@ public class Debug2Screen extends HudScreen {
         }
     }
 
+    public void drawMesh(float x, float y) {
+        // TODO: figure out how to translate a mesh
+        sourceTex.bind();
+        shader.begin();
+        shader.setUniformMatrix("u_projTrans", game.batch.getProjectionMatrix());
+        shader.setUniformi("u_texture", 0);
+        mesh.render(shader, GL20.GL_TRIANGLES);
+        shader.end();
+
+    }
+
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
@@ -300,8 +306,8 @@ public class Debug2Screen extends HudScreen {
 
     @Override
     public void dispose() {
-        modelBatch.dispose();
-        model.dispose();
+//        modelBatch.dispose();
+//        model.dispose();
         super.dispose();
     }
 }
