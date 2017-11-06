@@ -199,8 +199,9 @@ public class Puzzle extends OrthoGestureListener {
             for (int j=0; j<numRows; j++) {
                 float sign = (rand.nextBoolean())? colSpacing(i): -colSpacing(i);
 
+                // Use the same point as the row spline, so that the splines intersect at a control point
                 if (j==0) colControlPoints[i][1+j*pointsPerPiece] = new Vector2(offset + randC(Fr), rowOffset(j));
-                else      colControlPoints[i][1+j*pointsPerPiece] = new Vector2(offset + randC(Fr), rowOffset(j) + randC(Fr));
+                else      colControlPoints[i][1+j*pointsPerPiece] = rowControlPoints[j-1][1+(i+1)*pointsPerPiece];
 
                 colControlPoints[i][2+j*pointsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f - A)*rowSpacing(j) + randC(Ar));
                 colControlPoints[i][3+j*pointsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f - B)*rowSpacing(j) + randC(Br));

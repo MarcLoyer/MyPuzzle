@@ -100,7 +100,6 @@ public class Debug2Screen extends HudScreen {
         sourceTex = new Texture(sourceImg);
 
         // Collect the portions of the splines that pertain to our piece
-        // TODO: the intersections of splines don't neatly line up - I'll have to adjust my spline generation to fix this
         // TODO: support for edge pieces
         for (int i=col*50; i<(col+1)*50; i++) { splineShape.add(puzzle.rowLine[row][i]); }
         for (int i=(row+1)*50; i>row*50; i--) { splineShape.add(puzzle.colLine[col][i]); }
