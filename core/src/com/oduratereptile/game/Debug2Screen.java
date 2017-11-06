@@ -8,6 +8,9 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -15,6 +18,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
@@ -28,6 +32,9 @@ import com.badlogic.gdx.utils.ShortArray;
 
 import java.util.ArrayList;
 
+import static com.badlogic.gdx.graphics.GL20.GL_ONE;
+import static com.badlogic.gdx.graphics.GL20.GL_ZERO;
+import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 import static com.oduratereptile.game.HudScreen.Corner.LR;
 
 /**
@@ -42,12 +49,14 @@ public class Debug2Screen extends HudScreen {
     public int col = 1;
 
     public ModelBatch modelBatch;
+    public SpriteBatch spriteBatch;
 
     public Debug2Screen(final MyPuzzle game, Puzzle puzzle) {
         super(game);
         camera = new OrthographicCamera();
         addInputController(new GestureDetector(new OrthoGestureListener(camera)));
 //        modelBatch = new ModelBatch();
+        spriteBatch = new SpriteBatch();
 
         this.puzzle = puzzle;
 
@@ -82,6 +91,8 @@ public class Debug2Screen extends HudScreen {
     public PuzzlePieceCoords coords;
     public Pixmap sourceImg;
     public Texture sourceTex;
+    public TextureRegion shapeTex;
+    public Sprite shapeSprite;
 
     public FloatArray verts;
     public ShortArray tris;
@@ -137,6 +148,9 @@ public class Debug2Screen extends HudScreen {
         );
         if (shader.getLog().length()!=0)
             Gdx.app.error("debug", shader.getLog());
+
+        shapeTex = renderToTexture();
+        shapeSprite = new Sprite(shapeTex);
     }
 
     public void createMesh() {
@@ -164,6 +178,29 @@ public class Debug2Screen extends HudScreen {
         );
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
+    }
+
+    public TextureRegion renderToTexture() {
+        int bufferWidth = (int)coords.size.x;
+        int bufferHeight = (int)coords.size.y;
+        FrameBuffer fbo = new FrameBuffer(RGBA8888, bufferWidth, bufferHeight, false);
+        TextureRegion fboTex = new TextureRegion(fbo.getColorBufferTexture(), bufferWidth, bufferHeight);
+        fbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        fboTex.flip(false, true);
+
+        camera.setToOrtho(false, bufferWidth, bufferHeight);
+        game.batch.setProjectionMatrix(camera.combined);
+
+        fbo.begin();
+        Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl20.glEnable(GL20.GL_TEXTURE_2D);
+        Gdx.gl20.glDisable(GL20.GL_BLEND);
+        Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        drawMesh(0,0);
+        fbo.end();
+
+        return fboTex;
     }
 
     Model model;
@@ -219,13 +256,19 @@ public class Debug2Screen extends HudScreen {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
         game.shapeRenderer.setProjectionMatrix(camera.combined);
+        spriteBatch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
         game.batch.draw(sourceTex, 20, 60);
         game.batch.end();
 
-        // TODO: draw the mesh
+        // draw the mesh
         drawMesh(40+w, 60);
+
+        // draw the sprite
+        drawSprite(40+w, 60);
+
+
 
 //        // TODO: draw the model
 //        modelBatch.begin(camera);
@@ -289,6 +332,13 @@ public class Debug2Screen extends HudScreen {
         mesh.render(shader, GL20.GL_TRIANGLES);
         shader.end();
 
+    }
+
+    public void drawSprite(float x, float y) {
+        shapeSprite.setPosition(x,y);
+        spriteBatch.begin();
+        shapeSprite.draw(spriteBatch);
+        spriteBatch.end();
     }
 
     @Override
