@@ -32,8 +32,6 @@ import com.badlogic.gdx.utils.ShortArray;
 
 import java.util.ArrayList;
 
-import static com.badlogic.gdx.graphics.GL20.GL_ONE;
-import static com.badlogic.gdx.graphics.GL20.GL_ZERO;
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 import static com.oduratereptile.game.HudScreen.Corner.LR;
 
@@ -45,11 +43,24 @@ public class Debug2Screen extends HudScreen {
     public OrthographicCamera camera;
     public Puzzle puzzle;
 
-    public int row = 1;
-    public int col = 1;
-
     public ModelBatch modelBatch;
     public SpriteBatch spriteBatch;
+    public ShaderProgram shader;
+
+    public float worldWidth = 1000;
+
+    public ArrayList<Vector2> splineShape = new ArrayList<Vector2>();
+    public Pixmap sourceImg;
+    public Texture sourceTex;
+    public PuzzlePieceCoords coords0, coords1, coords2, coords3;
+    public TextureRegion shapeTex0, shapeTex1, shapeTex2, shapeTex3;
+    public Sprite shapeSprite0, shapeSprite1, shapeSprite2, shapeSprite3;
+
+    public float padding = 20;
+
+    public FloatArray verts;
+    public ShortArray tris;
+    public Mesh mesh;
 
     public Debug2Screen(final MyPuzzle game, Puzzle puzzle) {
         super(game);
@@ -72,50 +83,55 @@ public class Debug2Screen extends HudScreen {
         });
         getTable(LR).add(button);
 
-//        // Create a button to step the flood fill
-//        button = new Button(game.skin, "play");
-//        button.addListener(new ClickListener(){
-//            @Override
-//            public void clicked(InputEvent event, float x, float y){
-//                step();
-//            }
-//        });
-//        getTable(LL).add(button);
+        shader = new ShaderProgram(
+                Gdx.files.internal("shaders/mesh.vert"),
+                Gdx.files.internal("shaders/mesh.frag")
+        );
+        if (shader.getLog().length()!=0)
+            Gdx.app.error("debug", shader.getLog());
 
-        setupData();
+        coords0 = new PuzzlePieceCoords(1, 1, puzzle.puzzleImg, puzzle.numRows, puzzle.numCols);
+        setupData(coords0);
+        shapeTex0 = renderToTexture();
+        shapeSprite0 = new Sprite(shapeTex0);
+
+        coords1 = new PuzzlePieceCoords(1, 2, puzzle.puzzleImg, puzzle.numRows, puzzle.numCols);
+        setupData(coords1);
+        shapeTex1 = renderToTexture();
+        shapeSprite1 = new Sprite(shapeTex1);
+
+        coords2 = new PuzzlePieceCoords(2, 1, puzzle.puzzleImg, puzzle.numRows, puzzle.numCols);
+        setupData(coords2);
+        shapeTex2 = renderToTexture();
+        shapeSprite2 = new Sprite(shapeTex2);
+
+        coords3 = new PuzzlePieceCoords(2, 2, puzzle.puzzleImg, puzzle.numRows, puzzle.numCols);
+        setupData(coords3);
+        shapeTex3 = renderToTexture();
+        shapeSprite3 = new Sprite(shapeTex3);
+
     }
 
-    public float worldWidth = 1000;
+    public void setupData(PuzzlePieceCoords coords) {
+        int row = coords.row;
+        int col = coords.col;
 
-    public ArrayList<Vector2> splineShape = new ArrayList<Vector2>();
-    public PuzzlePieceCoords coords;
-    public Pixmap sourceImg;
-    public Texture sourceTex;
-    public TextureRegion shapeTex;
-    public Sprite shapeSprite;
-
-    public FloatArray verts;
-    public ShortArray tris;
-    public Mesh mesh;
-    public ShaderProgram shader;
-
-    public void setupData() {
         // Clip the image around the piece we are drawing
-        coords = new PuzzlePieceCoords(row, col, puzzle.puzzleImg, puzzle.numRows, puzzle.numCols);
-        sourceImg = new Pixmap((int)coords.size.x, (int)coords.size.y, Pixmap.Format.RGBA8888);
+        sourceImg = new Pixmap((int) coords.size.x, (int) coords.size.y, Pixmap.Format.RGBA8888);
         sourceImg.drawPixmap(puzzle.puzzleImg, 0, 0,
-                (int)coords.pos.x, puzzle.puzzleImg.getHeight() - (int)coords.pos.y - (int)coords.size.y,
-                (int)coords.size.x, (int)coords.size.y);
+                (int) coords.pos.x, puzzle.puzzleImg.getHeight() - (int) coords.pos.y - (int) coords.size.y,
+                (int) coords.size.x, (int) coords.size.y);
         sourceImg.setBlending(Pixmap.Blending.None);
 
         sourceTex = new Texture(sourceImg);
 
         // Collect the portions of the splines that pertain to our piece
         // TODO: support for edge pieces
-        for (int i=col*50; i<(col+1)*50; i++) { splineShape.add(puzzle.rowLine[row][i]); }
-        for (int i=(row+1)*50; i>row*50; i--) { splineShape.add(puzzle.colLine[col][i]); }
-        for (int i=(col+1)*50; i>col*50; i--) { splineShape.add(puzzle.rowLine[row-1][i]); }
-        for (int i=row*50; i<(row+1)*50; i++) { splineShape.add(puzzle.colLine[col-1][i]); }
+        splineShape.clear();
+        for (int i=col*50; i<(col+1)*50; i++) { splineShape.add(puzzle.rowLine[row][i].cpy()); }
+        for (int i=(row+1)*50; i>row*50; i--) { splineShape.add(puzzle.colLine[col][i].cpy()); }
+        for (int i=(col+1)*50; i>col*50; i--) { splineShape.add(puzzle.rowLine[row-1][i].cpy()); }
+        for (int i=row*50; i<(row+1)*50; i++) { splineShape.add(puzzle.colLine[col-1][i].cpy()); }
 
         for (Vector2 v: splineShape) v.sub(coords.pos);
 
@@ -141,16 +157,6 @@ public class Debug2Screen extends HudScreen {
         tris = triangulator.computeTriangles(verts);
         createMesh();
 //        createModel();
-
-        shader = new ShaderProgram(
-                Gdx.files.internal("shaders/mesh.vert"),
-                Gdx.files.internal("shaders/mesh.frag")
-        );
-        if (shader.getLog().length()!=0)
-            Gdx.app.error("debug", shader.getLog());
-
-        shapeTex = renderToTexture();
-        shapeSprite = new Sprite(shapeTex);
     }
 
     public void createMesh() {
@@ -164,8 +170,8 @@ public class Debug2Screen extends HudScreen {
             vertices[i*vSize]   = verts.get(i*2);
             vertices[i*vSize+1] = verts.get(i*2+1);
             vertices[i*vSize+2] = 0f;
-            vertices[i*vSize+3] = verts.get(i*2) / coords.size.x;
-            vertices[i*vSize+4] = 1f - (verts.get(i*2+1) / coords.size.y);
+            vertices[i*vSize+3] = verts.get(i*2) / coords0.size.x;
+            vertices[i*vSize+4] = 1f - (verts.get(i*2+1) / coords0.size.y);
         }
         short [] indices = new short[numInds];
         for (int i=0; i<numInds; i++) {
@@ -181,8 +187,8 @@ public class Debug2Screen extends HudScreen {
     }
 
     public TextureRegion renderToTexture() {
-        int bufferWidth = (int)coords.size.x;
-        int bufferHeight = (int)coords.size.y;
+        int bufferWidth = (int) coords0.size.x;
+        int bufferHeight = (int) coords0.size.y;
         FrameBuffer fbo = new FrameBuffer(RGBA8888, bufferWidth, bufferHeight, false);
         TextureRegion fboTex = new TextureRegion(fbo.getColorBufferTexture(), bufferWidth, bufferHeight);
         fbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
@@ -220,8 +226,8 @@ public class Debug2Screen extends HudScreen {
             vertices[i*vSize+3] = 0f;
             vertices[i*vSize+4] = 0f;
             vertices[i*vSize+5] = 1f;
-            vertices[i*vSize+6] = verts.get(i*2) / coords.size.x;
-            vertices[i*vSize+7] = 1f - (verts.get(i*2+1) / coords.size.y);
+            vertices[i*vSize+6] = verts.get(i*2) / coords0.size.x;
+            vertices[i*vSize+7] = 1f - (verts.get(i*2+1) / coords0.size.y);
         }
         short [] indices = new short[numInds];
         for (int i=0; i<numInds; i++) {
@@ -266,9 +272,10 @@ public class Debug2Screen extends HudScreen {
         drawMesh(40+w, 60);
 
         // draw the sprite
-        drawSprite(40+w, 60);
-
-
+        drawSprite(shapeSprite0, coords0, 40+w, 60);
+        drawSprite(shapeSprite1, coords1, 40+w, 60);
+        drawSprite(shapeSprite2, coords2, 40+w, 60);
+        drawSprite(shapeSprite3, coords3, 40+w, 60);
 
 //        // TODO: draw the model
 //        modelBatch.begin(camera);
@@ -309,7 +316,7 @@ public class Debug2Screen extends HudScreen {
     }
 
     public void drawTriangles(ShapeRenderer sr, float x, float y) {
-        sr.setColor(0f, 0f, 0f, 1f);
+        sr.setColor(1f, 1f, 1f, 1f);
 
         if (tris == null) return;
         if (verts == null) return;
@@ -334,10 +341,13 @@ public class Debug2Screen extends HudScreen {
 
     }
 
-    public void drawSprite(float x, float y) {
-        shapeSprite.setPosition(x,y);
+    public void drawSprite(Sprite sprite, PuzzlePieceCoords coords, float x, float y) {
+        float offsetX = x + coords.pos.x - coords0.pos.x + padding*(coords.col-coords0.col);
+        float offsetY = y + coords.pos.y - coords0.pos.y + padding*(coords.row-coords0.row);
+
+        sprite.setPosition(offsetX, offsetY);
         spriteBatch.begin();
-        shapeSprite.draw(spriteBatch);
+        sprite.draw(spriteBatch);
         spriteBatch.end();
     }
 
