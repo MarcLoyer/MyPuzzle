@@ -3,6 +3,7 @@ package com.oduratereptile.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
@@ -113,6 +114,7 @@ public class Puzzle extends OrthoGestureListener {
 
         pc.tick();
         generateSplines();
+        generateAtlas();
         generatePieces();
         pc.tick();
         perfmonReport();
@@ -158,7 +160,7 @@ public class Puzzle extends OrthoGestureListener {
 
     public void generateSplines() {
         int pointsPerPiece = 6;
-        int pointsPerSpline = numCols*50;
+        int pointsPerSpline = numCols*50 + 1; // TODO: bug - this only works for NxN puzzles
 
         pc.counters.get(0).start();
         rowControlPoints = new Vector2[numRows-1][numCols*pointsPerPiece+3];
@@ -256,6 +258,31 @@ public class Puzzle extends OrthoGestureListener {
 
     public float randC(float max) {
         return ((rand.nextFloat() * 2.0f * max) - max) * colSpacing(0);
+    }
+
+    // We build a 2D mesh using the splines for the outline, and map the
+    // puzzle texture to the mesh. Then we render-to-texture, thus building
+    // our atlas texture
+    public void generateAtlas() {
+        // TODO: allocate a framebuffer for our atlas texture
+
+
+        for (int i=0; i<numRows; i++) {
+            for (int j=0; j<numCols; j++) {
+                Mesh mesh = generateMesh(i,j);
+                // TODO: check if there is room for this piece in the atlas (if not, new framebuffer)
+                // TODO: add the piece to the atlas
+                // TODO: create the sprite
+            }
+        }
+
+        // TODO: don't forget to dispose!
+    }
+
+    public Mesh generateMesh(int row, int col) {
+        // TODO: implement!
+
+        return null;
     }
 
     public Pixmap pieceImg;
