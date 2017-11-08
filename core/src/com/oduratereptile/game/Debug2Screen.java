@@ -17,6 +17,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -197,10 +199,21 @@ public class Debug2Screen extends HudScreen {
         // Build the mesh
         EarClippingTriangulator triangulator = new EarClippingTriangulator();
         verts = new FloatArray(2*splineShape.size());
+        Vector3 min = new Vector3(splineShape.get(0).x, splineShape.get(0).y, 0);
+        Vector3 max = new Vector3(splineShape.get(0).x, splineShape.get(0).y, 0);
         for (int i=0; i<splineShape.size(); i++) {
-            Vector2 v = splineShape.get(i);
+            Vector2 v = splineShape.get(i).cpy();
             verts.addAll(v.x, v.y);
+            if (v.x < min.x) min.x = v.x;
+            if (v.y < min.y) min.y = v.y;
+            if (v.x > max.x) max.x = v.x;
+            if (v.y > max.y) max.y = v.y;
         }
+        min.x = (float)Math.floor(min.x);
+        min.y = (float)Math.floor(min.y);
+        max.x = (float)Math.ceil(max.x);
+        max.y = (float)Math.ceil(max.y);
+        coords.boundingBox = new BoundingBox(min, max);
         tris = triangulator.computeTriangles(verts);
         createMesh(coords);
     }
@@ -213,8 +226,8 @@ public class Debug2Screen extends HudScreen {
 
         float [] vertices = new float[vSize*numVerts];
         for (int i=0; i<numVerts; i++) {
-            vertices[i*vSize]   = verts.get(i*2);
-            vertices[i*vSize+1] = verts.get(i*2+1);
+            vertices[i*vSize]   = verts.get(i*2)   - coords.boundingBox.min.x;
+            vertices[i*vSize+1] = verts.get(i*2+1) - coords.boundingBox.min.y;
             vertices[i*vSize+2] = 0f;
             vertices[i*vSize+3] = verts.get(i*2) / coords.size.x;
             vertices[i*vSize+4] = 1f - (verts.get(i*2+1) / coords.size.y);
@@ -230,16 +243,14 @@ public class Debug2Screen extends HudScreen {
         );
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
-
-        coords.boundingBox = mesh.calculateBoundingBox();
-        //TODO: update position and size to the bounding box.
     }
 
     public TextureRegion renderToTexture(PuzzlePieceCoords coords) {
-        int bufferWidth = (int) coords.size.x;
-        int bufferHeight = (int) coords.size.y;
+        int bufferWidth = (int) coords.boundingBox.getWidth();
+        int bufferHeight = (int) coords.boundingBox.getHeight();
+
         FrameBuffer fbo = new FrameBuffer(RGBA8888, bufferWidth, bufferHeight, false);
-        TextureRegion fboTex = new TextureRegion(fbo.getColorBufferTexture(), bufferWidth, bufferHeight);
+        TextureRegion fboTex = new TextureRegion(fbo.getColorBufferTexture(), 0, 0, bufferWidth, bufferHeight);
         fbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         fboTex.flip(false, true);
 
@@ -298,9 +309,7 @@ public class Debug2Screen extends HudScreen {
         drawSpriteBounds(game.shapeRenderer, shapeSprite2);
         drawSpriteBounds(game.shapeRenderer, shapeSprite3);
         drawSplineShape(game.shapeRenderer, 20, 60);
-//        drawSplineShape(game.shapeRenderer, 40+w, 60);
         drawTriangles(game.shapeRenderer, 20, 60);
-//        mesh.render(shader, GL20.GL_TRIANGLES);
 
         game.shapeRenderer.end();
 
@@ -358,8 +367,8 @@ public class Debug2Screen extends HudScreen {
     }
 
     public void drawSprite(Sprite sprite, PuzzlePieceCoords coords, float x, float y) {
-        float offsetX = x + coords.pos.x - coords0.pos.x + padding*(coords.col-coords0.col);
-        float offsetY = y + coords.pos.y - coords0.pos.y + padding*(coords.row-coords0.row);
+        float offsetX = x + coords.pos.x - coords0.pos.x + coords.boundingBox.min.x + padding*(coords.col-coords0.col);
+        float offsetY = y + coords.pos.y - coords0.pos.y + coords.boundingBox.min.y + padding*(coords.row-coords0.row);
 
         sprite.setPosition(offsetX, offsetY);
         spriteBatch.begin();
