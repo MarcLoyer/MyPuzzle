@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
 /**
  * Created by Marc on 10/20/2017.
@@ -21,6 +22,8 @@ public class PuzzlePieceCoords {
     public Vector2 pos;
     public Vector2 mid;
     public Vector2 size;
+
+    public BoundingBox boundingBox;
 
     public GridPoint2 bbLL;
     public GridPoint2 bbUR;
