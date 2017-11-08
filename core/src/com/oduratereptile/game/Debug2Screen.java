@@ -24,6 +24,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -240,6 +242,9 @@ public class Debug2Screen extends HudScreen {
         );
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
+
+        coords.boundingBox = mesh.calculateBoundingBox();
+        //TODO: update position and size to the bounding box.
     }
 
     public TextureRegion renderToTexture(PuzzlePieceCoords coords) {
@@ -344,7 +349,11 @@ public class Debug2Screen extends HudScreen {
         h = sourceImg.getHeight();
         game.shapeRenderer.setColor(0f, 0f, 1f, 1f);
         game.shapeRenderer.rect(20, 60, w, h);
-        game.shapeRenderer.rect(40+w, 60, w, h);
+        drawBoundingBox(game.shapeRenderer, coords3, 20, 60);
+        drawSpriteBounds(game.shapeRenderer, shapeSprite0);
+        drawSpriteBounds(game.shapeRenderer, shapeSprite1);
+        drawSpriteBounds(game.shapeRenderer, shapeSprite2);
+        drawSpriteBounds(game.shapeRenderer, shapeSprite3);
         drawSplineShape(game.shapeRenderer, 20, 60);
 //        drawSplineShape(game.shapeRenderer, 40+w, 60);
         drawTriangles(game.shapeRenderer, 20, 60);
@@ -358,6 +367,14 @@ public class Debug2Screen extends HudScreen {
     public Vector2 v1 = new Vector2();
     public Vector2 v2 = new Vector2();
     public Vector2 v3 = new Vector2();
+
+    public void drawBoundingBox(ShapeRenderer sr, PuzzlePieceCoords coords, float x, float y) {
+        sr.setColor(1f, 0f, 0f, 1f);
+        v1.set(x+coords.boundingBox.min.x, y+coords.boundingBox.min.y);
+        v2.set(x+coords.boundingBox.max.x, y+coords.boundingBox.max.y);
+        v2.sub(v1);
+        sr.rect(v1.x, v1.y, v2.x, v2.y);
+    }
 
     public void drawSplineShape(ShapeRenderer sr, float x, float y) {
         sr.setColor(1f, 1f, 1f, 1f);
@@ -405,6 +422,11 @@ public class Debug2Screen extends HudScreen {
         spriteBatch.begin();
         sprite.draw(spriteBatch);
         spriteBatch.end();
+    }
+
+    public void drawSpriteBounds(ShapeRenderer sr, Sprite sprite) {
+        sr.setColor(0f, 0f, 1f, 1f);
+        sr.rect(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
     }
 
     @Override
