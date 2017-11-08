@@ -11,21 +11,12 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -46,7 +37,6 @@ public class Debug2Screen extends HudScreen {
     public OrthographicCamera camera;
     public Puzzle puzzle;
 
-    public ModelBatch modelBatch;
     public SpriteBatch spriteBatch;
     public ShaderProgram shader;
 
@@ -72,7 +62,6 @@ public class Debug2Screen extends HudScreen {
         super(game);
         camera = new OrthographicCamera();
         addInputController(new GestureDetector(new OrthoGestureListener(camera)));
-//        modelBatch = new ModelBatch();
         spriteBatch = new SpriteBatch();
 
         this.puzzle = puzzle;
@@ -214,7 +203,6 @@ public class Debug2Screen extends HudScreen {
         }
         tris = triangulator.computeTriangles(verts);
         createMesh(coords);
-//        createModel();
     }
 
     public void createMesh(PuzzlePieceCoords coords) {
@@ -270,46 +258,6 @@ public class Debug2Screen extends HudScreen {
         return fboTex;
     }
 
-    Model model;
-    ModelInstance modelInstance;
-
-    public void createModel() {
-        int numVerts = verts.size/2;
-        int numInds = tris.size;
-
-        int vSize = 8; // pos(x,y,z), nor(x,y,z), texture(u,v)
-
-        float [] vertices = new float[vSize*numVerts];
-        for (int i=0; i<numVerts; i++) {
-            vertices[i*vSize]   = verts.get(i*2);
-            vertices[i*vSize+1] = verts.get(i*2+1);
-            vertices[i*vSize+2] = 0f;
-            vertices[i*vSize+3] = 0f;
-            vertices[i*vSize+4] = 0f;
-            vertices[i*vSize+5] = 1f;
-            vertices[i*vSize+6] = verts.get(i*2) / coords0.size.x;
-            vertices[i*vSize+7] = 1f - (verts.get(i*2+1) / coords0.size.y);
-        }
-        short [] indices = new short[numInds];
-        for (int i=0; i<numInds; i++) {
-            indices[i] = tris.get(i);
-        }
-
-        ModelBuilder mb = new ModelBuilder();
-        mb.begin();
-        MeshPartBuilder mpb = mb.part("shape", GL20.GL_TRIANGLES,
-                VertexAttributes.Usage.Position |
-                VertexAttributes.Usage.Normal |
-                VertexAttributes.Usage.TextureCoordinates,
-                new Material(TextureAttribute.createDiffuse(sourceTex))
-        );
-        mpb.vertex(vertices);
-        for (int i=0; i<numInds; i++) mpb.index(tris.get(i));
-
-        model = mb.end();
-        modelInstance = new ModelInstance(model);
-    }
-
     public float w, h;
 
     @Override
@@ -337,11 +285,6 @@ public class Debug2Screen extends HudScreen {
         drawSprite(shapeSprite1, coords1, 40+w, 60);
         drawSprite(shapeSprite2, coords2, 40+w, 60);
         drawSprite(shapeSprite3, coords3, 40+w, 60);
-
-//        // TODO: draw the model
-//        modelBatch.begin(camera);
-//        modelBatch.render(modelInstance);
-//        modelBatch.end();
 
         game.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
@@ -444,8 +387,6 @@ public class Debug2Screen extends HudScreen {
 
     @Override
     public void dispose() {
-//        modelBatch.dispose();
-//        model.dispose();
         super.dispose();
     }
 }
