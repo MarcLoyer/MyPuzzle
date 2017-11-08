@@ -16,6 +16,8 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.EarClippingTriangulator;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -289,7 +291,7 @@ public class Debug2Screen extends HudScreen {
         game.batch.end();
 
         // draw the mesh
-        drawMesh(40+w, 60);
+        drawMesh(20, 80 + h);
 
         // draw the sprite
         drawSprite(shapeSprite0, coords0, 40+w, 60);
@@ -356,7 +358,9 @@ public class Debug2Screen extends HudScreen {
     }
 
     public void drawMesh(float x, float y) {
-        // TODO: figure out how to translate a mesh
+        Matrix4 mat = new Matrix4(new Vector3(x,y,0), new Quaternion(), new Vector3(1,1,1));
+        mesh.transform(mat);
+
         sourceTex.bind();
         shader.begin();
         shader.setUniformMatrix("u_projTrans", game.batch.getProjectionMatrix());
@@ -364,6 +368,7 @@ public class Debug2Screen extends HudScreen {
         mesh.render(shader, GL20.GL_TRIANGLES);
         shader.end();
 
+        mesh.transform(mat.inv());
     }
 
     public void drawSprite(Sprite sprite, PuzzlePieceCoords coords, float x, float y) {
