@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -327,14 +328,14 @@ public class Puzzle extends OrthoGestureListener {
     }
 
     public void generateHighlight(PuzzlePiece p) {
-//        gameScreen.game.outlineShader.setup(((TextureRegionDrawable)p.getDrawable()).getRegion());
-//        // TODO: bug - highlight is transposed!
-//        p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
-////        p.highlight.flip(false, false);
-//        //  true,  true:  top->right,  right->bottom
-//        //  true,  false: top->bottom, right->left
-//        //  false, true:  top->right,  right->top
-//        //  false, false: top->left,   right->top
+        gameScreen.game.outlineShader.setup(p);
+        // TODO: bug - highlight is transposed!
+        p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
+//        p.highlight.flip(false, false);
+        //  true,  true:  top->right,  right->bottom
+        //  true,  false: top->bottom, right->left
+        //  false, true:  top->right,  right->top
+        //  false, false: top->left,   right->top
     }
 
     private boolean hit(PuzzlePiece p, float x, float y) {
