@@ -3,14 +3,11 @@ package com.oduratereptile.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PixmapPacker;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.MathUtils;
@@ -107,30 +104,29 @@ public class Puzzle extends OrthoGestureListener {
         //  - combine into an atlas
         //  - convert each texture into a texture region and create each piece
 
-        pc.add("generateSplines");
-        pc.add("generateSplineImage");
-        pc.add("generatePieces");
-        pc.add("  clear alpha");
-        pc.add("  flood fill");
-        pc.add("  create texture");
-        pc.add("generate puzzle pieces");
-
-        pc.tick();
         generateSplines();
-        generateAtlas();
-        generatePieces();
-        pc.tick();
-        perfmonReport();
+        createMeshPieceAtlas();
+        createPuzzlePieces();
     }
 
-    public void perfmonReport() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Performance report:\n");
-        for (PerformanceCounter cntr: pc.counters) {
-            sb.append(String.format("  %-30s  %5.2f (%5.4f)\n", cntr.name, cntr.time.average, cntr.load.average));
-        }
+    public PuzzlePacker puzzlePacker;
 
-        Gdx.app.error("debug", sb.toString());
+    public void createMeshPieceAtlas() {
+        puzzlePacker = new PuzzlePacker(this, 1024);
+        for (int i=0; i<numRows; i++) {
+            for (int j=0; j<numCols; j++) {
+                puzzlePacker.pack(i,j);
+            }
+        }
+        puzzlePacker.createAtlas();
+    }
+
+    public void createPuzzlePieces() {
+        for (int i=0; i<numRows; i++) {
+            for (int j=0; j<numCols; j++) {
+                puzzlePiece.add(new PuzzlePiece(i, j, puzzlePacker.getPosition(i,j), puzzlePacker.getRegion(i,j), true));
+            }
+        }
     }
 
     public float rowSpacing(int row) {
@@ -164,7 +160,6 @@ public class Puzzle extends OrthoGestureListener {
     public void generateSplines() {
         int pointsPerSpline = numCols*pointsPerPiece + 1;
 
-        pc.counters.get(0).start();
         rowControlPoints = new Vector2[numRows-1][numCols*controlsPerPiece+3];
         rowSpline = new CatmullRomSpline[numRows-1];
         rowLine = new Vector2[numRows-1][pointsPerSpline];
@@ -224,35 +219,6 @@ public class Puzzle extends OrthoGestureListener {
                 colSpline[i].valueAt(colLine[i][j], (float)j/(float)(pointsPerSpline-1));
             }
         }
-        pc.counters.get(0).stop();
-
-        // Create a pixmap of the splines
-        pc.counters.get(1).start();
-        splineImg = new Pixmap(puzzleImg.getWidth(), puzzleImg.getHeight(), Pixmap.Format.RGBA8888); // use Alpha format - saves masking
-        splineImg.setBlending(Pixmap.Blending.None);
-        splineImg.setColor(0,0,0,0);
-        splineImg.fill();
-        splineImg.setColor(1f, 1f, 1f, 1f);
-        for (Vector2 [] path: rowLine) {
-            for (int i=1; i<pointsPerSpline; i++) {
-                int x1 = (int)(path[i-1].x + 0.5f);
-                int y1 = splineImg.getHeight() - (int)(path[i-1].y + 0.5f);
-                int x2 = (int)(path[i].x + 0.5f);
-                int y2 = splineImg.getHeight() - (int)(path[i].y + 0.5f);
-                splineImg.drawLine(x1, y1, x2, y2);
-            }
-        }
-        for (Vector2 [] path: colLine) {
-            for (int i=1; i<pointsPerSpline; i++) {
-                int x1 = (int)(path[i-1].x + 0.5f);
-                int y1 = splineImg.getHeight() - (int)(path[i-1].y + 0.5f);
-                int x2 = (int)(path[i].x + 0.5f);
-                int y2 = splineImg.getHeight() - (int)(path[i].y + 0.5f);
-                splineImg.drawLine(x1, y1, x2, y2);
-            }
-        }
-        splineImgTex = new Texture(splineImg);
-        pc.counters.get(1).stop();
     }
 
     public float randR(float max) {
@@ -263,117 +229,12 @@ public class Puzzle extends OrthoGestureListener {
         return ((rand.nextFloat() * 2.0f * max) - max) * colSpacing(0);
     }
 
-    // We build a 2D mesh using the splines for the outline, and map the
-    // puzzle texture to the mesh. Then we render-to-texture, thus building
-    // our atlas texture
-    public void generateAtlas() {
-        // TODO: allocate a framebuffer for our atlas texture
-
-        // TODO: instead of coding all of this, let's just convert the renderToTexture() TextureRegion to a Pixmap
-        // (we have to save the TextureAtlas anyway so it can be reloaded when a saved game restarts). This allows us
-        // to use PixmapPacker.
-        for (int i=0; i<numRows; i++) {
-            for (int j=0; j<numCols; j++) {
-                Mesh mesh = generateMesh(i,j);
-                // TODO: check if there is room for this piece in the atlas (if not, new framebuffer)
-                // TODO: add the piece to the atlas
-                // TODO: create the sprite
-            }
-        }
-
-        // TODO: don't forget to dispose!
-    }
-
-    public Mesh generateMesh(int row, int col) {
-        // TODO: implement!
-
-        return null;
-    }
-
     public Pixmap pieceImg;
     public Texture pieceImgTex;
     public Vector2 pieceImgTexLocation = new Vector2();
 
-    public PuzzlePieceCoords [] debugCoords;
-
-    public void generatePieces() {
-        debugCoords = new PuzzlePieceCoords[numCols*numRows];
-
-        pc.counters.get(2).start();
-        for (int i=0; i<numRows; i++) {
-            for (int j=0; j<numCols; j++) {
-                generatePiece(i, j);
-                String s = i + "," + j;
-                packer.pack(s, pieceImg);
-
-//                // DEBUG: save a couple pixmaps for use in ShaderLessons...
-//                if (Gdx.files.isLocalStorageAvailable()) {
-//                    if ((i == 0) && (j == 0)) {
-//                        gameScreen.setStatus("Local path: " + Gdx.files.getLocalStoragePath());
-//                        FileHandle fh = Gdx.files.local("piece_00.png");
-//                        PixmapIO.writePNG(fh, pieceImg);
-//                    }
-//                    if ((i == 1) && (j == 1)) {
-//                        FileHandle fh = Gdx.files.local("piece_11.png");
-//                        PixmapIO.writePNG(fh, pieceImg);
-//                    }
-//                }
-            }
-        }
-        pc.counters.get(2).stop();
-
-        pc.counters.get(6).start();
-        packer.updateTextureAtlas(pieceAtlas, Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest, false);
-        // TODO: save the TextureAtlas
-
-        PuzzlePieceCoords coords;
-        for (int i=0; i<numRows; i++) {
-            for (int j=0; j<numCols; j++) {
-                coords = new PuzzlePieceCoords(i, j, puzzleImg, numRows, numCols);
-                String s = i + "," + j;
-                puzzlePiece.add(new PuzzlePiece(i, j, coords, pieceAtlas.findRegion(s)));
-            }
-        }
-        pc.counters.get(6).stop();
-    }
-
-    public void generatePiece(int i, int j) {
-        PuzzlePieceCoords coords = new PuzzlePieceCoords(i, j, puzzleImg, numRows, numCols);
-        debugCoords[i*numCols+j] = coords;
-
-        pieceImg = new Pixmap((int)coords.size.x, (int)coords.size.y, Pixmap.Format.RGBA8888);
-        pieceImg.drawPixmap(puzzleImg, 0, 0,
-                (int)coords.pos.x, puzzleImg.getHeight() - (int)coords.pos.y - (int)coords.size.y,
-                (int)coords.size.x, (int)coords.size.y);
-        pieceImg.setBlending(Pixmap.Blending.None);
-
-        // clear alpha across the whole image, then floodfill starting in the middle
-        pc.counters.get(3).start();
-        for (int x=0; x<pieceImg.getWidth(); x++) {
-            for (int y=0; y<pieceImg.getHeight(); y++) {
-                pieceImg.drawPixel(x, y, pieceImg.getPixel(x, y) & 0xFFFFFF00);
-            }
-        }
-        pc.counters.get(3).stop();
-
-        boolean includeBorder = ((i+j)%2==0);
-
-        pc.counters.get(4).start();
-        puzzleFill.initialize(pieceImg, splineImg, coords, includeBorder);
-        puzzleFill.fill((int)coords.mid.x, (int)coords.mid.y);
-        pc.counters.get(4).stop();
-
-        pc.counters.get(5).start();
-        pieceImgTex = new Texture(pieceImg);
-        pieceImgTexLocation.set(coords.pos.x, coords.pos.y);
-        pc.counters.get(5).stop();
-    }
-
     public void render(SpriteBatch batch, float delta) {
         if (displayImage) batch.draw(puzzleImgTex, 0,0);
-
-        // DEBUG code...
-//        batch.draw(pieceImgTex, pieceImgTexLocation.x, pieceImgTexLocation.y);
 
         for (PuzzlePiece p : puzzlePiece) {
             boolean isEven = ((p.col + p.row)%2 == 0);
@@ -386,7 +247,7 @@ public class Puzzle extends OrthoGestureListener {
         }
 
         for (PuzzlePiece p: selectedPiece) {
-            p.drawHighlight(batch, 1.0f);
+//            p.drawHighlight(batch, 1.0f);
         }
 
         if (displaySplineImage) batch.draw(splineImgTex, 0,0);
@@ -398,19 +259,6 @@ public class Puzzle extends OrthoGestureListener {
             for (int i=0; i<numRows-1; i++) drawRowSpline(i);
             for (int i=0; i<numCols-1; i++) drawColSpline(i);
         }
-
-        // DEBUG code...
-//        sr.begin(ShapeRenderer.ShapeType.Line);
-//        for (PuzzlePieceCoords ppc: debugCoords) {
-//            sr.setColor(0,1,0,1);
-//            sr.rect(ppc.pos.x, ppc.pos.y, ppc.size.x, ppc.size.y);
-//            sr.setColor(1,1,0,1);
-//            sr.rect(ppc.pos.x + ppc.bbLL.x, ppc.pos.y + ppc.bbLL.y,
-//                    ppc.bbUR.x - ppc.bbLL.x, ppc.bbUR.y - ppc.bbLL.y);
-//            sr.begin(ShapeRenderer.ShapeType.Filled);
-//            sr.circle(ppc.mid.x, ppc.mid.y, 3);
-//        }
-//        sr.end();
 
         batch.begin();
     }
@@ -479,14 +327,14 @@ public class Puzzle extends OrthoGestureListener {
     }
 
     public void generateHighlight(PuzzlePiece p) {
-        gameScreen.game.outlineShader.setup(((TextureRegionDrawable)p.getDrawable()).getRegion());
-        // TODO: bug - highlight is transposed!
-        p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
-//        p.highlight.flip(false, false);
-        //  true,  true:  top->right,  right->bottom
-        //  true,  false: top->bottom, right->left
-        //  false, true:  top->right,  right->top
-        //  false, false: top->left,   right->top
+//        gameScreen.game.outlineShader.setup(((TextureRegionDrawable)p.getDrawable()).getRegion());
+//        // TODO: bug - highlight is transposed!
+//        p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
+////        p.highlight.flip(false, false);
+//        //  true,  true:  top->right,  right->bottom
+//        //  true,  false: top->bottom, right->left
+//        //  false, true:  top->right,  right->top
+//        //  false, false: top->left,   right->top
     }
 
     private boolean hit(PuzzlePiece p, float x, float y) {

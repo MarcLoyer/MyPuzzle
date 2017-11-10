@@ -2,6 +2,7 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -13,33 +14,36 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
  * Created by Marc on 10/7/2017.
  */
 
-class PuzzlePiece extends Image {
+class PuzzlePiece extends Sprite {
     public int row;
     public int col;
-    public PuzzlePieceCoords coords;
+//    public PuzzlePieceCoords coords;
+    public Vector2 pos;
+    public Vector2 mid;
 
     public boolean isSelected=false;
     public TextureRegion highlight=null;
 
-    public PuzzlePiece(int r, int c, PuzzlePieceCoords coords, TextureRegion img) {
+    public PuzzlePiece(int r, int c, Vector2 pos, TextureRegion img, boolean flipY) {
         super(img);
+        if (flipY) flip(false, true);
         row = r;
         col = c;
-        this.coords = coords;
-        setPosition(coords.pos.x, coords.pos.y);
+        this.pos = pos;
+        setPosition(pos.x, pos.y);
 
-        Vector2 mid = coords.getMid();
+        mid = new Vector2(img.getRegionWidth()/2, img.getRegionHeight()/2);
         setOrigin(mid.x, mid.y);
     }
 
-    @Override
     public void moveBy(float x, float y) {
-        super.moveBy(x,y);
-        coords.pos.add(x,y);
+        pos.add(x,y);
+        setPosition(pos.x, pos.y);
     }
 
     public Vector2 getMid() {
-        return coords.getMid().add(coords.pos);
+        Vector2 rv = new Vector2(mid);
+        return rv.add(pos);
     }
 
     public void select(boolean sel) {
