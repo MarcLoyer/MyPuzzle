@@ -257,6 +257,7 @@ public class Debug2Screen extends HudScreen {
         fboTex.flip(false, true);
 
         camera.setToOrtho(false, bufferWidth, bufferHeight);
+        camera.setToOrtho(false, bufferWidth, bufferHeight);
         game.batch.setProjectionMatrix(camera.combined);
 
         fbo.begin();

@@ -50,10 +50,19 @@ public class GameScreen extends HudScreen {
         popup.setHeight(200);
 
         // TODO: add option menu implementations
-        button = new TextButton("debug flood fill", game.skin);
+//        button = new TextButton("debug flood fill", game.skin);
+//        button.addListener(new ClickListener(){
+//            public void clicked(InputEvent event, float x, float y){
+//                game.setScreen(new DebugScreen(game, puzzle.puzzleImg, puzzle.splineImg, puzzle.debugCoords[1]));
+////                dispose();
+//            }
+//        });
+//        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("debug packer", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
-                game.setScreen(new DebugScreen(game, puzzle.puzzleImg, puzzle.splineImg, puzzle.debugCoords[1]));
+                game.setScreen(new Debug3Screen(game, puzzle));
 //                dispose();
             }
         });

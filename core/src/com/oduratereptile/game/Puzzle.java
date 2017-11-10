@@ -69,6 +69,9 @@ public class Puzzle extends OrthoGestureListener {
         puzzleImgTex = new Texture(puzzleImg); //TODO: split into regions if the Pixmap is too big, or maybe mipmaps?
     }
 
+    public int controlsPerPiece = 6;
+    public int pointsPerPiece = 50;
+
     public int numRows;
     public Vector2[][] rowControlPoints;
     public CatmullRomSpline<Vector2> [] rowSpline;
@@ -159,11 +162,10 @@ public class Puzzle extends OrthoGestureListener {
     }
 
     public void generateSplines() {
-        int pointsPerPiece = 6;
-        int pointsPerSpline = numCols*50 + 1; // TODO: bug - this only works for NxN puzzles
+        int pointsPerSpline = numCols*pointsPerPiece + 1;
 
         pc.counters.get(0).start();
-        rowControlPoints = new Vector2[numRows-1][numCols*pointsPerPiece+3];
+        rowControlPoints = new Vector2[numRows-1][numCols*controlsPerPiece+3];
         rowSpline = new CatmullRomSpline[numRows-1];
         rowLine = new Vector2[numRows-1][pointsPerSpline];
         for (int i=0; i<numRows-1; i++) {
@@ -172,17 +174,17 @@ public class Puzzle extends OrthoGestureListener {
             for (int j=0; j<numCols; j++) {
                 float sign = (rand.nextBoolean())? rowSpacing(i): -rowSpacing(i);
 
-                if (j==0) rowControlPoints[i][1+j*pointsPerPiece] = new Vector2(colOffset(j), offset + randR(Fr));
-                else      rowControlPoints[i][1+j*pointsPerPiece] = new Vector2(colOffset(j) + randC(Fr), offset + randR(Fr));
+                if (j==0) rowControlPoints[i][1+j*controlsPerPiece] = new Vector2(colOffset(j), offset + randR(Fr));
+                else      rowControlPoints[i][1+j*controlsPerPiece] = new Vector2(colOffset(j) + randC(Fr), offset + randR(Fr));
 
-                rowControlPoints[i][2+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f - A)*colSpacing(j) + randC(Ar), offset        + randR(Ar));
-                rowControlPoints[i][3+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f - B)*colSpacing(j) + randC(Br), offset+sign*C + randR(Br));
-                rowControlPoints[i][4+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f    )*colSpacing(j) + randC(Br), offset+sign*D + randR(Br));
-                rowControlPoints[i][5+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f + B)*colSpacing(j) + randC(Br), offset+sign*C + randR(Br));
-                rowControlPoints[i][6+j*pointsPerPiece] = new Vector2(colOffset(j) + (0.5f + A)*colSpacing(j) + randC(Ar), offset        + randR(Ar));
+                rowControlPoints[i][2+j*controlsPerPiece] = new Vector2(colOffset(j) + (0.5f - A)*colSpacing(j) + randC(Ar), offset        + randR(Ar));
+                rowControlPoints[i][3+j*controlsPerPiece] = new Vector2(colOffset(j) + (0.5f - B)*colSpacing(j) + randC(Br), offset+sign*C + randR(Br));
+                rowControlPoints[i][4+j*controlsPerPiece] = new Vector2(colOffset(j) + (0.5f    )*colSpacing(j) + randC(Br), offset+sign*D + randR(Br));
+                rowControlPoints[i][5+j*controlsPerPiece] = new Vector2(colOffset(j) + (0.5f + B)*colSpacing(j) + randC(Br), offset+sign*C + randR(Br));
+                rowControlPoints[i][6+j*controlsPerPiece] = new Vector2(colOffset(j) + (0.5f + A)*colSpacing(j) + randC(Ar), offset        + randR(Ar));
             }
-            rowControlPoints[i][1+numCols*pointsPerPiece] = new Vector2((float)colOffset(numCols), offset + randR(Fr));
-            rowControlPoints[i][2+numCols*pointsPerPiece] = new Vector2((float)colOffset(numCols+1), offset);
+            rowControlPoints[i][1+numCols*controlsPerPiece] = new Vector2((float)colOffset(numCols), offset + randR(Fr));
+            rowControlPoints[i][2+numCols*controlsPerPiece] = new Vector2((float)colOffset(numCols+1), offset);
 
             rowSpline[i] = new CatmullRomSpline<Vector2>(rowControlPoints[i], false);
 
@@ -192,7 +194,8 @@ public class Puzzle extends OrthoGestureListener {
             }
         }
 
-        colControlPoints = new Vector2[numCols-1][numRows*pointsPerPiece+3];
+        pointsPerSpline = numRows*pointsPerPiece + 1;
+        colControlPoints = new Vector2[numCols-1][numRows*controlsPerPiece+3];
         colSpline = new CatmullRomSpline[numCols-1];
         colLine = new Vector2[numCols-1][pointsPerSpline];
         for (int i=0; i<numCols-1; i++) {
@@ -202,17 +205,17 @@ public class Puzzle extends OrthoGestureListener {
                 float sign = (rand.nextBoolean())? colSpacing(i): -colSpacing(i);
 
                 // Use the same point as the row spline, so that the splines intersect at a control point
-                if (j==0) colControlPoints[i][1+j*pointsPerPiece] = new Vector2(offset + randC(Fr), rowOffset(j));
-                else      colControlPoints[i][1+j*pointsPerPiece] = rowControlPoints[j-1][1+(i+1)*pointsPerPiece];
+                if (j==0) colControlPoints[i][1+j*controlsPerPiece] = new Vector2(offset + randC(Fr), rowOffset(j));
+                else      colControlPoints[i][1+j*controlsPerPiece] = rowControlPoints[j-1][1+(i+1)*controlsPerPiece];
 
-                colControlPoints[i][2+j*pointsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f - A)*rowSpacing(j) + randC(Ar));
-                colControlPoints[i][3+j*pointsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f - B)*rowSpacing(j) + randC(Br));
-                colControlPoints[i][4+j*pointsPerPiece] = new Vector2(offset+sign*D + randC(Br), rowOffset(j) + (0.5f    )*rowSpacing(j) + randC(Br));
-                colControlPoints[i][5+j*pointsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f + B)*rowSpacing(j) + randC(Br));
-                colControlPoints[i][6+j*pointsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f + A)*rowSpacing(j) + randC(Ar));
+                colControlPoints[i][2+j*controlsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f - A)*rowSpacing(j) + randC(Ar));
+                colControlPoints[i][3+j*controlsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f - B)*rowSpacing(j) + randC(Br));
+                colControlPoints[i][4+j*controlsPerPiece] = new Vector2(offset+sign*D + randC(Br), rowOffset(j) + (0.5f    )*rowSpacing(j) + randC(Br));
+                colControlPoints[i][5+j*controlsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f + B)*rowSpacing(j) + randC(Br));
+                colControlPoints[i][6+j*controlsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f + A)*rowSpacing(j) + randC(Ar));
             }
-            colControlPoints[i][1+numCols*pointsPerPiece] = new Vector2(offset + randC(Fr), (float)rowOffset(numRows));
-            colControlPoints[i][2+numCols*pointsPerPiece] = new Vector2(offset, (float)rowOffset(numRows+1));
+            colControlPoints[i][1+numCols*controlsPerPiece] = new Vector2(offset + randC(Fr), (float)rowOffset(numRows));
+            colControlPoints[i][2+numCols*controlsPerPiece] = new Vector2(offset, (float)rowOffset(numRows+1));
 
             colSpline[i] = new CatmullRomSpline<Vector2>(colControlPoints[i], false);
 
@@ -266,7 +269,9 @@ public class Puzzle extends OrthoGestureListener {
     public void generateAtlas() {
         // TODO: allocate a framebuffer for our atlas texture
 
-
+        // TODO: instead of coding all of this, let's just convert the renderToTexture() TextureRegion to a Pixmap
+        // (we have to save the TextureAtlas anyway so it can be reloaded when a saved game restarts). This allows us
+        // to use PixmapPacker.
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
                 Mesh mesh = generateMesh(i,j);
