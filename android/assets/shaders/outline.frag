@@ -41,26 +41,20 @@ void main() {
 
     if (edgedetect==1) {
         vec4 p = texture2D(u_texture, tc);
-        if (p.a < 0.5) {
+        if (p.a > 0.5) {
             gl_FragColor = vec4(color.rgb, 0.0);
         } else {
             p = texture2D(u_texture, vec2(tc.x + 1.0*hblur, tc.y));
-            p = min(p, texture2D(u_texture, vec2(tc.x - 1.0*hblur, tc.y)));
-            p = min(p, texture2D(u_texture, vec2(tc.x, tc.y + 1.0*vblur)));
-            p = min(p, texture2D(u_texture, vec2(tc.x, tc.y - 1.0*vblur)));
-            // keep going to make wider edges...
-            p = min(p, texture2D(u_texture, vec2(tc.x + 2.0*hblur, tc.y)));
-            p = min(p, texture2D(u_texture, vec2(tc.x - 2.0*hblur, tc.y)));
-            p = min(p, texture2D(u_texture, vec2(tc.x, tc.y + 2.0*vblur)));
-            p = min(p, texture2D(u_texture, vec2(tc.x, tc.y - 2.0*vblur)));
+            p = max(p, texture2D(u_texture, vec2(tc.x - 1.0*hblur, tc.y)));
+            p = max(p, texture2D(u_texture, vec2(tc.x, tc.y + 1.0*vblur)));
+            p = max(p, texture2D(u_texture, vec2(tc.x, tc.y - 1.0*vblur)));
 
-            p = min(p, texture2D(u_texture, vec2(tc.x + 3.0*hblur, tc.y)));
-            p = min(p, texture2D(u_texture, vec2(tc.x - 3.0*hblur, tc.y)));
-            p = min(p, texture2D(u_texture, vec2(tc.x, tc.y + 3.0*vblur)));
-            p = min(p, texture2D(u_texture, vec2(tc.x, tc.y - 3.0*vblur)));
+            p = max(p, texture2D(u_texture, vec2(tc.x + 1.0*hblur, tc.y + 1.0*vblur)));
+            p = max(p, texture2D(u_texture, vec2(tc.x - 1.0*hblur, tc.y + 1.0*vblur)));
+            p = max(p, texture2D(u_texture, vec2(tc.x + 1.0*hblur, tc.y - 1.0*vblur)));
+            p = max(p, texture2D(u_texture, vec2(tc.x - 1.0*hblur, tc.y - 1.0*vblur)));
 
-
-            gl_FragColor = vec4(color.rgb, 1.0 - step(0.5, p.a));
+            gl_FragColor = vec4(color.rgb, step(0.5, p.a));
         }
     } else {
 //	    // 1-D Gaussian filter

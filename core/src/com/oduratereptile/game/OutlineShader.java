@@ -44,9 +44,6 @@ public class OutlineShader extends ShaderProgram {
         bufferWidth = tex.getRegionWidth() + 2*PAD;
         bufferHeight = tex.getRegionHeight() + 2*PAD;
 
-        if (blurTargetA != null) blurTargetA.dispose();
-        if (blurTargetB != null) blurTargetB.dispose();
-
         begin();
         setUniformf("dir", 0f, 0f);
         setUniformf("width", bufferWidth);
@@ -129,6 +126,9 @@ public class OutlineShader extends ShaderProgram {
 //        batch.end();
 //        batch.flush();
 //        blurTargetB.end();
+
+        // add the blurred image to the edgedetected image
+
 
         // use the default shader
         batch.setShader(null);

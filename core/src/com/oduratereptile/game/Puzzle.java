@@ -248,7 +248,7 @@ public class Puzzle extends OrthoGestureListener {
         }
 
         for (PuzzlePiece p: selectedPiece) {
-//            p.drawHighlight(batch, 1.0f);
+            p.drawHighlight(batch, 1.0f); // this one draws the outline improperly
         }
 
         if (displaySplineImage) batch.draw(splineImgTex, 0,0);

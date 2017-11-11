@@ -61,10 +61,6 @@ class PuzzlePiece extends Sprite {
 
     public void draw(SpriteBatch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        // TODO: draw highlight with rotation as well
-        if (isSelected) {
-            batch.draw(highlight, getX()-OutlineShader.PAD, getY()-OutlineShader.PAD);
-        }
     }
 
     public void drawHighlight(SpriteBatch batch, float parentAlpha) {
@@ -73,8 +69,7 @@ class PuzzlePiece extends Sprite {
                 getOriginX() + OutlineShader.PAD, getOriginY() + OutlineShader.PAD,
                 highlight.getRegionWidth(), highlight.getRegionHeight(),
                 1.0f, 1.0f,
-                getRotation(), false
-                );
+                getRotation());
     }
 
     public void generateHighlight() {
