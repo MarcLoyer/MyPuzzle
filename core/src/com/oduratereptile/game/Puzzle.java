@@ -329,13 +329,7 @@ public class Puzzle extends OrthoGestureListener {
 
     public void generateHighlight(PuzzlePiece p) {
         gameScreen.game.outlineShader.setup(p);
-        // TODO: bug - highlight is transposed!
         p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
-//        p.highlight.flip(false, false);
-        //  true,  true:  top->right,  right->bottom
-        //  true,  false: top->bottom, right->left
-        //  false, true:  top->right,  right->top
-        //  false, false: top->left,   right->top
     }
 
     private boolean hit(PuzzlePiece p, Vector3 loc) {
