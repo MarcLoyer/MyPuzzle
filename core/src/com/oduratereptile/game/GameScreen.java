@@ -93,6 +93,14 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
+        button = new TextButton("display tap squares", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                puzzle.displayTapSquares = !puzzle.displayTapSquares;
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
         button = new TextButton("toggle pieces", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){

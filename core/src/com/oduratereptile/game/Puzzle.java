@@ -40,10 +40,9 @@ public class Puzzle extends OrthoGestureListener {
 
     public boolean displayImage = false;
     public boolean displaySplines = false;
-    public boolean displaySplineImage = false;
     public boolean displayEvenPieces = false;
     public boolean displayAllPieces = true;
-
+    public boolean displayTapSquares = false;
 
     public Puzzle(GameScreen gameScreen) {
         super(gameScreen.camera);
@@ -76,12 +75,6 @@ public class Puzzle extends OrthoGestureListener {
     public Vector2[][] colControlPoints;
     public CatmullRomSpline<Vector2> [] colSpline;
     public Vector2[][] colLine;
-
-    public Pixmap splineImg;
-    public Texture splineImgTex;
-
-    public PerformanceCounters pc = new PerformanceCounters();
-
 
     // shape parameters
     private static final float A = 0.15f;
@@ -248,8 +241,6 @@ public class Puzzle extends OrthoGestureListener {
             p.drawHighlight(batch, 1.0f); // this one draws the outline improperly
         }
 
-        if (displaySplineImage) batch.draw(splineImgTex, 0,0);
-
         batch.end();
 
         sr.setProjectionMatrix(gameScreen.camera.combined);
@@ -258,13 +249,15 @@ public class Puzzle extends OrthoGestureListener {
             for (int i=0; i<numCols-1; i++) drawColSpline(i);
         }
 
-//        // Draw tap squares
-//        sr.begin(ShapeRenderer.ShapeType.Line);
-//        sr.setColor(0f, 0.7f, 0f, 1f);
-//        for (PuzzlePiece p: puzzlePiece) {
-//            sr.rect(p.tapSquare.min.x, p.tapSquare.min.y, p.tapSquare.getWidth(), p.tapSquare.getHeight());
-//        }
-//        sr.end();
+        // Draw tap squares
+        if (displayTapSquares) {
+            sr.begin(ShapeRenderer.ShapeType.Line);
+            sr.setColor(0f, 0.7f, 0f, 1f);
+            for (PuzzlePiece p: puzzlePiece) {
+                sr.rect(p.tapSquare.min.x, p.tapSquare.min.y, p.tapSquare.getWidth(), p.tapSquare.getHeight());
+            }
+            sr.end();
+        }
 
         batch.begin();
     }
