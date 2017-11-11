@@ -16,9 +16,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.EarClippingTriangulator;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -46,7 +43,7 @@ public class PuzzlePacker {
     public PixmapPacker packer;
     public TextureAtlas atlas=null;
 
-    public ObjectMap<String, Vector2> piecePosition = new ObjectMap<String, Vector2>();
+    public ObjectMap<String, PieceData> pieceData = new ObjectMap<String, PieceData>();
 
     public PuzzlePacker(Puzzle puzzle, int pageSize) {
         this.puzzle = puzzle;
@@ -76,9 +73,19 @@ public class PuzzlePacker {
 
     public MeshPiece pack(MeshPiece piece) {
         String name = piece.row + "," + piece.col;
-        piecePosition.put(name, piece.pos);
+        pieceData.put(name, new PieceData(piece.pos, piece.tapSquare));
         packer.pack(name, piece.getPixmap());
         return piece;
+    }
+
+    public class PieceData {
+        public Vector2 position;
+        public BoundingBox tapSquare;
+
+        public PieceData(Vector2 p, BoundingBox t) {
+            position = p;
+            tapSquare = t;
+        }
     }
 
     public void createAtlas() { getAtlas(); }
@@ -99,13 +106,13 @@ public class PuzzlePacker {
         return atlas.findRegion(name);
     }
 
-    public Vector2 getPosition(int row, int col) {
+    public PieceData getData(int row, int col) {
         String name = row + "," + col;
-        return getPosition(name);
+        return getData(name);
     }
 
-    public Vector2 getPosition(String name) {
-        return piecePosition.get(name);
+    public PieceData getData(String name) {
+        return pieceData.get(name);
     }
 
     public void save(FileHandle fh) {
@@ -122,6 +129,7 @@ public class PuzzlePacker {
         public Mesh mesh;
         public Vector2 pos;
         public BoundingBox bounds;
+        public BoundingBox tapSquare;
         private FrameBuffer fbo;
         private Texture tex=null;
         private Pixmap pix=null;
@@ -131,33 +139,32 @@ public class PuzzlePacker {
             this.col = col;
 
             // get the shape from the splines
-            Vector3 min = new Vector3();
-            Vector3 max = new Vector3();
-            ArrayList<Vector2> splineShape = getShape(row, col, min, max);
-            pos = new Vector2(min.x, min.y);
+            ArrayList<Vector2> splineShape = getShape(row, col);
+            pos = new Vector2(bounds.min.x, bounds.min.y);
 
             // triangulate it
             FloatArray verts = getVerts(splineShape);
             ShortArray tris = getTris(verts);
 
             // create the mesh
-            mesh = makeMesh(verts, tris, min);
-            max.sub(min);
-            min.set(0,0,0);
-            bounds = new BoundingBox(min, max);
+            mesh = makeMesh(verts, tris, bounds.min);
+            bounds.max.sub(bounds.min);
+            tapSquare.min.sub(bounds.min);
+            tapSquare.max.sub(bounds.min);
+            bounds.min.set(0,0,0);
         }
 
         /** Collect the portions of the splines that pertain to our piece
          *
          * @param row
          * @param col
-         * @param min modified by this routine
-         * @param max modified by this routine
          * @return
          */
-        private ArrayList<Vector2> getShape(int row, int col, Vector3 min, Vector3 max) {
+        private ArrayList<Vector2> getShape(int row, int col) {
             ArrayList<Vector2> splineShape = new ArrayList<Vector2>();
             Vector2 upperRight = new Vector2(puzzle.puzzleImg.getWidth(), puzzle.puzzleImg.getHeight());
+
+            int [] corner = new int[3];
 
             // top
             if (row == (puzzle.numRows-1)) {
@@ -169,6 +176,7 @@ public class PuzzlePacker {
             } else {
                 for (int i=col*50; i<(col+1)*50; i++) { splineShape.add(puzzle.rowLine[row][i].cpy()); }
             }
+            corner[0] = splineShape.size();
 
             // right
             if (col == (puzzle.numCols-1)) {
@@ -180,6 +188,8 @@ public class PuzzlePacker {
             } else {
                 for (int i=(row+1)*50; i>row*50; i--) { splineShape.add(puzzle.colLine[col][i].cpy()); }
             }
+            corner[1] = splineShape.size();
+
             // bottom
             if (row == 0) {
                 if (col == (puzzle.numCols-1)) {
@@ -190,6 +200,8 @@ public class PuzzlePacker {
             } else {
                 for (int i=(col+1)*50; i>col*50; i--) { splineShape.add(puzzle.rowLine[row-1][i].cpy()); }
             }
+            corner[2] = splineShape.size();
+
             // left
             if (col == 0) {
                 if (row == 0) {
@@ -201,21 +213,60 @@ public class PuzzlePacker {
                 for (int i=row*50; i<(row+1)*50; i++) { splineShape.add(puzzle.colLine[col-1][i].cpy()); }
             }
 
-            min.set(splineShape.get(0).x, splineShape.get(0).y, 0);
-            max.set(splineShape.get(0).x, splineShape.get(0).y, 0);
-            for (Vector2 v: splineShape) {
-                if (v.x < min.x) min.x = v.x;
-                if (v.y < min.y) min.y = v.y;
-                if (v.x > max.x) max.x = v.x;
-                if (v.y > max.y) max.y = v.y;
-            }
-            min.x = (float)Math.floor(min.x);
-            min.y = (float)Math.floor(min.y);
-            max.x = (float)Math.ceil(max.x);
-            max.y = (float)Math.ceil(max.y);
+            splineShape.add(splineShape.get(0));
+            computeTapSquare(splineShape, corner[0], corner[1], corner[2]);
+            splineShape.remove(splineShape.size()-1);
 
             return splineShape;
         }
+
+        private void computeTapSquare(ArrayList<Vector2> s, int ur, int lr, int ll) {
+            Vector2 top = getTapSquareSide(0, s, 0, ur); // x==max, y==min
+            Vector2 right = getTapSquareSide(1, s, ur, lr);
+            Vector2 bottom = getTapSquareSide(2, s, lr, ll);
+            Vector2 left = getTapSquareSide(3, s, ll, s.size()-1);
+
+            bounds = new BoundingBox(
+                    new Vector3(
+                            (float)Math.floor(left.y),
+                            (float)Math.floor(bottom.y),
+                            0),
+                    new Vector3(
+                            (float)Math.ceil(right.x),
+                            (float)Math.ceil(top.x),
+                            0)
+            );
+
+            float ratio = 0.4f;
+            tapSquare = new BoundingBox(
+                    new Vector3(
+                            interp(ratio, left.x, left.y),
+                            interp(ratio, bottom.x, bottom.y),
+                            0),
+                    new Vector3(
+                            interp(ratio, right.y, right.x),
+                            interp(ratio, top.y, top.x),
+                            0)
+            );
+        }
+
+        private float interp(float ratio, float a, float b) {
+            return a*(1-ratio) + b*ratio;
+        }
+
+        private Vector2 getTapSquareSide(int side, ArrayList<Vector2> s, int start, int stop) {
+            float ratio = 0.4f;
+            boolean useY = (side==0)||(side==2); // 0==top, 1=right, 2=bottom, 3==left
+            float max = (useY)? s.get(stop).y: s.get(stop).x;
+            float min = (useY)? s.get(stop).y: s.get(stop).x;
+            for (int i=start; i<stop; i++) {
+                float a = (useY)? s.get(i).y: s.get(i).x;
+                if (a>max) max=a;
+                if (a<min) min=a;
+            }
+            return new Vector2(max, min);
+        }
+
 
         /**
          * Converts a list of Vector2 to a list of floats

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -19,17 +20,21 @@ class PuzzlePiece extends Sprite {
     public int col;
 //    public PuzzlePieceCoords coords;
     public Vector2 pos;
+    public BoundingBox tapSquare;
     public Vector2 mid;
 
     public boolean isSelected=false;
     public TextureRegion highlight=null;
 
-    public PuzzlePiece(int r, int c, Vector2 pos, TextureRegion img, boolean flipY) {
+    public PuzzlePiece(int r, int c, PuzzlePacker.PieceData data, TextureRegion img, boolean flipY) {
         super(img);
         if (flipY) flip(false, true);
         row = r;
         col = c;
-        this.pos = pos;
+        this.pos = data.position;
+        this.tapSquare = data.tapSquare;
+        tapSquare.min.add(pos.x, pos.y, 0);
+        tapSquare.max.add(pos.x, pos.y, 0);
         setPosition(pos.x, pos.y);
 
         mid = new Vector2(img.getRegionWidth()/2, img.getRegionHeight()/2);
@@ -38,6 +43,8 @@ class PuzzlePiece extends Sprite {
 
     public void moveBy(float x, float y) {
         pos.add(x,y);
+        tapSquare.min.add(x,y,0);
+        tapSquare.max.add(x,y,0);
         setPosition(pos.x, pos.y);
     }
 

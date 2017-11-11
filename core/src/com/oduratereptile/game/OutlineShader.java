@@ -128,7 +128,7 @@ public class OutlineShader extends ShaderProgram {
 //        blurTargetB.end();
 
         // add the blurred image to the edgedetected image
-
+        
 
         // use the default shader
         batch.setShader(null);

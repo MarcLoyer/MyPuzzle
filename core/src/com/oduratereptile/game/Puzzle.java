@@ -12,12 +12,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.BufferUtils;
-import com.badlogic.gdx.utils.PerformanceCounter;
 import com.badlogic.gdx.utils.PerformanceCounters;
 
 import java.nio.IntBuffer;
@@ -125,7 +122,7 @@ public class Puzzle extends OrthoGestureListener {
     public void createPuzzlePieces() {
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
-                puzzlePiece.add(new PuzzlePiece(i, j, puzzlePacker.getPosition(i,j), puzzlePacker.getRegion(i,j), true));
+                puzzlePiece.add(new PuzzlePiece(i, j, puzzlePacker.getData(i,j), puzzlePacker.getRegion(i,j), true));
             }
         }
     }
@@ -261,6 +258,14 @@ public class Puzzle extends OrthoGestureListener {
             for (int i=0; i<numCols-1; i++) drawColSpline(i);
         }
 
+//        // Draw tap squares
+//        sr.begin(ShapeRenderer.ShapeType.Line);
+//        sr.setColor(0f, 0.7f, 0f, 1f);
+//        for (PuzzlePiece p: puzzlePiece) {
+//            sr.rect(p.tapSquare.min.x, p.tapSquare.min.y, p.tapSquare.getWidth(), p.tapSquare.getHeight());
+//        }
+//        sr.end();
+
         batch.begin();
     }
 
@@ -277,8 +282,7 @@ public class Puzzle extends OrthoGestureListener {
 //        for (int j=0; j<rowControlPoints[i].length; j++) {
 //            sr.circle(rowControlPoints[i][j].x, rowControlPoints[i][j].y, 3);
 //        }
-
-        sr.end();
+//        sr.end();
     }
 
     public void drawColSpline(int i) {
@@ -294,8 +298,7 @@ public class Puzzle extends OrthoGestureListener {
 //        for (int j=0; j<colControlPoints[i].length; j++) {
 //            sr.circle(colControlPoints[i][j].x, colControlPoints[i][j].y, 3);
 //        }
-
-        sr.end();
+//        sr.end();
     }
 
     // I currently only select one piece at a time, but maybe in the future I'll
@@ -315,7 +318,7 @@ public class Puzzle extends OrthoGestureListener {
 
         // check if the tap location selects a new piece
         for (PuzzlePiece p: puzzlePiece) {
-            if (hit(p, c.x, c.y)) {
+            if (hit(p, c)) {
                 p.select();
                 if (p.highlight==null) {
                     generateHighlight(p);
@@ -338,13 +341,8 @@ public class Puzzle extends OrthoGestureListener {
         //  false, false: top->left,   right->top
     }
 
-    private boolean hit(PuzzlePiece p, float x, float y) {
-        float rad = Math.min(rowSpacing(p.row), colSpacing(p.col))/2.0f;
-        float rad2 = rad*rad;
-        Vector2 m = p.getMid();
-        float d2 = m.dst2(x,y);
-
-        return (d2 < rad2);
+    private boolean hit(PuzzlePiece p, Vector3 loc) {
+        return (p.tapSquare.contains(loc));
     }
 
     // use this to move the selected piece (or maybe drag and drop?)
