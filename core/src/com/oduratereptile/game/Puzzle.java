@@ -303,20 +303,24 @@ public class Puzzle extends OrthoGestureListener {
     public boolean tap(float x, float y, int count, int button) {
         Vector3 c = cam.unproject(new Vector3(x,y,0));
 
-        // deselect any selected pieces
-        for (PuzzlePiece p: selectedPiece) {
-            p.select(false);
-        }
-        selectedPiece.clear();
-
         // check if the tap location selects a new piece
         for (PuzzlePiece p: puzzlePiece) {
             if (hit(p, c)) {
-                p.select();
-                if (p.highlight==null) {
-                    generateHighlight(p);
+                if (p.isSelected) {
+                    p.select(false);
+                    selectedPiece.clear();
+                } else {
+                    for (PuzzlePiece s: selectedPiece) {
+                        s.select(false);
+                    }
+                    selectedPiece.clear();
+
+                    p.select();
+                    if (p.highlight == null) {
+                        generateHighlight(p);
+                    }
+                    selectedPiece.add(p);
                 }
-                selectedPiece.add(p);
             }
         }
 
