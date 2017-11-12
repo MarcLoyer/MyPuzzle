@@ -304,8 +304,9 @@ public class Puzzle extends OrthoGestureListener {
         Vector3 c = cam.unproject(new Vector3(x,y,0));
 
         // check if the tap location selects a new piece
+        boolean isHit = false;
         for (PuzzlePiece p: puzzlePiece) {
-            if (hit(p, c)) {
+            if (p.hit(c)) {
                 if (p.isSelected) {
                     p.select(false);
                     selectedPiece.clear();
@@ -321,6 +322,14 @@ public class Puzzle extends OrthoGestureListener {
                     }
                     selectedPiece.add(p);
                 }
+                isHit = true;
+                break;
+            }
+            if (!isHit) {
+                for (PuzzlePiece s: selectedPiece) {
+                    s.select(false);
+                }
+                selectedPiece.clear();
             }
         }
 
@@ -330,10 +339,6 @@ public class Puzzle extends OrthoGestureListener {
     public void generateHighlight(PuzzlePiece p) {
         gameScreen.game.outlineShader.setup(p);
         p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
-    }
-
-    private boolean hit(PuzzlePiece p, Vector3 loc) {
-        return (p.tapSquare.contains(loc));
     }
 
     // use this to move the selected piece (or maybe drag and drop?)

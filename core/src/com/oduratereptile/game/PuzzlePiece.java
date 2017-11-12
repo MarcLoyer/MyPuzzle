@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -18,7 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 class PuzzlePiece extends Sprite {
     public int row;
     public int col;
-//    public PuzzlePieceCoords coords;
     public Vector2 pos;
     public BoundingBox tapSquare;
     public Vector2 mid;
@@ -41,6 +41,10 @@ class PuzzlePiece extends Sprite {
         setOrigin(mid.x, mid.y);
     }
 
+    public boolean hit(Vector3 loc) {
+        return tapSquare.contains(loc);
+    }
+
     public void moveBy(float x, float y) {
         pos.add(x,y);
         tapSquare.min.add(x,y,0);
@@ -54,14 +58,7 @@ class PuzzlePiece extends Sprite {
     }
 
     public void select(boolean sel) {
-        if (sel) {
-            Gdx.app.error("debug", "piece ("+row+", "+col+") is selected");
-            if (highlight == null) generateHighlight();
-            isSelected = true;
-        } else {
-            Gdx.app.error("debug", "piece ("+row+", "+col+") is deselected");
-            isSelected = false;
-        }
+        isSelected = sel;
     }
 
     public void select() { select(true); }
@@ -77,12 +74,5 @@ class PuzzlePiece extends Sprite {
                 highlight.getRegionWidth(), highlight.getRegionHeight(),
                 1.0f, 1.0f,
                 getRotation());
-    }
-
-    public void generateHighlight() {
-        // TODO: implement!
-        Gdx.app.error("status", "Generating highlight for (" + row + ", " + col + ")");
-        // TODO: need the batch
-        //highlight = shader.renderToTexture(batch);
     }
 }
