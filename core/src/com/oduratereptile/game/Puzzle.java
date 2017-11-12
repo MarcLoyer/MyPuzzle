@@ -230,15 +230,16 @@ public class Puzzle extends OrthoGestureListener {
         for (PuzzlePiece p : puzzlePiece) {
             boolean isEven = ((p.col + p.row)%2 == 0);
             if (displayAllPieces) {
-                p.draw(batch, 1);
+                if(!p.isSelected) p.draw(batch, 1);
             } else {
                 if ((displayEvenPieces && isEven) || (!displayEvenPieces && !isEven))
-                    p.draw(batch, 1);
+                    if (!p.isSelected) p.draw(batch, 1);
             }
         }
 
         for (PuzzlePiece p: selectedPiece) {
-            p.drawHighlight(batch, 1.0f); // this one draws the outline improperly
+            p.draw(batch, 1.0f);
+            p.drawHighlight(batch, 1.0f);
         }
 
         batch.end();

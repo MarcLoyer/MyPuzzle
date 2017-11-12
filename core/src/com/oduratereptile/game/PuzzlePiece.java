@@ -1,6 +1,7 @@
 package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -25,6 +26,7 @@ class PuzzlePiece extends Sprite {
 
     public boolean isSelected=false;
     public TextureRegion highlight=null;
+    public Color highlightColor = Color.WHITE;
 
     public PuzzlePiece(int r, int c, PuzzlePacker.PieceData data, TextureRegion img, boolean flipY) {
         super(img);
@@ -68,11 +70,13 @@ class PuzzlePiece extends Sprite {
     }
 
     public void drawHighlight(SpriteBatch batch, float parentAlpha) {
+        batch.setColor(highlightColor);
         batch.draw(highlight,
                 getX() - OutlineShader.PAD, getY() - OutlineShader.PAD,
                 getOriginX() + OutlineShader.PAD, getOriginY() + OutlineShader.PAD,
                 highlight.getRegionWidth(), highlight.getRegionHeight(),
                 1.0f, 1.0f,
                 getRotation());
+        batch.setColor(Color.WHITE);
     }
 }
