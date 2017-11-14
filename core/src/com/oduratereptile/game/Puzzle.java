@@ -30,13 +30,11 @@ public class Puzzle extends OrthoGestureListener {
     public Pixmap puzzleImg;
     public ShapeRenderer sr;
     public Random rand = new Random();
-    public PuzzleFill puzzleFill = new PuzzleFill();
     public PixmapPacker packer = new PixmapPacker(1024, 1024, Pixmap.Format.RGBA8888, 2, true);
     public TextureAtlas pieceAtlas = new TextureAtlas();
 
     public ArrayList<PuzzlePiece> puzzlePiece = new ArrayList<PuzzlePiece>();
 //    public ArrayList<PuzzleGroup> puzzleGroup;
-    public BoundingBox puzzleBounds = new BoundingBox();
 
     public boolean displayImage = false;
     public boolean displaySplines = false;
@@ -98,6 +96,34 @@ public class Puzzle extends OrthoGestureListener {
         generateSplines();
         createMeshPieceAtlas();
         createPuzzlePieces();
+        setPieceNeighbors();
+    }
+
+    public PuzzlePiece getPiece(int row, int col) {
+        for (PuzzlePiece p: puzzlePiece) {
+            if ((p.row==row)&&(p.col==col)) return p;
+        }
+        return null;
+    }
+
+    /**
+     * this routine assumes all pieces are in their solved state.
+     */
+    public void setPieceNeighbors() {
+        PuzzlePiece [][] table = new PuzzlePiece[numRows][numCols];
+        for (PuzzlePiece p: puzzlePiece) {
+            table[p.row][p.col] = p;
+        }
+        for (int i=0; i<numRows; i++) {
+            for (int j=0; j<numCols; j++) {
+                table[i][j].setNeighbors(
+                        (i==numRows-1)? null: table[i+1][j],
+                        (j==numCols-1)? null: table[i][j+1],
+                        (i==0)? null: table[i-1][j],
+                        (j==0)? null: table[i][j-1]
+                );
+            }
+        }
     }
 
     public PuzzlePacker puzzlePacker;
@@ -326,12 +352,12 @@ public class Puzzle extends OrthoGestureListener {
                 isHit = true;
                 break;
             }
-            if (!isHit) {
-                for (PuzzlePiece s: selectedPiece) {
-                    s.select(false);
-                }
-                selectedPiece.clear();
+        }
+        if (!isHit) {
+            for (PuzzlePiece s: selectedPiece) {
+                s.select(false);
             }
+            selectedPiece.clear();
         }
 
         return true;
@@ -365,6 +391,23 @@ public class Puzzle extends OrthoGestureListener {
         }
 
         return super.touchDown(x,y,pointer, button);
+    }
+
+    @Override
+    public boolean panStop(float x, float y, int pointer, int button) {
+        if (selectedPiece.size()==1) {
+            PuzzlePiece p = selectedPiece.get(0);
+            if (p.snapsWith>0) p.snapIn();
+        }
+        return super.panStop(x, y, pointer, button);
+    }
+
+    @Override
+    public void pinchStop() {
+        if (selectedPiece.size()==1) {
+            PuzzlePiece p = selectedPiece.get(0);
+            if (p.snapsWith>0) p.snapIn();
+        }
     }
 
     // Use this to rotate a selected piece
