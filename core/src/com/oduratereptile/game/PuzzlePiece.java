@@ -76,6 +76,7 @@ class PuzzlePiece extends Sprite {
     Vector2 actual = new Vector2();
 
     public boolean fit(int i) {
+        // TODO: bug - this is not correct when rotations are present
         if (neighbor[i]==null) return false;
         // the distance between the two pieces as well as the orientation of both pieces must
         // be close. We generate a fit vector based on the fit vectors of the two pieces and the
@@ -85,7 +86,7 @@ class PuzzlePiece extends Sprite {
         if (Math.abs(neighbor[i].getRotation()-getRotation())>epsilon) return false;
 
         actual.set(neighbor[i].pos).sub(pos);
-        epsilon = 5.0f; // TODO: should epsilon scale with the size of the piece?
+        epsilon = 5.0f;
         if (actual.dst2(neighborFit[i])>epsilon) return false;
 
         return true;
