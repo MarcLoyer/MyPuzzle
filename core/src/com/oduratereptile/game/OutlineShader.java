@@ -45,7 +45,6 @@ public class OutlineShader extends ShaderProgram {
         bufferHeight = tex.getRegionHeight() + 2*PAD;
 
         begin();
-        setUniformf("dir", 0f, 0f);
         setUniformf("width", bufferWidth);
         setUniformf("height", bufferHeight);
         setUniformf("radius", 1f);
@@ -66,7 +65,7 @@ public class OutlineShader extends ShaderProgram {
 
         // draw from tex to FBO A
         blurTargetA.begin();
-        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+        Gdx.gl.glClearColor(1f, 1f, 1f, 0.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         batch.draw(tex, PAD, PAD);
@@ -78,13 +77,13 @@ public class OutlineShader extends ShaderProgram {
 
         // setup edgedetection
         begin();
-        setUniformi("edgedetect", 1);
-        setUniformf("radius", 2f);
+        setUniformi("mode", 1);
+        setUniformf("radius", 1.0f);
         end();
 
         // draw from FBO A to FBO B
         blurTargetB.begin();
-        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+        Gdx.gl.glClearColor(1f, 1f, 1f, 0.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         batch.draw(fboRegionA,0,0);
@@ -94,41 +93,19 @@ public class OutlineShader extends ShaderProgram {
 
         // setup H-blur / 2D blur
         begin();
-        setUniformi("edgedetect", 0); // turn off edge detection
-//        setUniformf("dir", 0f, 1f);
-        setUniformf("dir", 1f, 1f);
-        setUniformf("radius", 1.1f);
+        setUniformi("mode", 0); // turn on blur
+        setUniformf("radius", 1.0f);
         end();
 
         // draw from FBO B to FBO A
         blurTargetA.begin();
-        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+        Gdx.gl.glClearColor(1f, 1f, 1f, 0.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         batch.draw(fboRegionB,0,0);
         batch.end();
         batch.flush();
         blurTargetA.end();
-
-//        // setup V-blur
-//        begin();
-//        setUniformf("dir", 1f, 0f);
-//        setUniformi("edgedetect", 0); // turn off edge detection
-//        setUniformf("radius", 0.6f);
-//        end();
-//
-//        // draw from FBO A to FBO B
-//        blurTargetB.begin();
-//        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        batch.begin();
-//        batch.draw(fboRegionA,0,0);
-//        batch.end();
-//        batch.flush();
-//        blurTargetB.end();
-
-        // add the blurred image to the edgedetected image
-        
 
         // use the default shader
         batch.setShader(null);
