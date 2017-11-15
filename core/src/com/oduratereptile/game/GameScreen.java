@@ -114,8 +114,6 @@ public class GameScreen extends HudScreen {
                         puzzle.displayAllPieces = true;
                     }
                 }
-
-//                puzzle.displayEvenPieces = !puzzle.displayEvenPieces;
             }
         });
         popup.add(button).expandX().fillX().row();
