@@ -238,7 +238,7 @@ class PuzzlePiece extends Sprite {
             setHighlightColor(Color.WHITE);
         }
 
-        // TODO: rotate the tapSquare?
+        // rotate the tapSquare
         cos = (float)Math.cos(-degrees*Math.PI/180.0f);
         sin = (float)Math.sin(-degrees*Math.PI/180.0f);
 
