@@ -140,9 +140,13 @@ public class Puzzle extends OrthoGestureListener {
     }
 
     public void createPuzzlePieces() {
+        PuzzlePiece p;
+
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
-                puzzlePiece.add(new PuzzlePiece(i, j, puzzlePacker.getData(i,j), puzzlePacker.getRegion(i,j), true));
+                p = new PuzzlePiece(i, j, puzzlePacker.getData(i,j), puzzlePacker.getRegion(i,j), true);
+                puzzlePiece.add(p);
+                generateHighlight(p);
             }
         }
     }
@@ -257,10 +261,10 @@ public class Puzzle extends OrthoGestureListener {
         for (PuzzlePiece p : puzzlePiece) {
             boolean isEven = ((p.col + p.row)%2 == 0);
             if (displayAllPieces) {
-                if(!p.isSelected) p.draw(batch, 1);
+                if(!p.isSelected()) p.draw(batch, 1);
             } else {
                 if ((displayEvenPieces && isEven) || (!displayEvenPieces && !isEven))
-                    if (!p.isSelected) p.draw(batch, 1);
+                    if (!p.isSelected()) p.draw(batch, 1);
             }
         }
 
@@ -287,9 +291,9 @@ public class Puzzle extends OrthoGestureListener {
             sr.end();
         }
 
-//        for (PuzzlePiece p: selectedPiece) {
-//            p.drawDebugLines(sr);
-//        }
+        for (PuzzlePiece p: selectedPiece) {
+            p.drawDebugLines(sr);
+        }
 
         batch.begin();
     }
@@ -339,7 +343,7 @@ public class Puzzle extends OrthoGestureListener {
         boolean isHit = false;
         for (PuzzlePiece p: puzzlePiece) {
             if (p.hit(c)) {
-                if (p.isSelected) {
+                if (p.isSelected()) {
                     p.select(false);
                     selectedPiece.clear();
                 } else {
@@ -349,9 +353,6 @@ public class Puzzle extends OrthoGestureListener {
                     selectedPiece.clear();
 
                     p.select();
-                    if (p.highlight == null) {
-                        generateHighlight(p);
-                    }
                     selectedPiece.add(p);
                 }
                 isHit = true;

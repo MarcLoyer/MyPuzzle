@@ -12,6 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+import java.util.Iterator;
+
 import static com.oduratereptile.game.HudScreen.Corner.*;
 
 /**
@@ -49,7 +51,7 @@ public class GameScreen extends HudScreen {
         popup.setWidth(200);
         popup.setHeight(200);
 
-        // TODO: add option menu implementations
+        // option menu
 //        button = new TextButton("debug flood fill", game.skin);
 //        button.addListener(new ClickListener(){
 //            public void clicked(InputEvent event, float x, float y){
@@ -112,6 +114,18 @@ public class GameScreen extends HudScreen {
                         puzzle.displayEvenPieces = false;
                     } else {
                         puzzle.displayAllPieces = true;
+                    }
+                }
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("fit report", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                for (PuzzlePiece p: puzzle.puzzlePiece) {
+                    if (p.isSelected()) {
+                        p.fitReport();
                     }
                 }
             }
