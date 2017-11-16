@@ -64,7 +64,6 @@ public class PuzzleGroup {
     }
 
     public void setRotation(float degrees) {
-        // TODO: implement!
         // move the origin of rotation to "center", then rotate
         Iterator<PuzzlePiece> iter = piece.iterator();
         while (iter.hasNext()) {
