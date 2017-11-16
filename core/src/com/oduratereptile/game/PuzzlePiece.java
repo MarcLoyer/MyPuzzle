@@ -82,6 +82,10 @@ class PuzzlePiece extends Sprite {
         return point.sub(mid).rotate(degrees).add(mid);
     }
 
+    public Vector2 rotatePoint2(Vector2 point, float degrees) {
+        return point.sub(getMid()).rotate(degrees).add(getMid());
+    }
+
     public void fitReport() {
         Gdx.app.error("fitReport", "fit report for ("+row+","+col+")");
         Gdx.app.error("fitReport", "  rotation:");
@@ -183,8 +187,28 @@ class PuzzlePiece extends Sprite {
         }
     }
 
+    public float cos = 1f;
+    public float sin = 0f;
+    public Vector2 trans;
+    public Vector3 rot = new Vector3();
+
+    /**
+     * We rotate the touch into the coordinate system of the bounding box, then
+     * check bounds.
+     */
     public boolean hit(Vector3 loc) {
-        return tapSquare.contains(loc);
+        trans = new Vector2(loc.x, loc.y);
+        trans.sub(getMid());
+
+        rot.set(
+                trans.x*cos - trans.y*sin,
+                trans.y*cos + trans.x*sin,
+                0
+        );
+
+        rot.add(getMid().x, getMid().y, 0);
+
+        return tapSquare.contains(rot);
     }
 
     @Override
@@ -215,6 +239,9 @@ class PuzzlePiece extends Sprite {
         }
 
         // TODO: rotate the tapSquare?
+        cos = (float)Math.cos(-degrees*Math.PI/180.0f);
+        sin = (float)Math.sin(-degrees*Math.PI/180.0f);
+
         super.setRotation(degrees);
     }
 
@@ -289,6 +316,20 @@ class PuzzlePiece extends Sprite {
             return;
         }
         super.draw(batch, parentAlpha);
+    }
+
+    public void drawTapSquare(ShapeRenderer sr) {
+        Vector2 [] corner = new Vector2[4];
+        corner[0] = new Vector2(tapSquare.min.x, tapSquare.min.y);
+        corner[1] = new Vector2(tapSquare.min.x, tapSquare.max.y);
+        corner[2] = new Vector2(tapSquare.max.x, tapSquare.max.y);
+        corner[3] = new Vector2(tapSquare.max.x, tapSquare.min.y);
+        for (int i=0; i<4; i++) corner[i] = rotatePoint2(corner[i], getRotation());
+
+        sr.line(corner[0], corner[1]);
+        sr.line(corner[1], corner[2]);
+        sr.line(corner[2], corner[3]);
+        sr.line(corner[3], corner[0]);
     }
 
     public void drawDebugLines(ShapeRenderer sr) {
