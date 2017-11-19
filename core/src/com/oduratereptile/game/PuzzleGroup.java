@@ -49,10 +49,29 @@ public class PuzzleGroup {
         Iterator<PuzzlePiece> iter = piece.iterator();
         center.set(0,0);
         while (iter.hasNext()) {
-            center.add(iter.next().getMid());
+            PuzzlePiece p = iter.next();
+            center.add(p.pos);
+            center.add(p.getRegionWidth()/2, p.getRegionHeight()/2);
         }
         float scale = 1.0f / (float)piece.size();
         center.scl(scale);
+    }
+
+    public void propagateCenter() {
+        // changing the origin can only be done when the group has 0 rotation
+        float deg = piece.get(0).getRotation();
+        Vector2 p = new Vector2(piece.get(0).posRotated);
+
+        Iterator<PuzzlePiece> iter = piece.iterator();
+        while (iter.hasNext()) {
+            PuzzlePiece pp = iter.next();
+            pp.setRotation(0, false);
+            pp.setOrigin(center.x-pp.pos.x, center.y-pp.pos.y);
+            pp.setRotation(deg, false);
+        }
+
+        p.sub(piece.get(0).posRotated);
+        moveBy(p.x, p.y);
     }
 
     public void moveBy(float x, float y) {

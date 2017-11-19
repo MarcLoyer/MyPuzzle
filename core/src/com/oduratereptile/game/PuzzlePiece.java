@@ -68,7 +68,9 @@ class PuzzlePiece extends Sprite {
     public Vector2 getOrigin() {
         if (group==null)
             return new Vector2(getOriginX(), getOriginY());
-        return group.center.cpy();
+        Vector2 rv = new Vector2(group.center);
+        rv.sub(pos);
+        return rv;
     }
 
     @Override
@@ -199,7 +201,8 @@ class PuzzlePiece extends Sprite {
                     setRotation(0);
                     v1.set(neighbor[i].pos).sub(neighborFit[i]);
                     moveTo(v1.x, v1.y);
-                    v1.set(neighbor[i].getOrigin()).add(neighbor[i].pos).sub(pos);
+                    v2.set(getOrigin());
+                    v1.set(neighbor[i].getMid()).sub(pos); // <-- TODO: doesn't work with groups
                     setOrigin(v1.x, v1.y);
                     setRotation(neighbor[i].getRotation());
 
@@ -214,7 +217,8 @@ class PuzzlePiece extends Sprite {
                             select(true);
                         }
                     }
-
+                    // TODO: update the origin to the new group origin
+                    group.propagateCenter();
                 }
 
                 neighbor[i].neighbor[(i+2)%4] = null;
