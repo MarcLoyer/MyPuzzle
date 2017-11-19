@@ -291,13 +291,6 @@ public class Puzzle extends OrthoGestureListener {
             sr.end();
         }
 
-        // debug - draw tap location for piece 1,1
-        PuzzlePiece ppp = getPiece(1,1);
-        sr.begin(ShapeRenderer.ShapeType.Filled);
-        sr.setColor(Color.PINK);
-        sr.circle(ppp.rot.x, ppp.rot.y, 3);
-        sr.end();
-
         for (PuzzlePiece p: selectedPiece) {
             p.drawDebugLines(sr);
         }

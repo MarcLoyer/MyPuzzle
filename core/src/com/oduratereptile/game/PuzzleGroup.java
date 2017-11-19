@@ -82,9 +82,6 @@ public class PuzzleGroup {
         return rv;
     }
 
-    // TODO: this routine fails to properly snap in if the group has been rotated
-    //  It seems to be related to which piece was touched to select the group
-    // TODO: sometimes the highlightColor remains LIME after the snapIn has finished.
     public void snapIn() {
         int size = piece.size();
         for (int i=0; i<size; i++) {

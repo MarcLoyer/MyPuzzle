@@ -50,14 +50,39 @@ class PuzzlePiece extends Sprite {
         for (int i=0; i<4; i++) { neighborFit[i] = new Vector2(); }
     }
 
+    public Vector2 getPosition() {
+        return new Vector2(getX(), getY());
+    }
+
     @Override
     public void setOrigin(float x, float y) {
+        // TODO: set the origin for the group
         if (mid==null) { // don't know why I have to do this - mid was already allocated. It throws an error if I don't though
             mid = new Vector2(x,y);
         } else {
             mid.set(x,y);
         }
         super.setOrigin(x,y);
+    }
+
+    public Vector2 getOrigin() {
+        if (group==null)
+            return new Vector2(getOriginX(), getOriginY());
+        return group.center.cpy();
+    }
+
+    @Override
+    public float getRotation() {
+        float rv = super.getRotation();
+        if (rv<0) rv = 360f - ((-rv)%360f);
+        return rv;
+    }
+
+    public float getDegreeDiff(float angle1, float angle2) {
+        float rv = angle1-angle2;
+        if (rv<-180f) rv += 360f;
+        if (rv>180f) rv -= 360f;
+        return Math.abs(rv);
     }
 
     /**
@@ -87,6 +112,9 @@ class PuzzlePiece extends Sprite {
     }
 
     public void fitReport() {
+        if ((neighbor[0] == null) && (neighbor[1] == null) &&
+            (neighbor[2] == null) && (neighbor[3] == null)) return;
+
         Gdx.app.error("fitReport", "fit report for ("+row+","+col+")");
         Gdx.app.error("fitReport", "  rotation:");
         Gdx.app.error("fitReport", "    this       : " + getRotation());
@@ -94,7 +122,7 @@ class PuzzlePiece extends Sprite {
             if (neighbor[i]==null) continue;
             float epsilon = 5.0f;
             float rotation = neighbor[i].getRotation();
-            String status = (Math.abs(rotation-getRotation())>epsilon)? " (FAIL)": "(pass)";
+            String status = (getDegreeDiff(rotation, getRotation())>epsilon)? " (FAIL)": "(pass)";
             Gdx.app.error("fitReport", "    neighbor[" + i + "]: " + rotation + status);
         }
         Gdx.app.error("fitReport", "  position:");
@@ -139,7 +167,7 @@ class PuzzlePiece extends Sprite {
         // rotation angle of this piece, and compare that to the relative position vector of the
         // two pieces and the angle of rotation of the neighbor.
         float epsilon = 5.0f;
-        if (Math.abs(neighbor[i].getRotation()-getRotation())>epsilon) return false;
+        if (getDegreeDiff(neighbor[i].getRotation(), getRotation())>epsilon) return false;
 
         v1.set(neighbor[i].posRotated);
 
@@ -165,22 +193,30 @@ class PuzzlePiece extends Sprite {
         for (int i=0; i<4; i++) {
             if (neighbor[i]==null) continue;
             if ((snapsWith & (1<<i))!=0) {
-                // if this piece is part of a group, move/rotate the whole group
-                setRotation(neighbor[i].getRotation());
-                v1.set(neighbor[i].posRotated).sub(neighborFit[i]);
-                moveTo(v1.x, v1.y);
+                // if the piece is snapping into multiple neighbors, it may have snapped into
+                // the current group already. In that case, we don't need to snapIn again
+                if ((group==null) || (group != neighbor[i].group)) {
+                    setRotation(0);
+                    v1.set(neighbor[i].pos).sub(neighborFit[i]);
+                    moveTo(v1.x, v1.y);
+                    v1.set(neighbor[i].getOrigin()).add(neighbor[i].pos).sub(pos);
+                    setOrigin(v1.x, v1.y);
+                    setRotation(neighbor[i].getRotation());
 
-                // merge the neighbor (and its group) with this piece (and its group)
-                if (group!=null) {
-                    group.add(neighbor[i]);
-                } else {
-                    if (neighbor[i].group!=null) {
-                        neighbor[i].group.add(this);
+                    // merge the neighbor (and its group) with this piece (and its group)
+                    if (group!=null) {
+                        group.add(neighbor[i]);
                     } else {
-                        new PuzzleGroup(this, neighbor[i]);
-                        select(true);
+                        if (neighbor[i].group!=null) {
+                            neighbor[i].group.add(this);
+                        } else {
+                            new PuzzleGroup(this, neighbor[i]);
+                            select(true);
+                        }
                     }
+
                 }
+
                 neighbor[i].neighbor[(i+2)%4] = null;
                 neighbor[i] = null;
             }
@@ -223,14 +259,18 @@ class PuzzlePiece extends Sprite {
             return;
         }
 
+        // limit degrees to 0-360
+        float deg = (degrees>0)? degrees%360f: 360f - (-degrees)%360f;
+
         v1.set(0,0);
-        rotatePoint(v1, degrees);
+        rotatePoint(v1, deg);
         posRotated.set(pos).add(v1);
 
         float currentDegrees = getRotation();
+
         for (Vector2 v: neighborFit) {
             if (v==null) continue;
-            rotatePoint(v, degrees-currentDegrees);
+            rotatePoint(v, deg-currentDegrees);
         }
         if (checkForFit()) {
             setHighlightColor(Color.LIME);
@@ -239,10 +279,10 @@ class PuzzlePiece extends Sprite {
         }
 
         // rotate the tapSquare
-        cos = (float)Math.cos(-degrees*Math.PI/180.0f);
-        sin = (float)Math.sin(-degrees*Math.PI/180.0f);
+        cos = (float)Math.cos(-deg*Math.PI/180.0f);
+        sin = (float)Math.sin(-deg*Math.PI/180.0f);
 
-        super.setRotation(degrees);
+        super.setRotation(deg);
     }
 
     public void moveTo(float x, float y) {
@@ -344,6 +384,18 @@ class PuzzlePiece extends Sprite {
         sr.setColor(Color.CYAN);
         sr.circle(posRotated.x, posRotated.y, 3f);
         sr.rect(getMid().x, getMid().y, 3f, 3f);
+        sr.end();
+
+        sr.begin(ShapeRenderer.ShapeType.Line);
+        for (int i=0; i<4; i++) {
+            if (neighbor[i]==null) continue;
+            sr.setColor(Color.LIME);
+            sr.circle(neighbor[i].pos.x, neighbor[i].pos.y, 3f);
+            sr.setColor(Color.CYAN);
+            sr.circle(pos.x+neighborFit[i].x, pos.y+neighborFit[i].y, 2f);
+        }
+        sr.setColor(Color.CYAN);
+        sr.circle(pos.x, pos.y, 3f);
         sr.end();
     }
 
