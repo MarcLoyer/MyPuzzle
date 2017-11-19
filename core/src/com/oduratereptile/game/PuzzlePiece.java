@@ -202,7 +202,7 @@ class PuzzlePiece extends Sprite {
                     v1.set(neighbor[i].pos).sub(neighborFit[i]);
                     moveTo(v1.x, v1.y);
                     v2.set(getOrigin());
-                    v1.set(neighbor[i].getMid()).sub(pos); // <-- TODO: doesn't work with groups
+                    v1.set(neighbor[i].getMid()).sub(pos);
                     setOrigin(v1.x, v1.y);
                     setRotation(neighbor[i].getRotation());
 
@@ -217,7 +217,8 @@ class PuzzlePiece extends Sprite {
                             select(true);
                         }
                     }
-                    // TODO: update the origin to the new group origin
+
+                    // update the origin to the new group origin
                     group.propagateCenter();
                 }
 

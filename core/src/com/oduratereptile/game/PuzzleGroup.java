@@ -87,7 +87,6 @@ public class PuzzleGroup {
         Iterator<PuzzlePiece> iter = piece.iterator();
         while (iter.hasNext()) {
             PuzzlePiece p = iter.next();
-            p.setOrigin(center.x-p.pos.x, center.y-p.pos.y);
             p.setRotation(degrees, false);
         }
     }
