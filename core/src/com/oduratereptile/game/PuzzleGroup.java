@@ -74,6 +74,8 @@ public class PuzzleGroup {
         moveBy(p.x, p.y);
     }
 
+    public int size() { return piece.size(); }
+
     public void moveBy(float x, float y) {
         Iterator<PuzzlePiece> iter = piece.iterator();
         while (iter.hasNext()) {

@@ -35,7 +35,7 @@ public class Puzzle extends OrthoGestureListener {
     public TextureAtlas pieceAtlas = new TextureAtlas();
 
     public ArrayList<PuzzlePiece> puzzlePiece = new ArrayList<PuzzlePiece>();
-//    public ArrayList<PuzzleGroup> puzzleGroup;
+    public PuzzleGroup largestGroup = null;
 
     public boolean displayImage = false;
     public boolean displaySplines = false;
@@ -403,7 +403,13 @@ public class Puzzle extends OrthoGestureListener {
     public boolean panStop(float x, float y, int pointer, int button) {
         if (selectedPiece.size()==1) {
             PuzzlePiece p = selectedPiece.get(0);
-            if (p.snapsWith>0) p.snapIn();
+            if (p.snapsWith>0) {
+                p.snapIn();
+                if ((largestGroup==null) || (p.group.size()>largestGroup.size())) {
+                    setLargestGroup(p.group);
+
+                }
+            }
         }
         return super.panStop(x, y, pointer, button);
     }
@@ -412,8 +418,19 @@ public class Puzzle extends OrthoGestureListener {
     public void pinchStop() {
         if (selectedPiece.size()==1) {
             PuzzlePiece p = selectedPiece.get(0);
-            if (p.snapsWith>0) p.snapIn();
+            if (p.snapsWith>0) {
+                p.snapIn();
+                if ((largestGroup==null) || (p.group.size()>largestGroup.size())) {
+                    setLargestGroup(p.group);
+                }
+            }
         }
+    }
+
+    public void setLargestGroup(PuzzleGroup group) {
+        largestGroup = group;
+        // TODO: implement win()
+//        if (largestGroup.size() = numRows*numCols) win();
     }
 
     // Use this to rotate a selected piece
