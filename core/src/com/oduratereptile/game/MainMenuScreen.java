@@ -21,6 +21,8 @@ public class MainMenuScreen extends Stage implements Screen {
     public OrthographicCamera camera;
     final public MyPuzzle game;
 
+    public boolean waitForImageSelection = false;
+
     public MainMenuScreen(final MyPuzzle game) {
         super(new FitViewport(MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY));
         Gdx.input.setInputProcessor(this);
@@ -30,14 +32,27 @@ public class MainMenuScreen extends Stage implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
 
-        final TextButton textbutton = new TextButton("Play", game.skin);
-        textbutton.setWidth(100f);
-        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 50f, MyPuzzle.SCREENSIZEY/2f - 20f);
+        TextButton textbutton = new TextButton("Play", game.skin);
+        textbutton.setWidth(150f);
+        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 20f);
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
                 game.setScreen(new GameScreen(game));
                 dispose();
+            }
+        });
+        addActor(textbutton);
+
+        textbutton = new TextButton("Load image", game.skin);
+        textbutton.setWidth(150f);
+        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 100f);
+        textbutton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+                game.galleryOpener.openGallery();
+                waitForImageSelection = true;
+                Gdx.app.error("main", "setting waitForImageSelection");
             }
         });
         addActor(textbutton);
@@ -74,7 +89,11 @@ public class MainMenuScreen extends Stage implements Screen {
 
     @Override
     public void resume() {
-
+        // if the "Load Image" button was pressed, resume() shows that we have focus again
+        if (waitForImageSelection) {
+            waitForImageSelection = false;
+            Gdx.app.error("ImagePicker", "Path = " + game.galleryOpener.getSelectedFilePath());
+        }
     }
 
     @Override

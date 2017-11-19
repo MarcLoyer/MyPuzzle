@@ -7,6 +7,6 @@ import com.oduratereptile.game.MyPuzzle;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		new LwjglApplication(new MyPuzzle(), config);
+		new LwjglApplication(new MyPuzzle(new DesktopGalleryOpener()), config);
 	}
 }

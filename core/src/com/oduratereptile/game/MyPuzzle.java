@@ -20,9 +20,15 @@ public class MyPuzzle extends Game {
     AssetManager manager;
 
 	OutlineShader outlineShader;
+    GalleryOpener galleryOpener;
 
     final static public int SCREENSIZEX = 800;
     final static public int SCREENSIZEY = 480;
+
+	public MyPuzzle(GalleryOpener galleryOpener) {
+		super();
+        this.galleryOpener = galleryOpener;
+	}
 
 	@Override
 	public void create () {
