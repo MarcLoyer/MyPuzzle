@@ -3,6 +3,7 @@ package com.oduratereptile.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
@@ -29,6 +30,10 @@ public class GameScreen extends HudScreen {
     public Table popup;
 
     public GameScreen(final MyPuzzle game) {
+        this(game, null);
+    }
+
+    public GameScreen(final MyPuzzle game, Pixmap image) {
         super(game);
         camera = new OrthographicCamera();
 
@@ -150,18 +155,24 @@ public class GameScreen extends HudScreen {
 
         puzzle = new Puzzle(this);
         addInputController(new GestureDetector(puzzle));
-        getPuzzleImage();
+        getPuzzleImage(image);
     }
 
     public float worldWidth = 1000;
 
-    public void getPuzzleImage() {
+    public void getPuzzleImage(Pixmap image) {
         // TODO: the big image doesn't display properly on my phone!
         String picture1 = "monumentValley.JPG"; // big: 5000x3000
         String picture2 = "klimt.JPG"; // small: 500x300
         String picture3 = "oregonpath.JPG"; // tiny: 150x100
 
-        puzzle.setPicture(Gdx.files.internal(picture2));
+        if (image != null) {
+            // TODO: some pieces don't generate properly with some images
+            puzzle.setPicture(image);
+        } else {
+            puzzle.setPicture(Gdx.files.internal(picture2));
+        }
+
 //        puzzle.createPieces(3, 3);
 //        puzzle.createPieces(5, 5);
         puzzle.createPieces(10, 10);

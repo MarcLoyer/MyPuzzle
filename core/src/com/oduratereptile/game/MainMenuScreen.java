@@ -2,8 +2,11 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -12,6 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 
 /**
  * Created by Marc on 10/3/2017.
@@ -38,7 +44,7 @@ public class MainMenuScreen extends Stage implements Screen {
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new GameScreen(game, image));
                 dispose();
             }
         });
@@ -92,8 +98,28 @@ public class MainMenuScreen extends Stage implements Screen {
         // if the "Load Image" button was pressed, resume() shows that we have focus again
         if (waitForImageSelection) {
             waitForImageSelection = false;
-            Gdx.app.error("ImagePicker", "Path = " + game.galleryOpener.getSelectedFilePath());
+            image = loadPixmapFromFileDescriptor(game.galleryOpener.getFileDescriptor());
         }
+    }
+
+    public Pixmap image = null;
+
+    public Pixmap loadPixmapFromFileDescriptor(FileDescriptor fd) {
+        FileInputStream stream = new FileInputStream(fd);
+        Pixmap pixmap=null;
+        try {
+            long size = stream.getChannel().size();
+            if (size >= 0x80000000L) {
+                Gdx.app.error("loadPixmap", "File is too big: " + size);
+            }
+            byte [] bytes = new byte[(int)size];
+            stream.read(bytes);
+            pixmap = new Pixmap(new Gdx2DPixmap(bytes, 0, (int)size, 0));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Gdx.app.error("loadPixmap", "Failed to read image file");
+        }
+        return pixmap;
     }
 
     @Override

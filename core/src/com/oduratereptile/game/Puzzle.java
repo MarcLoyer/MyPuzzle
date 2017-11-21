@@ -52,7 +52,11 @@ public class Puzzle extends OrthoGestureListener {
     public Texture puzzleImgTex;
 
     public void setPicture(FileHandle fh) {
-        puzzleImg = new Pixmap(fh);
+        setPicture(new Pixmap(fh));
+    }
+
+    public void setPicture(Pixmap pixmap) {
+        puzzleImg = pixmap;
 
         IntBuffer buffer = BufferUtils.newIntBuffer(16);
         Gdx.gl.glGetIntegerv(GL20.GL_MAX_TEXTURE_SIZE, buffer);
