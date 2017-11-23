@@ -66,6 +66,19 @@ public class GameScreen extends HudScreen {
 //        });
 //        popup.add(button).expandX().fillX().row();
 
+//        button = new TextButton("debug mesh #2", game.skin);
+//        button.addListener(new ClickListener(){
+//            public void clicked(InputEvent event, float x, float y){
+//                if (puzzle.selectedPiece.size()==1) {
+//                    int row = puzzle.selectedPiece.get(0).row;
+//                    int col = puzzle.selectedPiece.get(0).col;
+//                    game.setScreen(new Debug4Screen(game, puzzle, row, col));
+////                    dispose();
+//                }
+//            }
+//        });
+//        popup.add(button).expandX().fillX().row();
+
 //        button = new TextButton("debug packer", game.skin);
 //        button.addListener(new ClickListener(){
 //            public void clicked(InputEvent event, float x, float y){
@@ -78,7 +91,13 @@ public class GameScreen extends HudScreen {
 //        button = new TextButton("debug mesh", game.skin);
 //        button.addListener(new ClickListener(){
 //            public void clicked(InputEvent event, float x, float y){
-//                game.setScreen(new Debug2Screen(game, puzzle));
+//                int row = 0;
+//                int col = 0;
+//                if (puzzle.selectedPiece.size()==1) {
+//                    row = puzzle.selectedPiece.get(0).row;
+//                    col = puzzle.selectedPiece.get(0).col;
+//                }
+//                game.setScreen(new Debug2Screen(game, puzzle, row, col));
 ////                dispose();
 //            }
 //        });

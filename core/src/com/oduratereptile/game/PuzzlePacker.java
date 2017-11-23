@@ -59,7 +59,7 @@ public class PuzzlePacker {
             Gdx.app.error("debug", shader.getLog());
 
         packer = new PixmapPacker(pageSize, pageSize, Pixmap.Format.RGBA8888, 0, false,
-                new PixmapPacker.SkylineStrategy());
+                new PixmapPacker.GuillotineStrategy());
     }
 
     public MeshPiece createPiece(int row, int col) {
@@ -126,6 +126,10 @@ public class PuzzlePacker {
     public class MeshPiece {
         public int row;
         public int col;
+        public ArrayList<Vector2> splineShape;
+        public FloatArray verts;
+        public ShortArray tris;
+        public float minX, minY;
         public Mesh mesh;
         public Vector2 pos;
         public BoundingBox bounds;
@@ -139,15 +143,17 @@ public class PuzzlePacker {
             this.col = col;
 
             // get the shape from the splines
-            ArrayList<Vector2> splineShape = getShape(row, col);
+            splineShape = getShape(row, col);
             pos = new Vector2(bounds.min.x, bounds.min.y);
 
             // triangulate it
-            FloatArray verts = getVerts(splineShape);
-            ShortArray tris = getTris(verts);
+            verts = getVerts(splineShape);
+            tris = getTris(verts);
 
             // create the mesh
             mesh = makeMesh(verts, tris, bounds.min);
+            minX = bounds.min.x;
+            minY = bounds.min.y;
             bounds.max.sub(bounds.min);
             tapSquare.min.sub(bounds.min);
             tapSquare.max.sub(bounds.min);

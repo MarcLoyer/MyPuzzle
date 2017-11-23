@@ -18,6 +18,7 @@ import static com.oduratereptile.game.HudScreen.Corner.LR;
 import static com.oduratereptile.game.HudScreen.Corner.UL;
 
 /**
+ * This screen was used to debug PuzzlePacker.
  * Created by Marc on 10/3/2017.
  */
 

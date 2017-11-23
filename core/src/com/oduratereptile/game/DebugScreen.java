@@ -17,6 +17,8 @@ import java.util.Iterator;
 import static com.oduratereptile.game.HudScreen.Corner.*;
 
 /**
+ * This screen was used to debug the flood fill algorithm. It also shows how to run and pause a separate thread (which
+ * I used to kind of step through the algorithm).
  * Created by Marc on 10/3/2017.
  */
 

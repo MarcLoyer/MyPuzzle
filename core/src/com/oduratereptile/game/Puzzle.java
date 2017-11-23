@@ -64,6 +64,7 @@ public class Puzzle extends OrthoGestureListener {
         Gdx.app.error("debug", "Max image size for this device = " + maxImageSize);
 
         puzzleImgTex = new Texture(puzzleImg); //TODO: split into regions if the Pixmap is too big, or maybe mipmaps?
+        Gdx.app.error("debug", "Current image size = (" + pixmap.getWidth() + ", " + pixmap.getHeight() + ")");
     }
 
     public int controlsPerPiece = 6;
@@ -132,12 +133,14 @@ public class Puzzle extends OrthoGestureListener {
     }
 
     public PuzzlePacker puzzlePacker;
+    public PuzzlePacker.MeshPiece[][] meshPieces;  // save the meshPieces for debugging
 
     public void createMeshPieceAtlas() {
         puzzlePacker = new PuzzlePacker(this, 1024);
+        meshPieces = new PuzzlePacker.MeshPiece[numRows][numCols];
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
-                puzzlePacker.pack(i,j);
+                meshPieces[i][j] = puzzlePacker.pack(i,j);
             }
         }
         puzzlePacker.createAtlas();

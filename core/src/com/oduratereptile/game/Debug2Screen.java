@@ -34,6 +34,7 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 import static com.oduratereptile.game.HudScreen.Corner.*;
 
 /**
+ * This screen was used to debug puzzle piece shape generation.
  * Created by Marc on 10/3/2017.
  */
 
@@ -63,6 +64,10 @@ public class Debug2Screen extends HudScreen {
     public Mesh mesh;
 
     public Debug2Screen(final MyPuzzle game, Puzzle puzzle) {
+        this(game, puzzle, 0, 0);
+    }
+
+    public Debug2Screen(final MyPuzzle game, Puzzle puzzle, int row, int col) {
         super(game);
         camera = new OrthographicCamera();
         addInputController(new GestureDetector(new OrthoGestureListener(camera)));
@@ -100,8 +105,8 @@ public class Debug2Screen extends HudScreen {
         if (shader.getLog().length()!=0)
             Gdx.app.error("debug", shader.getLog());
 
-        int initialRow = 0;
-        int initialCol = 0;
+        int initialRow = (row>(numRows-2)) ? numRows - 2: row;
+        int initialCol = (col>(numCols-2)) ? numCols - 2: col;
 
         coords0 = new PuzzlePieceCoords(initialRow, initialCol, puzzle.puzzleImg, puzzle.numRows, puzzle.numCols);
         setupData(coords0);
@@ -307,6 +312,7 @@ public class Debug2Screen extends HudScreen {
         game.shapeRenderer.setColor(0f, 0f, 1f, 1f);
         game.shapeRenderer.rect(20, 60, w, h);
         drawBoundingBox(game.shapeRenderer, coords3, 20, 60);
+//        drawBoundingBox(game.shapeRenderer, coords0, 20, 60);
         drawSpriteBounds(game.shapeRenderer, shapeSprite0);
         drawSpriteBounds(game.shapeRenderer, shapeSprite1);
         drawSpriteBounds(game.shapeRenderer, shapeSprite2);
