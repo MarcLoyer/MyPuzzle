@@ -138,6 +138,7 @@ public class HudScreen implements Screen {
     @Override
     public void render(float delta) {
         stage.act(delta);
+        stage.getViewport().apply();
         stage.draw();
     }
 

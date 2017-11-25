@@ -186,7 +186,6 @@ public class GameScreen extends HudScreen {
         String picture3 = "oregonpath.JPG"; // tiny: 150x100
 
         if (image != null) {
-            // TODO: some pieces don't generate properly with some images
             puzzle.setPicture(image);
         } else {
             puzzle.setPicture(Gdx.files.internal(picture2));
@@ -205,7 +204,7 @@ public class GameScreen extends HudScreen {
         Gdx.gl.glClearColor(0.2f, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-//    next steps:
+//    TODO: next steps:
 //        (3) "load an image" dialog
 //        (4) "invite a friend" dialog
 //        (5) "view full image" window
