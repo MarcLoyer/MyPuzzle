@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -228,7 +229,8 @@ public class GameScreen extends HudScreen {
     public void updateCameraViewport() {
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
-        camera.setToOrtho(false, worldWidth, worldWidth * h / w);
+        float aspectRatio = h/w;
+        camera.setToOrtho(false, worldWidth, worldWidth * aspectRatio);
     }
 
     @Override
