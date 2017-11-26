@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -26,6 +27,8 @@ import java.io.FileInputStream;
 public class MainMenuScreen extends Stage implements Screen {
     public OrthographicCamera camera;
     final public MyPuzzle game;
+    public Table table;
+
 
     public boolean waitForImageSelection = false;
 
@@ -38,9 +41,13 @@ public class MainMenuScreen extends Stage implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
 
+        table = new Table(game.skin);
+        table.setFillParent(true);
+        addActor(table);
+
         TextButton textbutton = new TextButton("Play", game.skin);
-        textbutton.setWidth(150f);
-        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 20f);
+//        textbutton.setWidth(150f);
+//        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 20f);
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
@@ -48,11 +55,12 @@ public class MainMenuScreen extends Stage implements Screen {
                 dispose();
             }
         });
-        addActor(textbutton);
+        table.add(textbutton).width(150);
 
+        table.row();
         textbutton = new TextButton("Load image", game.skin);
         textbutton.setWidth(150f);
-        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 100f);
+//        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 100f);
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
@@ -61,7 +69,7 @@ public class MainMenuScreen extends Stage implements Screen {
                 Gdx.app.error("main", "setting waitForImageSelection");
             }
         });
-        addActor(textbutton);
+        table.add(textbutton).width(150f);
     }
 
     @Override
@@ -85,6 +93,12 @@ public class MainMenuScreen extends Stage implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        float aspectRatio = (float)height / (float)width;
+        if (aspectRatio > 1f) { // portrait
+            getViewport().setWorldSize(MyPuzzle.SCREENSIZEY, MyPuzzle.SCREENSIZEX);
+        } else { // landscape
+            getViewport().setWorldSize(MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
+        }
         getViewport().update(width, height, true);
     }
 
