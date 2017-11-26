@@ -46,8 +46,6 @@ public class MainMenuScreen extends Stage implements Screen {
         addActor(table);
 
         TextButton textbutton = new TextButton("Play", game.skin);
-//        textbutton.setWidth(150f);
-//        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 20f);
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
@@ -60,7 +58,6 @@ public class MainMenuScreen extends Stage implements Screen {
         table.row();
         textbutton = new TextButton("Load image", game.skin);
         textbutton.setWidth(150f);
-//        textbutton.setPosition(MyPuzzle.SCREENSIZEX/2f - 75f, MyPuzzle.SCREENSIZEY/2f - 100f);
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
