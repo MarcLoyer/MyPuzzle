@@ -3,6 +3,8 @@ package com.oduratereptile.game.desktop;
 import com.badlogic.gdx.Gdx;
 import com.oduratereptile.game.GalleryOpener;
 
+import java.io.FileDescriptor;
+
 /**
  * Created by Marc on 11/19/2017.
  */
@@ -15,6 +17,12 @@ public class DesktopGalleryOpener implements GalleryOpener {
 
     @Override
     public String getSelectedFilePath() {
+        Gdx.app.log("DesktopGalleryOpener", "Not implemented");
+        return null;
+    }
+
+    @Override
+    public FileDescriptor getFileDescriptor() {
         Gdx.app.log("DesktopGalleryOpener", "Not implemented");
         return null;
     }

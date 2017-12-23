@@ -2,5 +2,7 @@
 <resources>
 
     <string name="app_name">MyPuzzle</string>
+    <string name="facebook_app_id">532991523721021</string>
+    <string name="fb_login_protocol_scheme">fb532991523721021</string>
 
 </resources>
