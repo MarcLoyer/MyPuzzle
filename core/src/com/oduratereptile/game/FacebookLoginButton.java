@@ -26,12 +26,11 @@ public class FacebookLoginButton extends TextButton {
     private boolean loginStatus = false;
     private boolean publishStatus = false;
 
-    public FacebookLoginButton(GDXFacebook facebook, Skin skin) {
-        this(facebook, "Login with Facebook", skin);
-    }
+    private static final String loginLabel = "Login with Facebook";
+    private static final String logoutLabel= "Logout";
 
-    public FacebookLoginButton(GDXFacebook facebook, String label, Skin skin) {
-        super(label, skin);
+    public FacebookLoginButton(GDXFacebook facebook, Skin skin) {
+        super(loginLabel, skin);
         this.facebook = facebook;
 
         permissionsRead.add("email");
@@ -44,7 +43,11 @@ public class FacebookLoginButton extends TextButton {
             }
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                loginWithReadPermissions();
+                if (loginStatus) {
+                    logout();
+                } else {
+                    loginWithReadPermissions();
+                }
             }
         });
     }
@@ -80,6 +83,7 @@ public class FacebookLoginButton extends TextButton {
             }
 
         });
+        Gdx.app.error("debug", "Logging in");
     }
 
     private void logout() {
@@ -91,7 +95,11 @@ public class FacebookLoginButton extends TextButton {
 
     private void setLoginButtonStatus(boolean loggedIn) {
         loginStatus = loggedIn;
-        setDisabled(loggedIn);
+        if (loggedIn) {
+            setText(logoutLabel);
+        } else {
+            setText(loginLabel);
+        }
     }
 
     private void setPublishButtonStatus(boolean enabled) {

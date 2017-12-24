@@ -31,6 +31,7 @@ public class AndroidLauncher extends AndroidApplication {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK && requestCode == AndroidGalleryOpener.SELECT_PICTURE) {
             Uri imageUri = data.getData();
             ParcelFileDescriptor pfd;
