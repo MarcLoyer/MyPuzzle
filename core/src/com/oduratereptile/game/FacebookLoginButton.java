@@ -11,7 +11,9 @@ import com.badlogic.gdx.utils.JsonValue;
 import de.tomgrill.gdxfacebook.core.GDXFacebook;
 import de.tomgrill.gdxfacebook.core.GDXFacebookCallback;
 import de.tomgrill.gdxfacebook.core.GDXFacebookError;
+import de.tomgrill.gdxfacebook.core.GDXFacebookGameRequest;
 import de.tomgrill.gdxfacebook.core.GDXFacebookGraphRequest;
+import de.tomgrill.gdxfacebook.core.GameRequestResult;
 import de.tomgrill.gdxfacebook.core.JsonResult;
 import de.tomgrill.gdxfacebook.core.SignInMode;
 import de.tomgrill.gdxfacebook.core.SignInResult;
@@ -62,6 +64,7 @@ public class FacebookLoginButton extends TextButton {
                 gainMoreUserInfo();
                 setPublishButtonStatus(true);
                 setLoginButtonStatus(true);
+                sendGameInvitation();
             }
 
             @Override
@@ -117,8 +120,9 @@ public class FacebookLoginButton extends TextButton {
                 String fbNickname = root.getString("name");
                 String fbIdForThisApp = root.getString("id");
 
-                Gdx.app.debug("debug", "Graph Reqest: successful");
+                Gdx.app.debug("debug", "Graph Request: successful");
                 Gdx.app.error("debug", "  " + fbNickname +", your unique ID is: " + fbIdForThisApp);
+                Gdx.app.error("debug", "  json result = " + result.getMessage());
             }
 
             @Override
@@ -139,6 +143,44 @@ public class FacebookLoginButton extends TextButton {
                 Gdx.app.error("debug", error.getErrorMessage());
                 Gdx.app.error("debug", "Graph Reqest: Error. Something went wrong with the access token.");
                 logout();
+            }
+        });
+    }
+
+    private void sendGameInvitation() {
+        GDXFacebookGameRequest request = new GDXFacebookGameRequest();
+        request.setMessage("Come play this game!");
+
+        /* TODO Note:
+         *  "Game Requests are only available to games."
+          *  I apparently have to release the game to the android play store before facebook will
+          *  allow me to add this functionality.
+          *  Ref: https://developers.facebook.com/docs/games/services/gamerequests
+         */
+        facebook.gameRequest(request, new GDXFacebookCallback<GameRequestResult>() {
+            @Override
+            public void onSuccess(GameRequestResult result) {
+                Gdx.app.debug("debug", "Game Request: successful");
+                Gdx.app.error("debug", "  ID: " + result.getRequestId());
+                Gdx.app.error("debug", "  recipients: " + result.getRecipients());
+                Gdx.app.error("debug", "  message: " + result.getMessage());
+            }
+
+            @Override
+            public void onCancel() {
+                Gdx.app.debug("debug", "Graph Request: Request cancelled. Reason unknown.");
+            }
+
+            @Override
+            public void onFail(Throwable t) {
+                Gdx.app.error("debug", "Graph Request: Failed with exception.");
+                t.printStackTrace();
+            }
+
+            @Override
+            public void onError(GDXFacebookError error) {
+                Gdx.app.error("debug", error.getErrorMessage());
+                Gdx.app.error("debug", "Graph Request: Error. Something went wrong with the access token.");
             }
         });
     }
