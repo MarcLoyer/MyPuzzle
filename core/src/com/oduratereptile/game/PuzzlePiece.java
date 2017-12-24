@@ -27,6 +27,7 @@ class PuzzlePiece extends Sprite {
     public TextureRegion highlight=null;
     public Color highlightColor = new Color(Color.WHITE);
 
+    public boolean[] neighborMask = new boolean[4];
     public PuzzlePiece[] neighbor = new PuzzlePiece[4];
     public Vector2[] neighborFit = new Vector2[4];
     public int snapsWith = 0;
@@ -47,7 +48,10 @@ class PuzzlePiece extends Sprite {
 
         setOrigin(img.getRegionWidth()/2, img.getRegionHeight()/2);
 
-        for (int i=0; i<4; i++) { neighborFit[i] = new Vector2(); }
+        for (int i=0; i<4; i++) {
+            neighborMask[i] = false;
+            neighborFit[i] = new Vector2();
+        }
     }
 
     public Vector2 getPosition() {
@@ -97,7 +101,11 @@ class PuzzlePiece extends Sprite {
         neighbor[3] = left;
 
         for (int i=0; i<4; i++) {
-            if (neighbor[i]==null) continue;
+            if (neighbor[i]==null) {
+                neighborMask[i] = false;
+                continue;
+            }
+            neighborMask[i] = true;
             neighborFit[i].set(neighbor[i].pos).sub(pos);
         }
     }
@@ -114,14 +122,14 @@ class PuzzlePiece extends Sprite {
     }
 
     public void fitReport() {
-        if ((neighbor[0] == null) && (neighbor[1] == null) &&
-            (neighbor[2] == null) && (neighbor[3] == null)) return;
+        if (!neighborMask[0] && !neighborMask[1] &&
+            !neighborMask[2] && !neighborMask[3]) return;
 
         Gdx.app.error("fitReport", "fit report for ("+row+","+col+")");
         Gdx.app.error("fitReport", "  rotation:");
         Gdx.app.error("fitReport", "    this       : " + getRotation());
         for (int i=0; i<4; i++) {
-            if (neighbor[i]==null) continue;
+            if (!neighborMask[i]) continue;
             float epsilon = 5.0f;
             float rotation = neighbor[i].getRotation();
             String status = (getDegreeDiff(rotation, getRotation())>epsilon)? " (FAIL)": "(pass)";
@@ -131,7 +139,7 @@ class PuzzlePiece extends Sprite {
         v2.set(pos);
         Gdx.app.error("fitReport", "    this       : " + v2.toString());
         for (int i=0; i<4; i++) {
-            if (neighbor[i]==null) continue;
+            if (!neighborMask[i]) continue;
             v1.set(neighbor[i].posRotated);
             v1.sub(neighborFit[i]);
             float epsilon = 5.0f;
@@ -163,7 +171,7 @@ class PuzzlePiece extends Sprite {
     public Vector2 v2 = new Vector2();
 
     public boolean fit(int i) {
-        if (neighbor[i]==null) return false;
+        if (!neighborMask[i]) return false;
         // the distance between the two pieces as well as the orientation of both pieces must
         // be close. We generate a fit vector based on the fit vectors of the two pieces and the
         // rotation angle of this piece, and compare that to the relative position vector of the
@@ -193,7 +201,7 @@ class PuzzlePiece extends Sprite {
         }
 
         for (int i=0; i<4; i++) {
-            if (neighbor[i]==null) continue;
+            if (!neighborMask[i]) continue;
             if ((snapsWith & (1<<i))!=0) {
                 // if the piece is snapping into multiple neighbors, it may have snapped into
                 // the current group already. In that case, we don't need to snapIn again
@@ -222,8 +230,8 @@ class PuzzlePiece extends Sprite {
                     group.propagateCenter();
                 }
 
-                neighbor[i].neighbor[(i+2)%4] = null;
-                neighbor[i] = null;
+                neighbor[i].neighborMask[(i+2)%4] = false;
+                neighborMask[i] = false;
             }
         }
     }
@@ -294,6 +302,12 @@ class PuzzlePiece extends Sprite {
         float deltaX = x - pos.x;
         float deltaY = y - pos.y;
         moveBy(deltaX, deltaY);
+    }
+
+    public void moveTo(float x, float y, boolean checkForGroup) {
+        float deltaX = x - pos.x;
+        float deltaY = y - pos.y;
+        moveBy(deltaX, deltaY, checkForGroup);
     }
 
     public void moveBy(float x, float y) {
@@ -380,7 +394,7 @@ class PuzzlePiece extends Sprite {
     public void drawDebugLines(ShapeRenderer sr) {
         sr.begin(ShapeRenderer.ShapeType.Filled);
         for (int i=0; i<4; i++) {
-            if (neighbor[i]==null) continue;
+            if (!neighborMask[i]) continue;
             sr.setColor(Color.LIME);
             sr.circle(neighbor[i].posRotated.x, neighbor[i].posRotated.y, 3f);
             sr.setColor(Color.CYAN);
@@ -393,7 +407,7 @@ class PuzzlePiece extends Sprite {
 
         sr.begin(ShapeRenderer.ShapeType.Line);
         for (int i=0; i<4; i++) {
-            if (neighbor[i]==null) continue;
+            if (!neighborMask[i]) continue;
             sr.setColor(Color.LIME);
             sr.circle(neighbor[i].pos.x, neighbor[i].pos.y, 3f);
             sr.setColor(Color.CYAN);

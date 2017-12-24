@@ -36,6 +36,7 @@ public class Puzzle extends OrthoGestureListener {
 
     public ArrayList<PuzzlePiece> puzzlePiece = new ArrayList<PuzzlePiece>();
     public PuzzleGroup largestGroup = null;
+    public PuzzlePieceManager manager;
 
     public boolean displayImage = false;
     public boolean displaySplines = false;
@@ -47,6 +48,7 @@ public class Puzzle extends OrthoGestureListener {
         super(gameScreen.camera);
         this.gameScreen = gameScreen;
         sr = gameScreen.game.shapeRenderer;
+        manager = new PuzzlePieceManager(this);
     }
 
     public Texture puzzleImgTex;
@@ -103,6 +105,8 @@ public class Puzzle extends OrthoGestureListener {
         createMeshPieceAtlas();
         createPuzzlePieces();
         setPieceNeighbors();
+        manager.initialize();
+        manager.saveInitialState();
     }
 
     public PuzzlePiece getPiece(int row, int col) {
@@ -264,6 +268,8 @@ public class Puzzle extends OrthoGestureListener {
 
     public void render(SpriteBatch batch, float delta) {
         if (displayImage) batch.draw(puzzleImgTex, 0,0);
+
+        manager.act(delta);
 
         for (PuzzlePiece p : puzzlePiece) {
             boolean isEven = ((p.col + p.row)%2 == 0);

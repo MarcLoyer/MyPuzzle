@@ -157,6 +157,22 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
+        button = new TextButton("shuffle", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                puzzle.manager.shuffle();
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("unshuffle", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                puzzle.manager.restoreInitialState();
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
         popup.setVisible(false);
 
         // Create a button to bring up the popup menu
