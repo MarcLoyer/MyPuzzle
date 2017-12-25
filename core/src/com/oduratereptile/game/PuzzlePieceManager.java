@@ -60,6 +60,7 @@ public class PuzzlePieceManager {
             tempPP = puzzle.puzzlePiece.get(i);
 
             // reset the neighbors, remove the groups
+            // TODO: make a pool for the groups?
             tempPP.group = null;
             for (int j=0; j<4; j++) {
                 tempPP.neighborMask[j] = (tempPP.neighbor[j]!=null);
@@ -89,7 +90,7 @@ public class PuzzlePieceManager {
 
         // 2) randomly assign pieces to locations
         for (int i=puzzle.numCols*puzzle.numRows-1; i>0; i--) {
-            int j = rand.nextInt(i);
+            int j = rand.nextInt(i+1);
             tmp = locs[j];
             locs[j] = locs[i];
             locs[i] = tmp;
@@ -113,7 +114,7 @@ public class PuzzlePieceManager {
     public boolean animate = false;
     public float animationDuration = 0;
     public float animationDelta = 0;
-    public Interpolation interp = new Interpolation.SwingOut(1);
+    public Interpolation interp = new Interpolation.SwingOut(0);
 
     public void startAnimation(float duration) {
         animationDuration = duration;
