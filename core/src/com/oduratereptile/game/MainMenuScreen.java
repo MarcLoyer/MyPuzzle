@@ -36,8 +36,6 @@ public class MainMenuScreen extends Stage implements Screen {
     public float buttonWidth = 200f;
 
 
-    public boolean waitForImageSelection = false;
-
     public MainMenuScreen(final MyPuzzle game) {
         super(new FitViewport(MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY));
         Gdx.input.setInputProcessor(this);
@@ -78,11 +76,15 @@ public class MainMenuScreen extends Stage implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y){
                 game.galleryOpener.openGallery();
-                waitForImageSelection = true;
-                Gdx.app.error("main", "setting waitForImageSelection");
             }
         });
         table.add(textbutton).width(buttonWidth);
+        game.galleryOpener.addListener(new GalleryOpener.GalleryListener() {
+            @Override
+            public void gallerySelection(FileDescriptor fd) {
+                image = loadPixmapFromFileDescriptor(fd);
+            }
+        });
 
         table.row();
         textbutton = new TextButton("Connect to server", game.skin);
@@ -138,16 +140,13 @@ public class MainMenuScreen extends Stage implements Screen {
 
     @Override
     public void resume() {
-        // if the "Load Image" button was pressed, resume() shows that we have focus again
-        if (waitForImageSelection) {
-            waitForImageSelection = false;
-            image = loadPixmapFromFileDescriptor(game.galleryOpener.getFileDescriptor());
-        }
+        
     }
 
     public Pixmap image = null;
 
     public Pixmap loadPixmapFromFileDescriptor(FileDescriptor fd) {
+        if (fd==null) return null;
         FileInputStream stream = new FileInputStream(fd);
         Pixmap pixmap=null;
         try {

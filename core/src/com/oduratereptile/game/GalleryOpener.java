@@ -14,4 +14,10 @@ public interface GalleryOpener {
     public FileDescriptor getFileDescriptor();
 
     public boolean resultIsReady();
+
+    public void addListener(GalleryListener listener);
+
+    public interface GalleryListener {
+        public void gallerySelection(FileDescriptor fd);
+    }
 }
