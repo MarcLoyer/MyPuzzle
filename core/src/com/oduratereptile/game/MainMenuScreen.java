@@ -140,7 +140,7 @@ public class MainMenuScreen extends Stage implements Screen {
 
     @Override
     public void resume() {
-        
+
     }
 
     public Pixmap image = null;

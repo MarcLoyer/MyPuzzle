@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
 /**
  * Created by Marc on 11/19/2017.
@@ -35,7 +36,12 @@ public class DesktopGalleryOpener implements GalleryOpener {
 
     @Override
     public void openGallery() {
+        JFrame f = new JFrame();
+        f.setVisible(true);
+        f.toFront();
+        f.setVisible(false);
         int returnValue = fileChooser.showOpenDialog(null);
+        f.dispose();
 
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             file = fileChooser.getSelectedFile();
