@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -33,9 +34,11 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
     public PixmapPacker packer = new PixmapPacker(1024, 1024, Pixmap.Format.RGBA8888, 2, true);
     public TextureAtlas pieceAtlas = new TextureAtlas();
     public Json json;
+    public Base64Coder base64Coder;
 
     public ObjectMap<String, PuzzlePiece> puzzlePiece = new ObjectMap<String, PuzzlePiece>();
     public ObjectMap<String, PuzzleGroup> puzzleGroup = new ObjectMap<String, PuzzleGroup>();
+    public GameData gameData = new GameData(puzzlePiece, puzzleGroup);
     public PuzzleGroup largestGroup = null;
     public PuzzlePieceManager manager;
 
@@ -58,7 +61,9 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         puzzleGroup.put(group.getId(), group);
         if ((largestGroup==null) || (group.size()>largestGroup.size())) {
             setLargestGroup(group);
+            gameData.largestGroupID = group.getId();
         }
+        gameData.groupCount = PuzzleGroup.count;
     }
 
     public void onDestroy(PuzzleGroup group) {
@@ -109,6 +114,9 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         this.numRows = numRows;
         this.numCols = numCols;
 
+        gameData.rows = numRows;
+        gameData.cols = numCols;
+
         //  - Catmull-Rom splines to define the shapes
         //  - divide into pieces
         //  - create separate texture for each piece (and add alpha mask to create the shape)
@@ -119,10 +127,6 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         createMeshPieceAtlas();
         createPuzzlePieces();
         setPieceNeighbors();
-
-        // experimenting with json...
-        String s = json.toJson(puzzlePiece.get("2,1"));
-        Gdx.app.error("json", json.prettyPrint(s));
     }
 
     public PuzzlePiece getPiece(int row, int col) {
@@ -477,5 +481,25 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         puzzleImgTex.dispose();
         packer.dispose();
         pieceAtlas.dispose();
+    }
+
+    static public class GameData {
+        public String puzzleName = "undefined";
+        public int rows = 0;
+        public int cols = 0;
+        public ObjectMap<String, PuzzlePiece> puzzlePieces;
+        public ObjectMap<String, PuzzleGroup> puzzleGroups;
+        public String largestGroupID = "";
+        public int groupCount = 0;
+
+        public GameData() {
+            puzzlePieces = new ObjectMap<String, PuzzlePiece>();
+            puzzleGroups = new ObjectMap<String, PuzzleGroup>();
+        }
+
+        public GameData(ObjectMap<String, PuzzlePiece> p, ObjectMap<String, PuzzleGroup> g) {
+            puzzlePieces = p;
+            puzzleGroups = g;
+        }
     }
 }

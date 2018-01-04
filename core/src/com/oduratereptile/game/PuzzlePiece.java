@@ -56,7 +56,7 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
         tapSquare.max.add(pos.x, pos.y, 0);
         setPosition(pos.x, pos.y);
 
-        setOrigin(img.getRegionWidth()/2, img.getRegionHeight()/2);
+        resetOrigin();
 
         for (int i=0; i<4; i++) {
             neighborMask[i] = false;

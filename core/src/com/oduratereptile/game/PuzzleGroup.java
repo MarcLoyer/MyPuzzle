@@ -25,6 +25,11 @@ public class PuzzleGroup implements Json.Serializable {
     boolean isSelected;
     Vector2 center = new Vector2();
 
+    public PuzzleGroup() {
+        setId(this);
+        notifyCreation(this);
+    }
+
     public PuzzleGroup(PuzzlePiece ... puzzlePieces) {
         for (PuzzlePiece p: puzzlePieces) {
             add(p);
@@ -38,7 +43,7 @@ public class PuzzleGroup implements Json.Serializable {
         PuzzleGroup oldGroup = p.group;
         if (oldGroup == this) return;
         if (oldGroup != null) {
-            Iterator<PuzzlePiece> iter = p.group.piece.iterator();
+            Iterator<PuzzlePiece> iter = oldGroup.piece.iterator();
             while (iter.hasNext()) {
                 PuzzlePiece pp = iter.next();
                 piece.add(pp);

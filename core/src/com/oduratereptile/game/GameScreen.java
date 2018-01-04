@@ -1,6 +1,7 @@
 package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -104,13 +105,13 @@ public class GameScreen extends HudScreen {
 //        });
 //        popup.add(button).expandX().fillX().row();
 
-        button = new TextButton("display image", game.skin);
-        button.addListener(new ClickListener(){
-            public void clicked(InputEvent event, float x, float y){
-                puzzle.displayImage = !puzzle.displayImage;
-            }
-        });
-        popup.add(button).expandX().fillX().row();
+//        button = new TextButton("display image", game.skin);
+//        button.addListener(new ClickListener(){
+//            public void clicked(InputEvent event, float x, float y){
+//                puzzle.displayImage = !puzzle.displayImage;
+//            }
+//        });
+//        popup.add(button).expandX().fillX().row();
 
         button = new TextButton("display splines", game.skin);
         button.addListener(new ClickListener(){
@@ -120,13 +121,13 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
-        button = new TextButton("display tap squares", game.skin);
-        button.addListener(new ClickListener(){
-            public void clicked(InputEvent event, float x, float y){
-                puzzle.displayTapSquares = !puzzle.displayTapSquares;
-            }
-        });
-        popup.add(button).expandX().fillX().row();
+//        button = new TextButton("display tap squares", game.skin);
+//        button.addListener(new ClickListener(){
+//            public void clicked(InputEvent event, float x, float y){
+//                puzzle.displayTapSquares = !puzzle.displayTapSquares;
+//            }
+//        });
+//        popup.add(button).expandX().fillX().row();
 
         button = new TextButton("toggle pieces", game.skin);
         button.addListener(new ClickListener(){
@@ -145,17 +146,17 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
-        button = new TextButton("fit report", game.skin);
-        button.addListener(new ClickListener(){
-            public void clicked(InputEvent event, float x, float y){
-                for (PuzzlePiece p: puzzle.puzzlePiece.values()) {
-                    if (p.isSelected()) {
-                        p.fitReport();
-                    }
-                }
-            }
-        });
-        popup.add(button).expandX().fillX().row();
+//        button = new TextButton("fit report", game.skin);
+//        button.addListener(new ClickListener(){
+//            public void clicked(InputEvent event, float x, float y){
+//                for (PuzzlePiece p: puzzle.puzzlePiece.values()) {
+//                    if (p.isSelected()) {
+//                        p.fitReport();
+//                    }
+//                }
+//            }
+//        });
+//        popup.add(button).expandX().fillX().row();
 
         button = new TextButton("shuffle", game.skin);
         button.addListener(new ClickListener(){
@@ -169,6 +170,35 @@ public class GameScreen extends HudScreen {
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
                 puzzle.manager.restoreInitialState();
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("save", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                String s = puzzle.json.toJson(puzzle.gameData);
+                Gdx.app.error("json", "json string length = "+s.length());
+                s = puzzle.base64Coder.encodeString(s);
+                // write the data to a file...
+                FileHandle fh = Gdx.files.local("savedGame.json");
+                fh.writeString(puzzle.json.prettyPrint(s), false);
+            }
+        });
+        popup.add(button).expandX().fillX().row();
+
+        button = new TextButton("load", game.skin);
+        button.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                // read the data from a file...
+                FileHandle fh = Gdx.files.local("savedGame.json");
+                String s = puzzle.base64Coder.decodeString(fh.readString());
+                Gdx.app.error("json", "json string length = "+s.length());
+                Puzzle.GameData p = puzzle.json.fromJson(Puzzle.GameData.class, s);
+                s = puzzle.json.toJson(p);
+//                Gdx.app.error("json", puzzle.json.prettyPrint(s));
+                Gdx.app.error("json", "number of pieces = " + p.puzzlePieces.size);
+                Gdx.app.error("json", "number of groups = " + p.puzzleGroups.size);
             }
         });
         popup.add(button).expandX().fillX().row();
