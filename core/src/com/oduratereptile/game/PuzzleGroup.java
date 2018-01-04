@@ -4,18 +4,22 @@ package com.oduratereptile.game;
  * Created by Marc on 11/15/2017.
  */
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.ListIterator;
 
 /**
  * Responsible for moving/rotating a group of snapped-in puzzle pieces as a single unit
  */
-public class PuzzleGroup {
+public class PuzzleGroup implements Json.Serializable {
+    public String id;
     ArrayList<PuzzlePiece> piece = new ArrayList<PuzzlePiece>();
     Color highlightColor = new Color();
     boolean isSelected;
@@ -25,17 +29,22 @@ public class PuzzleGroup {
         for (PuzzlePiece p: puzzlePieces) {
             add(p);
         }
+        setId(this);
+
+        notifyCreation(this);
     }
 
     public void add(PuzzlePiece p) {
-        if (p.group == this) return;
-        if (p.group != null) {
+        PuzzleGroup oldGroup = p.group;
+        if (oldGroup == this) return;
+        if (oldGroup != null) {
             Iterator<PuzzlePiece> iter = p.group.piece.iterator();
             while (iter.hasNext()) {
                 PuzzlePiece pp = iter.next();
                 piece.add(pp);
                 pp.group = this;
             }
+            oldGroup.destroy();
         } else {
             piece.add(p);
             p.group = this;
@@ -44,6 +53,8 @@ public class PuzzleGroup {
         isSelected = true;
         updateCenter();
     }
+
+    public String getId() { return id; }
 
     public void updateCenter() {
         Iterator<PuzzlePiece> iter = piece.iterator();
@@ -122,5 +133,80 @@ public class PuzzleGroup {
         while (iter.hasNext()) {
             iter.next().drawHighlight(batch, parentAlpha, false);
         }
+    }
+
+    public void destroy() {
+        notifyDestruction(this);
+    }
+
+    ArrayList<String> pieceIds = new ArrayList<String>();
+
+    private void setPieceIds() {
+        Iterator<PuzzlePiece> iter = piece.listIterator();
+        pieceIds.clear();
+        while (iter.hasNext()) {
+            pieceIds.add(iter.next().getID());
+        }
+    }
+
+    public void restorePieceLinkages(ObjectMap<String, PuzzlePiece> map) {
+        Iterator<String> iter = pieceIds.listIterator();
+        piece.clear();
+        while (iter.hasNext()) {
+            piece.add(map.get(iter.next()));
+        }
+    }
+
+    @Override
+    public void write(Json json) {
+        setPieceIds();
+
+        json.writeField(this, "id");
+        json.writeField(this, "pieceIds");
+        json.writeField(this, "highlightColor");
+        json.writeField(this, "isSelected");
+        json.writeField(this, "center");
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        json.readFields(this, jsonData);
+    }
+
+
+
+
+
+
+
+    public static ArrayList<PuzzleGroupListener> groupListeners = new ArrayList<PuzzleGroupListener>();
+    public static int count = 0;
+
+    public static void setId(PuzzleGroup group) {
+        group.id = "g"+count;
+        count++;
+    }
+
+    public static void addListener(PuzzleGroupListener listener) {
+        groupListeners.add(listener);
+    }
+
+    public static void notifyCreation(PuzzleGroup group) {
+        ListIterator<PuzzleGroupListener> iter = groupListeners.listIterator();
+        while (iter.hasNext()) {
+            iter.next().onCreate(group);
+        }
+    }
+
+    public static void notifyDestruction(PuzzleGroup group) {
+        ListIterator<PuzzleGroupListener> iter = groupListeners.listIterator();
+        while (iter.hasNext()) {
+            iter.next().onDestroy(group);
+        }
+    }
+
+    public interface PuzzleGroupListener {
+        void onCreate(PuzzleGroup group);
+        void onDestroy(PuzzleGroup group);
     }
 }

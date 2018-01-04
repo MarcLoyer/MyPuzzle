@@ -4,22 +4,27 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectMap;
 
 
 /**
  * Created by Marc on 10/7/2017.
  */
 
-class PuzzlePiece extends Sprite {
+class PuzzlePiece extends Sprite implements Json.Serializable {
     public int row;
     public int col;
     public Vector2 pos;
     public Vector2 posRotated;
+    public Vector2 posInitial;
     public BoundingBox tapSquare;
     public Vector2 mid = new Vector2();
 
@@ -34,6 +39,10 @@ class PuzzlePiece extends Sprite {
 
     public PuzzleGroup group = null;
 
+    public PuzzlePiece() {
+        super();
+    }
+
     public PuzzlePiece(int r, int c, PuzzlePacker.PieceData data, TextureRegion img, boolean flipY) {
         super(img);
         if (flipY) flip(false, true);
@@ -41,6 +50,7 @@ class PuzzlePiece extends Sprite {
         col = c;
         this.pos = data.position;
         posRotated = new Vector2(pos);
+        posInitial = new Vector2(pos);
         this.tapSquare = data.tapSquare;
         tapSquare.min.add(pos.x, pos.y, 0);
         tapSquare.max.add(pos.x, pos.y, 0);
@@ -56,6 +66,10 @@ class PuzzlePiece extends Sprite {
 
     public Vector2 getPosition() {
         return new Vector2(getX(), getY());
+    }
+
+    public void resetOrigin() {
+        setOrigin(getRegionWidth()/2, getRegionHeight()/2);
     }
 
     @Override
@@ -436,5 +450,76 @@ class PuzzlePiece extends Sprite {
                 1.0f, 1.0f,
                 getRotation());
         batch.setColor(Color.WHITE);
+    }
+
+    private String [] neighborID = new String[4];
+    private String groupID;
+
+    public String getID() {
+        return row + "," + col;
+    }
+    
+    public void setGroupID() {
+        groupID =  (group==null) ? "": group.getId();
+    }
+
+    public void setNeighborIDs() {
+        for (int i=0; i<4; i++) {
+            if (neighbor[i]==null) {
+                neighborID[i] = "";
+            } else {
+                neighborID[i] = neighbor[i].getID();
+            }
+        }
+    }
+
+    public void restoreNeighborLinkages(ObjectMap<String, PuzzlePiece> map) {
+        for (int i=0; i<4; i++) {
+            neighbor[i] = map.get(neighborID[i]);
+        }
+    }
+
+    public void restoreGroupLinkage(ObjectMap<String, PuzzleGroup> map) {
+        group = map.get(groupID);
+    }
+
+    public void restoreTextureRegion(TextureAtlas atlas) {
+        TextureRegion region = atlas.findRegion(getID());
+        setRegion(region);
+        setColor(1, 1, 1, 1);
+        setSize(region.getRegionWidth(), region.getRegionHeight());
+    }
+
+    @Override
+    public void write(Json json) {
+        setNeighborIDs();
+        setGroupID();
+
+        json.writeField(this, "row");
+        json.writeField(this, "col");
+        json.writeField(this, "pos");
+        json.writeField(this, "posRotated");
+        json.writeField(this, "posInitial");
+        json.writeField(this, "tapSquare");
+        json.writeField(this, "mid");
+        json.writeField(this, "isSelected");
+        json.writeField(this, "highlightColor");
+        json.writeField(this, "neighborMask");
+        json.writeField(this, "neighborID");
+        json.writeField(this, "neighborFit");
+        json.writeField(this, "groupID");
+        // write some fields from the superclass...
+        json.writeField(this, "x");
+        json.writeField(this, "y");
+        json.writeField(this, "width");
+        json.writeField(this, "height");
+        json.writeField(this, "originX");
+        json.writeField(this, "originY");
+        json.writeField(this, "rotation");
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        json.readFields(this, jsonData);
     }
 }

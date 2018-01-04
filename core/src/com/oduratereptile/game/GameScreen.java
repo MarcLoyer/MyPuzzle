@@ -148,7 +148,7 @@ public class GameScreen extends HudScreen {
         button = new TextButton("fit report", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
-                for (PuzzlePiece p: puzzle.puzzlePiece) {
+                for (PuzzlePiece p: puzzle.puzzlePiece.values()) {
                     if (p.isSelected()) {
                         p.fitReport();
                     }

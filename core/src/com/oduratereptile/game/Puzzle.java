@@ -2,7 +2,6 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,9 +13,9 @@ import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
-import com.badlogic.gdx.utils.PerformanceCounters;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -26,15 +25,17 @@ import java.util.Random;
  * Created by Marc on 10/7/2017.
  */
 
-public class Puzzle extends OrthoGestureListener {
+public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGroupListener {
     public GameScreen gameScreen;
     public Pixmap puzzleImg;
     public ShapeRenderer sr;
     public Random rand = new Random();
     public PixmapPacker packer = new PixmapPacker(1024, 1024, Pixmap.Format.RGBA8888, 2, true);
     public TextureAtlas pieceAtlas = new TextureAtlas();
+    public Json json;
 
-    public ArrayList<PuzzlePiece> puzzlePiece = new ArrayList<PuzzlePiece>();
+    public ObjectMap<String, PuzzlePiece> puzzlePiece = new ObjectMap<String, PuzzlePiece>();
+    public ObjectMap<String, PuzzleGroup> puzzleGroup = new ObjectMap<String, PuzzleGroup>();
     public PuzzleGroup largestGroup = null;
     public PuzzlePieceManager manager;
 
@@ -49,6 +50,19 @@ public class Puzzle extends OrthoGestureListener {
         this.gameScreen = gameScreen;
         sr = gameScreen.game.shapeRenderer;
         manager = new PuzzlePieceManager(this);
+        json = new Json();
+        PuzzleGroup.addListener(this);
+    }
+
+    public void onCreate(PuzzleGroup group) {
+        puzzleGroup.put(group.getId(), group);
+        if ((largestGroup==null) || (group.size()>largestGroup.size())) {
+            setLargestGroup(group);
+        }
+    }
+
+    public void onDestroy(PuzzleGroup group) {
+        puzzleGroup.remove(group.getId());
     }
 
     public Texture puzzleImgTex;
@@ -105,32 +119,27 @@ public class Puzzle extends OrthoGestureListener {
         createMeshPieceAtlas();
         createPuzzlePieces();
         setPieceNeighbors();
-        manager.initialize();
-        manager.saveInitialState();
+
+        // experimenting with json...
+        String s = json.toJson(puzzlePiece.get("2,1"));
+        Gdx.app.error("json", json.prettyPrint(s));
     }
 
     public PuzzlePiece getPiece(int row, int col) {
-        for (PuzzlePiece p: puzzlePiece) {
-            if ((p.row==row)&&(p.col==col)) return p;
-        }
-        return null;
+        return puzzlePiece.get(row+","+col);
     }
 
     /**
      * this routine assumes all pieces are in their solved state.
      */
     public void setPieceNeighbors() {
-        PuzzlePiece [][] table = new PuzzlePiece[numRows][numCols];
-        for (PuzzlePiece p: puzzlePiece) {
-            table[p.row][p.col] = p;
-        }
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
-                table[i][j].setNeighbors(
-                        (i==numRows-1)? null: table[i+1][j],
-                        (j==numCols-1)? null: table[i][j+1],
-                        (i==0)? null: table[i-1][j],
-                        (j==0)? null: table[i][j-1]
+                puzzlePiece.get(i+","+j).setNeighbors(
+                        (i==numRows-1)? null: puzzlePiece.get((i+1)+","+j),
+                        (j==numCols-1)? null: puzzlePiece.get(i+","+(j+1)),
+                        (i==0)? null: puzzlePiece.get((i-1)+","+j),
+                        (j==0)? null: puzzlePiece.get(i+","+(j-1))
                 );
             }
         }
@@ -156,7 +165,7 @@ public class Puzzle extends OrthoGestureListener {
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
                 p = new PuzzlePiece(i, j, puzzlePacker.getData(i,j), puzzlePacker.getRegion(i,j), true);
-                puzzlePiece.add(p);
+                puzzlePiece.put(p.getID(), p);
                 generateHighlight(p);
             }
         }
@@ -271,7 +280,7 @@ public class Puzzle extends OrthoGestureListener {
 
         manager.act(delta);
 
-        for (PuzzlePiece p : puzzlePiece) {
+        for (PuzzlePiece p : puzzlePiece.values()) {
             boolean isEven = ((p.col + p.row)%2 == 0);
             if (displayAllPieces) {
                 if(!p.isSelected()) p.draw(batch, 1);
@@ -298,7 +307,7 @@ public class Puzzle extends OrthoGestureListener {
         if (displayTapSquares) {
             sr.begin(ShapeRenderer.ShapeType.Line);
             sr.setColor(0f, 0.7f, 0f, 1f);
-            for (PuzzlePiece p: puzzlePiece) {
+            for (PuzzlePiece p: puzzlePiece.values()) {
                 p.drawTapSquare(sr);
             }
             sr.end();
@@ -354,7 +363,7 @@ public class Puzzle extends OrthoGestureListener {
 
         // check if the tap location selects a new piece
         boolean isHit = false;
-        for (PuzzlePiece p: puzzlePiece) {
+        for (PuzzlePiece p: puzzlePiece.values()) {
             if (p.hit(c)) {
                 if (p.isSelected()) {
                     p.select(false);
@@ -418,10 +427,6 @@ public class Puzzle extends OrthoGestureListener {
             PuzzlePiece p = selectedPiece.get(0);
             if (p.snapsWith>0) {
                 p.snapIn();
-                if ((largestGroup==null) || (p.group.size()>largestGroup.size())) {
-                    setLargestGroup(p.group);
-
-                }
             }
         }
         return super.panStop(x, y, pointer, button);
@@ -433,9 +438,6 @@ public class Puzzle extends OrthoGestureListener {
             PuzzlePiece p = selectedPiece.get(0);
             if (p.snapsWith>0) {
                 p.snapIn();
-                if ((largestGroup==null) || (p.group.size()>largestGroup.size())) {
-                    setLargestGroup(p.group);
-                }
             }
         }
     }

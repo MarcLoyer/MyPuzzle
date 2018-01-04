@@ -28,7 +28,6 @@ import de.tomgrill.gdxfacebook.core.GDXFacebookSystem;
  */
 
 public class MainMenuScreen extends Stage implements Screen {
-    public OrthographicCamera camera;
     final public MyPuzzle game;
     public WarpController warpController;
     public GDXFacebook facebook;
@@ -41,9 +40,6 @@ public class MainMenuScreen extends Stage implements Screen {
         Gdx.input.setInputProcessor(this);
 
         this.game = game;
-
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
 
         warpController = new WarpController();
 
@@ -113,13 +109,7 @@ public class MainMenuScreen extends Stage implements Screen {
         Gdx.gl.glClearColor(0, 0.2f, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        camera.update();
-        game.batch.setProjectionMatrix(camera.combined);
-
-        game.batch.begin();
         draw();
-        game.batch.end();
-
     }
 
     @Override
@@ -182,6 +172,6 @@ public class MainMenuScreen extends Stage implements Screen {
 
     @Override
     public void dispose() {
-
+        super.dispose();
     }
 }
