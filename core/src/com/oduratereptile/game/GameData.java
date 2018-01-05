@@ -3,6 +3,7 @@ package com.oduratereptile.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -21,6 +22,8 @@ public class GameData {
     public ObjectMap<String, PuzzleGroup> puzzleGroups;
     public int groupCount = 0;
     public String textureAtlasFilename = null;
+
+    public transient TextureAtlas atlas;
 
     public GameData() {
         puzzlePieces = new ObjectMap<String, PuzzlePiece>();
@@ -52,6 +55,13 @@ public class GameData {
         }
     }
 
+    public TextureAtlas getAtlas() {
+        if (atlas != null) return atlas;
+        if (textureAtlasFilename == null) return null;
+        atlas = new TextureAtlas(Gdx.files.local(textureAtlasFilename));
+        return atlas;
+    }
+
     public static GameData restoreGameData(String basename) {
         Json json = new Json();
 
@@ -59,7 +69,18 @@ public class GameData {
         String s = Base64Coder.decodeString(fh.readString());
         GameData gameData = json.fromJson(GameData.class, s);
 
-        // TODO: fix linkages
+        TextureAtlas atlas = gameData.getAtlas();
+
+        // fix linkages and textureRegions
+        for (PuzzlePiece p: gameData.puzzlePieces.values()) {
+            p.restoreTextureRegion(atlas);
+            p.restoreNeighborLinkages(gameData.puzzlePieces);
+            p.restoreGroupLinkage(gameData.puzzleGroups);
+        }
+
+        for (PuzzleGroup g: gameData.puzzleGroups.values()) {
+            g.restorePieceLinkages(gameData.puzzlePieces);
+        }
 
         return gameData;
     }
