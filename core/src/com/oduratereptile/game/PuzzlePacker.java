@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.PixmapPacker;
+import com.badlogic.gdx.graphics.g2d.PixmapPackerIO;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -24,6 +25,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.ShortArray;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
@@ -96,12 +98,12 @@ public class PuzzlePacker {
         return atlas;
     }
 
-    public TextureRegion getRegion(int row, int col) {
+    public TextureRegion findRegion(int row, int col) {
         String name = row + "," + col;
-        return getRegion(name);
+        return findRegion(name);
     }
 
-    public TextureRegion getRegion(String name) {
+    public TextureRegion findRegion(String name) {
         if (atlas==null) return null;
         return atlas.findRegion(name);
     }
@@ -116,12 +118,16 @@ public class PuzzlePacker {
     }
 
     public void save(FileHandle fh) {
-        // TODO: implement!
+        PixmapPackerIO packerIO = new PixmapPackerIO();
+        try {
+            packerIO.save(fh, packer);
+        } catch (IOException e) {
+            Gdx.app.error("Packer", "Failed to write TextureAtlas");
+            e.printStackTrace();
+        }
     }
 
-    public void load(FileHandle fh) {
-        // TODO: implement!
-    }
+
 
     public class MeshPiece {
         public int row;

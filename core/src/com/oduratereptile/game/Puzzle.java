@@ -5,9 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.PixmapPacker;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.MathUtils;
@@ -31,8 +29,6 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
     public Pixmap puzzleImg;
     public ShapeRenderer sr;
     public Random rand = new Random();
-    public PixmapPacker packer = new PixmapPacker(1024, 1024, Pixmap.Format.RGBA8888, 2, true);
-    public TextureAtlas pieceAtlas = new TextureAtlas();
     public Json json;
     public Base64Coder base64Coder;
 
@@ -161,6 +157,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
             }
         }
         puzzlePacker.createAtlas();
+        puzzlePacker.save(Gdx.files.local(gameData.getBasename() + "/" + gameData.getBasename() + ".atlas"));
     }
 
     public void createPuzzlePieces() {
@@ -168,7 +165,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
 
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
-                p = new PuzzlePiece(i, j, puzzlePacker.getData(i,j), puzzlePacker.getRegion(i,j), true);
+                p = new PuzzlePiece(i, j, puzzlePacker.getData(i,j), puzzlePacker.findRegion(i,j), true);
                 puzzlePiece.put(p.getID(), p);
                 generateHighlight(p);
             }
@@ -479,8 +476,6 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
     public void dispose() {
         puzzleImg.dispose();
         puzzleImgTex.dispose();
-        packer.dispose();
-        pieceAtlas.dispose();
     }
 
     static public class GameData {
@@ -491,6 +486,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         public ObjectMap<String, PuzzleGroup> puzzleGroups;
         public String largestGroupID = "";
         public int groupCount = 0;
+        public String textureAtlasFilename = null;
 
         public GameData() {
             puzzlePieces = new ObjectMap<String, PuzzlePiece>();
@@ -500,6 +496,10 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         public GameData(ObjectMap<String, PuzzlePiece> p, ObjectMap<String, PuzzleGroup> g) {
             puzzlePieces = p;
             puzzleGroups = g;
+        }
+
+        public String getBasename() {
+            return puzzleName + "_" + rows + "_" + cols;
         }
     }
 }

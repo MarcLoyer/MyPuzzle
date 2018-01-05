@@ -2,30 +2,20 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g2d.PixmapPacker;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectSet;
@@ -34,9 +24,7 @@ import com.badlogic.gdx.utils.ShortArray;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 import static com.oduratereptile.game.HudScreen.Corner.LR;
-import static com.oduratereptile.game.HudScreen.Corner.UL;
 
 /**
  * This screen was used to debug the puzzle shape texture generation when used with gallery images. (Turns
@@ -100,10 +88,10 @@ public class Debug4Screen extends HudScreen {
         meshPiece = puzzle.meshPieces[row][col];
         meshPieceTexture = meshPiece.getTexture();
         meshPiecePixmap = new Texture(meshPiece.getPixmap());
-        puzzleRegion = puzzle.puzzlePacker.getRegion(row,col);
+        puzzleRegion = puzzle.puzzlePacker.findRegion(row,col);
         puzzlePiece = new PuzzlePiece(row, col,
                 puzzle.puzzlePacker.getData(row,col),
-                puzzle.puzzlePacker.getRegion(row,col), true);
+                puzzle.puzzlePacker.findRegion(row,col), true);
 
         w = (1 + meshPiece.getWidth()/20)*20;
         h = (1 + meshPiece.getHeight()/20)*20;

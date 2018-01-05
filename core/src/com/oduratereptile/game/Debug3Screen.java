@@ -81,7 +81,7 @@ public class Debug3Screen extends HudScreen {
 
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
-                Sprite s = new Sprite(packer.getRegion(i,j));
+                Sprite s = new Sprite(packer.findRegion(i,j));
                 s.flip(false, true);
                 sprite.put(i+","+j, s);
                 position.put(i+","+j, packer.getData(i,j).position);

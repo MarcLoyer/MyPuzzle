@@ -181,8 +181,11 @@ public class GameScreen extends HudScreen {
                 Gdx.app.error("json", "json string length = "+s.length());
                 s = puzzle.base64Coder.encodeString(s);
                 // write the data to a file...
-                FileHandle fh = Gdx.files.local("savedGame.json");
+                FileHandle fh = Gdx.files.local(puzzle.gameData.getBasename() + "/savedGame.json");
                 fh.writeString(puzzle.json.prettyPrint(s), false);
+                for (FileHandle f: fh.parent().list()) {
+                    Gdx.app.error("list", f.name());
+                }
             }
         });
         popup.add(button).expandX().fillX().row();
@@ -191,7 +194,7 @@ public class GameScreen extends HudScreen {
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
                 // read the data from a file...
-                FileHandle fh = Gdx.files.local("savedGame.json");
+                FileHandle fh = Gdx.files.local(puzzle.gameData.getBasename() + "/savedGame.json");
                 String s = puzzle.base64Coder.decodeString(fh.readString());
                 Gdx.app.error("json", "json string length = "+s.length());
                 Puzzle.GameData p = puzzle.json.fromJson(Puzzle.GameData.class, s);
