@@ -40,19 +40,19 @@ public class PuzzlePacker {
     public SpriteBatch batch;
     public ShaderProgram shader;
 
-    public Puzzle puzzle;
+    public PuzzleMaker puzzleMaker;
     public int pageSize;
     public PixmapPacker packer;
     public TextureAtlas atlas=null;
 
     public ObjectMap<String, PieceData> pieceData = new ObjectMap<String, PieceData>();
 
-    public PuzzlePacker(Puzzle puzzle, int pageSize) {
-        this.puzzle = puzzle;
+    public PuzzlePacker(PuzzleMaker puzzleMaker, int pageSize) {
+        this.puzzleMaker = puzzleMaker;
         this.pageSize = pageSize;
 
         camera = new OrthographicCamera();
-        batch = puzzle.gameScreen.game.batch;
+        batch = puzzleMaker.gameScreen.game.batch;
         shader = new ShaderProgram(
                 Gdx.files.internal("shaders/mesh.vert"),
                 Gdx.files.internal("shaders/mesh.frag")
@@ -174,43 +174,43 @@ public class PuzzlePacker {
          */
         private ArrayList<Vector2> getShape(int row, int col) {
             ArrayList<Vector2> splineShape = new ArrayList<Vector2>();
-            Vector2 upperRight = new Vector2(puzzle.puzzleImg.getWidth(), puzzle.puzzleImg.getHeight());
+            Vector2 upperRight = new Vector2(puzzleMaker.puzzleImg.getWidth(), puzzleMaker.puzzleImg.getHeight());
 
             int [] corner = new int[3];
 
             // top
-            if (row == (puzzle.numRows-1)) {
+            if (row == (puzzleMaker.numRows-1)) {
                 if (col == 0) {
                     splineShape.add(new Vector2(0, upperRight.y));
                 } else {
-                    splineShape.add(puzzle.colLine[col - 1][puzzle.numRows * 50].cpy());
+                    splineShape.add(puzzleMaker.colLine[col - 1][puzzleMaker.numRows * 50].cpy());
                 }
             } else {
-                for (int i=col*50; i<(col+1)*50; i++) { splineShape.add(puzzle.rowLine[row][i].cpy()); }
+                for (int i=col*50; i<(col+1)*50; i++) { splineShape.add(puzzleMaker.rowLine[row][i].cpy()); }
             }
             corner[0] = splineShape.size();
 
             // right
-            if (col == (puzzle.numCols-1)) {
-                if (row == (puzzle.numRows-1)) {
+            if (col == (puzzleMaker.numCols-1)) {
+                if (row == (puzzleMaker.numRows-1)) {
                     splineShape.add(new Vector2(upperRight.x, upperRight.y));
                 } else {
-                    splineShape.add(puzzle.rowLine[row][puzzle.numCols * 50].cpy());
+                    splineShape.add(puzzleMaker.rowLine[row][puzzleMaker.numCols * 50].cpy());
                 }
             } else {
-                for (int i=(row+1)*50; i>row*50; i--) { splineShape.add(puzzle.colLine[col][i].cpy()); }
+                for (int i=(row+1)*50; i>row*50; i--) { splineShape.add(puzzleMaker.colLine[col][i].cpy()); }
             }
             corner[1] = splineShape.size();
 
             // bottom
             if (row == 0) {
-                if (col == (puzzle.numCols-1)) {
+                if (col == (puzzleMaker.numCols-1)) {
                     splineShape.add(new Vector2(upperRight.x, 0));
                 } else {
-                    splineShape.add(puzzle.colLine[col][0].cpy());
+                    splineShape.add(puzzleMaker.colLine[col][0].cpy());
                 }
             } else {
-                for (int i=(col+1)*50; i>col*50; i--) { splineShape.add(puzzle.rowLine[row-1][i].cpy()); }
+                for (int i=(col+1)*50; i>col*50; i--) { splineShape.add(puzzleMaker.rowLine[row-1][i].cpy()); }
             }
             corner[2] = splineShape.size();
 
@@ -219,10 +219,10 @@ public class PuzzlePacker {
                 if (row == 0) {
                     splineShape.add(new Vector2(0, 0));
                 } else {
-                    splineShape.add(puzzle.rowLine[row - 1][0].cpy());
+                    splineShape.add(puzzleMaker.rowLine[row - 1][0].cpy());
                 }
             } else {
-                for (int i=row*50; i<(row+1)*50; i++) { splineShape.add(puzzle.colLine[col-1][i].cpy()); }
+                for (int i=row*50; i<(row+1)*50; i++) { splineShape.add(puzzleMaker.colLine[col-1][i].cpy()); }
             }
 
             splineShape.add(splineShape.get(0));
@@ -323,8 +323,8 @@ public class PuzzlePacker {
                 vertices[i*vSize]   = verts.get(i*2)   - min.x;
                 vertices[i*vSize+1] = verts.get(i*2+1) - min.y;
                 vertices[i*vSize+2] = 0f;
-                vertices[i*vSize+3] = verts.get(i*2) / puzzle.puzzleImg.getWidth();
-                vertices[i*vSize+4] = 1f - (verts.get(i*2+1) / puzzle.puzzleImg.getHeight());
+                vertices[i*vSize+3] = verts.get(i*2) / puzzleMaker.puzzleImg.getWidth();
+                vertices[i*vSize+4] = 1f - (verts.get(i*2+1) / puzzleMaker.puzzleImg.getHeight());
             }
             short [] indices = new short[numInds];
             for (int i=0; i<numInds; i++) {
@@ -366,7 +366,7 @@ public class PuzzlePacker {
             Gdx.gl20.glDisable(GL20.GL_BLEND);
             Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-            puzzle.puzzleImgTex.bind();
+            puzzleMaker.puzzleImgTex.bind();
             shader.begin();
             shader.setUniformMatrix("u_projTrans", batch.getProjectionMatrix());
             shader.setUniformi("u_texture", 0);

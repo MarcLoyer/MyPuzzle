@@ -5,8 +5,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -14,8 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-
-import java.util.Iterator;
+import com.badlogic.gdx.utils.Base64Coder;
 
 import static com.oduratereptile.game.HudScreen.Corner.*;
 
@@ -59,51 +56,6 @@ public class GameScreen extends HudScreen {
         popup.setHeight(200);
 
         // option menu
-//        button = new TextButton("debug flood fill", game.skin);
-//        button.addListener(new ClickListener(){
-//            public void clicked(InputEvent event, float x, float y){
-//                game.setScreen(new DebugScreen(game, puzzle.puzzleImg, puzzle.splineImg, puzzle.debugCoords[1]));
-////                dispose();
-//            }
-//        });
-//        popup.add(button).expandX().fillX().row();
-
-//        button = new TextButton("debug mesh #2", game.skin);
-//        button.addListener(new ClickListener(){
-//            public void clicked(InputEvent event, float x, float y){
-//                if (puzzle.selectedPiece.size()==1) {
-//                    int row = puzzle.selectedPiece.get(0).row;
-//                    int col = puzzle.selectedPiece.get(0).col;
-//                    game.setScreen(new Debug4Screen(game, puzzle, row, col));
-////                    dispose();
-//                }
-//            }
-//        });
-//        popup.add(button).expandX().fillX().row();
-
-//        button = new TextButton("debug packer", game.skin);
-//        button.addListener(new ClickListener(){
-//            public void clicked(InputEvent event, float x, float y){
-//                game.setScreen(new Debug3Screen(game, puzzle));
-////                dispose();
-//            }
-//        });
-//        popup.add(button).expandX().fillX().row();
-
-//        button = new TextButton("debug mesh", game.skin);
-//        button.addListener(new ClickListener(){
-//            public void clicked(InputEvent event, float x, float y){
-//                int row = 0;
-//                int col = 0;
-//                if (puzzle.selectedPiece.size()==1) {
-//                    row = puzzle.selectedPiece.get(0).row;
-//                    col = puzzle.selectedPiece.get(0).col;
-//                }
-//                game.setScreen(new Debug2Screen(game, puzzle, row, col));
-////                dispose();
-//            }
-//        });
-//        popup.add(button).expandX().fillX().row();
 
 //        button = new TextButton("display image", game.skin);
 //        button.addListener(new ClickListener(){
@@ -112,14 +64,6 @@ public class GameScreen extends HudScreen {
 //            }
 //        });
 //        popup.add(button).expandX().fillX().row();
-
-        button = new TextButton("display splines", game.skin);
-        button.addListener(new ClickListener(){
-            public void clicked(InputEvent event, float x, float y){
-                puzzle.displaySplines = !puzzle.displaySplines;
-            }
-        });
-        popup.add(button).expandX().fillX().row();
 
 //        button = new TextButton("display tap squares", game.skin);
 //        button.addListener(new ClickListener(){
@@ -179,7 +123,7 @@ public class GameScreen extends HudScreen {
             public void clicked(InputEvent event, float x, float y){
                 String s = puzzle.json.toJson(puzzle.gameData);
                 Gdx.app.error("json", "json string length = "+s.length());
-                s = puzzle.base64Coder.encodeString(s);
+                s = Base64Coder.encodeString(s);
                 // write the data to a file...
                 FileHandle fh = Gdx.files.local(puzzle.gameData.getBasename() + "/savedGame.json");
                 fh.writeString(puzzle.json.prettyPrint(s), false);
@@ -195,9 +139,9 @@ public class GameScreen extends HudScreen {
             public void clicked(InputEvent event, float x, float y){
                 // read the data from a file...
                 FileHandle fh = Gdx.files.local(puzzle.gameData.getBasename() + "/savedGame.json");
-                String s = puzzle.base64Coder.decodeString(fh.readString());
+                String s = Base64Coder.decodeString(fh.readString());
                 Gdx.app.error("json", "json string length = "+s.length());
-                Puzzle.GameData p = puzzle.json.fromJson(Puzzle.GameData.class, s);
+                GameData p = puzzle.json.fromJson(GameData.class, s);
                 s = puzzle.json.toJson(p);
 //                Gdx.app.error("json", puzzle.json.prettyPrint(s));
                 Gdx.app.error("json", "number of pieces = " + p.puzzlePieces.size);
@@ -222,31 +166,30 @@ public class GameScreen extends HudScreen {
         });
         stage.addActor(popup);
 
-        puzzle = new Puzzle(this);
+        GameData gameData = makePuzzle(image);
+        puzzle = new Puzzle(this, gameData);
         addInputController(new GestureDetector(puzzle));
-        getPuzzleImage(image);
     }
 
     public float worldWidth = 1000;
 
-    public void getPuzzleImage(Pixmap image) {
-        // TODO: the big image doesn't display properly on my phone!
-        String picture1 = "monumentValley.JPG"; // big: 5000x3000
-        String picture2 = "klimt.JPG"; // small: 500x300
-        String picture3 = "oregonpath.JPG"; // tiny: 150x100
-
-        if (image != null) {
-            puzzle.setPicture(image);
-        } else {
-            puzzle.setPicture(Gdx.files.internal(picture2));
+    public GameData makePuzzle(Pixmap image) {
+        if (image == null) {
+//            image = new Pixmap(Gdx.files.internal("monumentValley.JPG")); // big: 5000x3000
+            image = new Pixmap(Gdx.files.internal("klimt.JPG")); // small: 500x300
+//            image = new Pixmap(Gdx.files.internal("oregonpath.JPG")); // tiny: 150x100
         }
 
-//        puzzle.createPieces(3, 3);
-//        puzzle.createPieces(5, 5);
-        puzzle.createPieces(10, 10);
+        PuzzleMaker puzzleMaker = new PuzzleMaker(this);
+        puzzleMaker.setPicture(image);
+//        puzzleMaker.createPieces(3, 3);
+//        puzzleMaker.createPieces(5, 5);
+        puzzleMaker.createPieces(10, 10);
 
-        worldWidth = puzzle.puzzleImg.getWidth();
+        worldWidth = image.getWidth();
         updateCameraViewport();
+
+        return puzzleMaker.gameData;
     }
 
     @Override

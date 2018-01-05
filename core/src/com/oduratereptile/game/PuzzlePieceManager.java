@@ -15,11 +15,10 @@ import java.util.Random;
 
 public class PuzzlePieceManager {
     public Puzzle puzzle;
-    public Random rand;
+    public Random rand = new Random();
 
     public PuzzlePieceManager(Puzzle puzzle) {
         this.puzzle = puzzle;
-        this.rand = puzzle.rand;
     }
 
     public ObjectMap<String, Vector2> locs = new ObjectMap<String, Vector2>();
@@ -33,25 +32,24 @@ public class PuzzlePieceManager {
         // remove the groups, move the pieces back to their
         // original locations, and reset the neighbors
         resetGroups();
-        for (PuzzlePiece p: puzzle.puzzlePiece.values()) {
+        for (PuzzlePiece p: puzzle.gameData.puzzlePieces.values()) {
             p.setRotation(0, false);
             p.moveTo(p.posInitial.x, p.posInitial.y, false);
         }
-        puzzle.setPieceNeighbors();
+        puzzle.gameData.setPieceNeighbors();
     }
 
     public void resetGroups() {
-        for (PuzzlePiece p: puzzle.puzzlePiece.values()) {
+        for (PuzzlePiece p: puzzle.gameData.puzzlePieces.values()) {
             // TODO: make a pool for the groups?
             p.group = null;
             p.resetOrigin();
             p.select(false);
         }
-        Iterator<PuzzleGroup> iter = puzzle.puzzleGroup.values().iterator();
+        Iterator<PuzzleGroup> iter = puzzle.gameData.puzzleGroups.values().iterator();
         while (iter.hasNext()) {
             iter.next().destroy();
         }
-        puzzle.largestGroup = null;
     }
 
     /**
@@ -62,24 +60,24 @@ public class PuzzlePieceManager {
 
         // 1) create a grid of locations to send the pieces to
         Vector2 tmp = new Vector2(
-                3.0f * (float)puzzle.puzzleImg.getWidth() / (float)puzzle.numCols,
-                3.0f * (float)puzzle.puzzleImg.getHeight() / (float)puzzle.numRows
+                3.0f * (float)puzzle.gameData.puzzleImageWidth / (float)puzzle.gameData.cols,
+                3.0f * (float)puzzle.gameData.puzzleImageHeight / (float)puzzle.gameData.rows
         );
 
-        for (int i=0; i<puzzle.numCols; i++) {
-            for (int j=0; j<puzzle.numRows; j++) {
+        for (int i=0; i<puzzle.gameData.cols; i++) {
+            for (int j=0; j<puzzle.gameData.rows; j++) {
                 locs.put(i+","+j, new Vector2(tmp.x * (float)i, tmp.y * (float)j));
             }
         }
 
         // 2) randomly assign pieces to locations
-        for (int i=0; i<puzzle.numRows; i++) {
-            for (int j=0; j<puzzle.numCols; j++) {
-                int index0 = i + j*puzzle.numRows;
+        for (int i=0; i<puzzle.gameData.rows; i++) {
+            for (int j=0; j<puzzle.gameData.cols; j++) {
+                int index0 = i + j*puzzle.gameData.rows;
                 String key0 = i+","+j;
 
                 int index1 = rand.nextInt(index0+1);
-                String key1 = (index1%puzzle.numRows) + "," + (index1/puzzle.numRows);
+                String key1 = (index1%puzzle.gameData.rows) + "," + (index1/puzzle.gameData.rows);
 
                 tmp = locs.get(key0);
                 locs.put(key0, locs.get(key1));
@@ -88,8 +86,8 @@ public class PuzzlePieceManager {
         }
 
         // 3) randomly assign a rotation to each piece
-        for (int i=0; i<puzzle.numCols; i++) {
-            for (int j=0; j<puzzle.numRows; j++) {
+        for (int i=0; i<puzzle.gameData.cols; i++) {
+            for (int j=0; j<puzzle.gameData.rows; j++) {
                 degs.put(i+","+j, (360.0f * 4.0f) + 360.0f*rand.nextFloat());
             }
         }
@@ -123,8 +121,8 @@ public class PuzzlePieceManager {
             } else {
                 del = interp.apply(animationDelta / animationDuration);
             }
-            for (String k: puzzle.puzzlePiece.keys()) {
-                tempPP = puzzle.puzzlePiece.get(k);
+            for (String k: puzzle.gameData.puzzlePieces.keys()) {
+                tempPP = puzzle.gameData.puzzlePieces.get(k);
                 tempV.set(locs.get(k))
                         .sub(tempPP.posInitial)
                         .scl(del)
