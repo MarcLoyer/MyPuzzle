@@ -117,6 +117,29 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 		font: large
 		fontColor: black
 	}
+	small: {
+		font: small
+		fontColor: white
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
+	default-horizontal: {
+		background: default-scroll
+		knob: default-round-large
+	}
+	default-vertical: {
+		background: default-scroll
+		knob: default-round-large
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
+	default: {
+		background: default-rect
+		hScroll: default-scroll
+		hScrollKnob: default-round-large
+		vScroll: default-scroll
+		vScrollKnob: default-round-large
+	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: {
@@ -125,6 +148,26 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 		downFontColor: grey
 		up: btnredtext
 		down: btnpressedredtext
+	}
+	checked: {
+		font: medium
+		fontColor: white
+		downFontColor: grey
+		checkedFontColor: grey
+		up: btnredtext
+		down: btnpressedredtext
+		checked: btnpressedredtext
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+	default: {
+		font: medium
+		fontColor: white
+		background: textfield
+		cursor: cursor
+		selection: selection
+		messageFont: medium
+		messageFontColor: white
 	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {

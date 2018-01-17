@@ -2,6 +2,8 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Base64Coder;
@@ -24,6 +26,7 @@ public class GameData {
     public String textureAtlasFilename = null;
 
     public transient TextureAtlas atlas;
+    public transient Pixmap thumbnail;
 
     public GameData() {
         puzzlePieces = new ObjectMap<String, PuzzlePiece>();
@@ -37,6 +40,22 @@ public class GameData {
 
     public String getBasename() {
         return puzzleName + "_" + rows + "_" + cols;
+    }
+
+    public final float THUMBNAIL_WIDTH = 300.0f;
+
+    public void createThumbnail(Pixmap original) {
+        float scale = THUMBNAIL_WIDTH / (float)original.getWidth();
+        thumbnail = new Pixmap(
+                (int)(original.getWidth() * scale),
+                (int)(original.getHeight() * scale),
+                original.getFormat());
+        thumbnail.setFilter(Pixmap.Filter.BiLinear);
+        thumbnail.drawPixmap(original,
+                0, 0,
+                original.getWidth(), original.getHeight(),
+                0, 0,
+                thumbnail.getWidth(), thumbnail.getHeight());
     }
 
     /**
@@ -62,12 +81,25 @@ public class GameData {
         return atlas;
     }
 
-    public static GameData restoreGameData(String basename) {
+    public void saveGameData() {
         Json json = new Json();
 
-        FileHandle fh = Gdx.files.local(basename + "/savedGame.json");
-        String s = Base64Coder.decodeString(fh.readString());
-        GameData gameData = json.fromJson(GameData.class, s);
+        // write the data to a file...
+        String s = json.toJson(this);
+        s = Base64Coder.encodeString(s);
+        FileHandle fh = Gdx.files.local(getBasename() + "/savedGame.json");
+//        fh.writeString(json.prettyPrint(s), false);
+        fh.writeString(s, false);
+
+        // write the thumbnail image
+        fh = Gdx.files.local(getBasename() + "/thumbnail.png");
+        PixmapIO.writePNG(fh, thumbnail);
+
+        // note: PuzzleMaker is responsible for writing the atlas to a file
+    }
+
+    public static GameData restoreGameData(String basename) {
+        GameData gameData = restoreGameHeader(basename);
 
         TextureAtlas atlas = gameData.getAtlas();
 
@@ -83,5 +115,25 @@ public class GameData {
         }
 
         return gameData;
+    }
+
+    public static GameData restoreGameHeader(String basename) {
+        Json json = new Json();
+
+        FileHandle fh = Gdx.files.local(basename + "/savedGame.json");
+        String s = Base64Coder.decodeString(fh.readString());
+        GameData gameData = json.fromJson(GameData.class, s);
+
+        fh = Gdx.files.local(basename + "/thumbnail.png");
+        if (fh.exists()) {
+            gameData.thumbnail = new Pixmap(fh);
+        }
+
+        return gameData;
+    }
+
+    // TODO: when should this get called?
+    public void dispose() {
+        if (atlas != null) atlas.dispose();
     }
 }

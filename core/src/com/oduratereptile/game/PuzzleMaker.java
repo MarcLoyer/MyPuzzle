@@ -48,6 +48,7 @@ public class PuzzleMaker {
 
         gameData.puzzleImageWidth = pixmap.getWidth();
         gameData.puzzleImageHeight = pixmap.getHeight();
+        gameData.createThumbnail(pixmap);
     }
 
     public int controlsPerPiece = 6;

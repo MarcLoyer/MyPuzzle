@@ -59,7 +59,7 @@ public class MainMenuScreen extends Stage implements Screen {
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
-                game.setScreen(new GameScreen(game, image));
+                game.setScreen(new GameScreen(game, image, "undetermined", 10, 10));
                 dispose();
             }
         });
@@ -97,6 +97,19 @@ public class MainMenuScreen extends Stage implements Screen {
         textbutton = new FacebookLoginButton(facebook, game.skin);
         textbutton.setWidth(150f);
         table.add(textbutton).width(buttonWidth);
+
+        table.row();
+        textbutton = new TextButton("Load screen", game.skin);
+        textbutton.setWidth(150f);
+        textbutton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+                game.setScreen(new LoadScreen(game));
+                dispose();
+            }
+        });
+        table.add(textbutton).width(buttonWidth);
+
     }
 
     @Override

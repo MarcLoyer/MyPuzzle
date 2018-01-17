@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -29,10 +30,10 @@ public class GameScreen extends HudScreen {
     public Table popup;
 
     public GameScreen(final MyPuzzle game) {
-        this(game, null);
+        this(game, null, "undetermined", 10, 10);
     }
 
-    public GameScreen(final MyPuzzle game, Pixmap image) {
+    public GameScreen(final MyPuzzle game, Pixmap image, String name, int rows, int cols) {
         super(game);
         camera = new OrthographicCamera();
 
@@ -121,14 +122,9 @@ public class GameScreen extends HudScreen {
         button = new TextButton("save", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
-                String s = puzzle.json.toJson(puzzle.gameData);
-                Gdx.app.error("json", "json string length = "+s.length());
-                s = Base64Coder.encodeString(s);
-                // write the data to a file...
-                FileHandle fh = Gdx.files.local(puzzle.gameData.getBasename() + "/savedGame.json");
-                fh.writeString(puzzle.json.prettyPrint(s), false);
-                for (FileHandle f: fh.parent().list()) {
-                    Gdx.app.error("list", f.name());
+                puzzle.gameData.saveGameData();
+                for (FileHandle fh: Gdx.files.local(puzzle.gameData.getBasename()).list()) {
+                    Gdx.app.error("save", fh.name());
                 }
             }
         });
@@ -137,15 +133,9 @@ public class GameScreen extends HudScreen {
         button = new TextButton("load", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
-                // read the data from a file...
-                FileHandle fh = Gdx.files.local(puzzle.gameData.getBasename() + "/savedGame.json");
-                String s = Base64Coder.decodeString(fh.readString());
-                Gdx.app.error("json", "json string length = "+s.length());
-                GameData p = puzzle.json.fromJson(GameData.class, s);
-                s = puzzle.json.toJson(p);
-//                Gdx.app.error("json", puzzle.json.prettyPrint(s));
-                Gdx.app.error("json", "number of pieces = " + p.puzzlePieces.size);
-                Gdx.app.error("json", "number of groups = " + p.puzzleGroups.size);
+                GameData gameData = GameData.restoreGameData(puzzle.gameData.getBasename());
+                Gdx.app.error("load", "number of pieces = " + gameData.puzzlePieces.size);
+                Gdx.app.error("load", "number of groups = " + gameData.puzzleGroups.size);
             }
         });
         popup.add(button).expandX().fillX().row();
@@ -166,28 +156,35 @@ public class GameScreen extends HudScreen {
         });
         stage.addActor(popup);
 
-        GameData gameData = makePuzzle(image);
+        GameData gameData = makePuzzle(image, name, rows, cols);
         puzzle = new Puzzle(this, gameData);
         addInputController(new GestureDetector(puzzle));
     }
 
     public float worldWidth = 1000;
 
-    public GameData makePuzzle(Pixmap image) {
+    public GameData makePuzzle(Pixmap image, String name, int rows, int cols) {
         if (image == null) {
-//            image = new Pixmap(Gdx.files.internal("monumentValley.JPG")); // big: 5000x3000
-            image = new Pixmap(Gdx.files.internal("klimt.JPG")); // small: 500x300
-//            image = new Pixmap(Gdx.files.internal("oregonpath.JPG")); // tiny: 150x100
+//            name = "monumentValley.JPG"; // big: 5000x3000
+            name = "klimt.JPG"; // small: 500x300
+//            name = "oregonpath.JPG"; // tiny: 150x100
+
+//            rows = cols = 3;
+//            rows = cols = 5;
+            rows = cols = 10;
+
+            image = new Pixmap(Gdx.files.internal(name)); // small: 500x300
         }
 
         PuzzleMaker puzzleMaker = new PuzzleMaker(this);
         puzzleMaker.setPicture(image);
-//        puzzleMaker.createPieces(3, 3);
-//        puzzleMaker.createPieces(5, 5);
-        puzzleMaker.createPieces(10, 10);
+        puzzleMaker.createPieces(rows, cols);
+        puzzleMaker.gameData.puzzleName = name;
 
         worldWidth = image.getWidth();
         updateCameraViewport();
+
+        puzzleMaker.gameData.saveGameData();
 
         return puzzleMaker.gameData;
     }
