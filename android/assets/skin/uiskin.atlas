@@ -20,14 +20,14 @@ btnPressedRedDefault
   index: -1
 btnPressedRedMenu
   rotate: false
-  xy: 1, 439
+  xy: 1, 407
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnPressedRedMute
   rotate: false
-  xy: 103, 491
+  xy: 103, 459
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
@@ -46,6 +46,13 @@ btnPressedRedStop
   orig: 50, 50
   offset: 0, 0
   index: -1
+btnPressedRedTrashcan
+  rotate: false
+  xy: 53, 355
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
 btnPressedRedUnmute
   rotate: false
   xy: 669, 721
@@ -55,21 +62,21 @@ btnPressedRedUnmute
   index: -1
 btnRedArrowLeft
   rotate: false
-  xy: 1, 387
+  xy: 1, 355
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedDefault
   rotate: false
-  xy: 53, 439
+  xy: 53, 407
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 btnRedMenu
   rotate: false
-  xy: 155, 491
+  xy: 155, 459
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
@@ -95,6 +102,13 @@ btnRedStop
   orig: 50, 50
   offset: 0, 0
   index: -1
+btnRedTrashcan
+  rotate: false
+  xy: 1, 303
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
 btnRedUnmute
   rotate: false
   xy: 721, 721
@@ -113,7 +127,7 @@ btnpressedredtext
   index: -1
 btnredtext
   rotate: false
-  xy: 1, 491
+  xy: 1, 459
   size: 100, 50
   split: 12, 20, 12, 20
   pad: 0, 0, 0, 0
@@ -136,7 +150,7 @@ medium
   index: -1
 cursor
   rotate: false
-  xy: 515, 560
+  xy: 619, 664
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -144,7 +158,7 @@ cursor
   index: -1
 default-rect
   rotate: false
-  xy: 207, 538
+  xy: 567, 612
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -152,7 +166,7 @@ default-rect
   index: -1
 default-round-large
   rotate: false
-  xy: 1, 365
+  xy: 105, 437
   size: 20, 20
   split: 5, 5, 5, 4
   orig: 20, 20
@@ -160,7 +174,7 @@ default-round-large
   index: -1
 default-scroll
   rotate: false
-  xy: 53, 417
+  xy: 207, 489
   size: 20, 20
   split: 2, 2, 2, 2
   orig: 20, 20
@@ -168,14 +182,14 @@ default-scroll
   index: -1
 selection
   rotate: false
-  xy: 567, 614
+  xy: 671, 718
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 textfield
   rotate: false
-  xy: 105, 475
+  xy: 515, 549
   size: 14, 14
   split: 3, 3, 3, 3
   orig: 14, 14
@@ -183,8 +197,8 @@ textfield
   index: -1
 small
   rotate: false
-  xy: 1, 543
-  size: 512, 32
-  orig: 512, 32
+  xy: 1, 511
+  size: 512, 64
+  orig: 512, 64
   offset: 0, 0
   index: -1

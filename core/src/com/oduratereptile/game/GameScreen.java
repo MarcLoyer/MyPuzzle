@@ -165,15 +165,15 @@ public class GameScreen extends HudScreen {
 
     public GameData makePuzzle(Pixmap image, String name, int rows, int cols) {
         if (image == null) {
-//            name = "monumentValley.JPG"; // big: 5000x3000
-            name = "klimt.JPG"; // small: 500x300
-//            name = "oregonpath.JPG"; // tiny: 150x100
+//            name = "monumentValley"; // big: 5000x3000
+            name = "klimt"; // small: 500x300
+//            name = "oregonpath"; // tiny: 150x100
 
 //            rows = cols = 3;
 //            rows = cols = 5;
             rows = cols = 10;
 
-            image = new Pixmap(Gdx.files.internal(name)); // small: 500x300
+            image = new Pixmap(Gdx.files.internal(name + ".JPG")); // small: 500x300
         }
 
         PuzzleMaker puzzleMaker = new PuzzleMaker(this);

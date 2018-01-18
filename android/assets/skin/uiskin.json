@@ -99,6 +99,10 @@ com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 		down: btnRedUnmute
 		checked: btnRedUnmute
 	}
+	trashcan: {
+		up: btnRedTrashcan
+		down: btnPressedRedTrashcan
+	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: {

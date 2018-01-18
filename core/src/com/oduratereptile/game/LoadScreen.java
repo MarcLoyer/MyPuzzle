@@ -82,7 +82,7 @@ public class LoadScreen extends Stage implements Screen {
         loadGame("game #6");
     }
 
-    private static final int WIDTH = 150;
+    private static final int WIDTH = 200;
 
     public void loadGame(String basename) {
         FileHandle fh = Gdx.files.local(basename);
@@ -97,7 +97,7 @@ public class LoadScreen extends Stage implements Screen {
             gameData.cols = 12;
         }
 
-        final TextButton t = new TextButton(gameData.puzzleName, game.skin);
+        final TextButton t = new TextButton(gameData.getBasename(), game.skin);
         t.getLabelCell().expand(true, false);
 
         t.row();
@@ -111,13 +111,26 @@ public class LoadScreen extends Stage implements Screen {
         t.row();
         // TODO: the small font is TOO small - regenerate the skin with a bigger small font
         Label label = new Label("size = " + gameData.rows + "x" + gameData.cols + " (" + gameData.rows*gameData.cols + ")", game.skin, "small");
-        t.add(label).width(WIDTH).height(WIDTH*0.6f);
+        t.add(label).width(WIDTH).height(40.0f);
+
+        t.row();
+        Button b = new Button(game.skin, "trashcan");
+        b.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.error("debug", "click detected on " + t.getLabel().getText() + ".delete");
+                event.stop();
+            }
+        });
+        b.align(Align.bottomRight);
+        t.add(b).width(50).height(50).expand().bottom().right().pad(10);
 
         float h = t.getPrefHeight();
-        gameTable.add(t).top().width(WIDTH*1.2f).height(h*1.2f).pad(3).space(3);
+        gameTable.add(t).top().width(WIDTH*1.2f).height(h*1.2f).space(3);
         t.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (event.isStopped()) return;
                 Gdx.app.error("debug", "click detected on " + t.getLabel().getText());
             }
         });
