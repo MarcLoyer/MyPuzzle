@@ -7,7 +7,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.FloatAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -73,7 +76,7 @@ public class LoadScreen extends Stage implements Screen {
         loadGame("game #6");
     }
 
-    private static final int WIDTH = 200;
+    private static final float WIDTH = 200.0f;
 
     public void loadGame(String basename) {
         final FileHandle baseDir = Gdx.files.local(basename);
@@ -90,7 +93,7 @@ public class LoadScreen extends Stage implements Screen {
             gameData.cols = 12;
         }
 
-        TextButton t = new TextButton(gameData.getBasename(), game.skin);
+        final TextButton t = new TextButton(gameData.getBasename(), game.skin);
         t.getLabelCell().expand(true, false);
 
         t.row();
@@ -111,7 +114,13 @@ public class LoadScreen extends Stage implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (baseDir.exists()) baseDir.deleteDirectory();
-                // TODO: remove this panel from the table
+
+                // remove this panel from the table
+                Cell c = gameTable.getCell(t);
+                t.remove();
+                CollapseCellAction action = new CollapseCellAction(c, WIDTH*1.2f, 0.5f);
+                gameTable.addAction(action);
+
                 event.stop();
             }
         });
@@ -173,5 +182,23 @@ public class LoadScreen extends Stage implements Screen {
     @Override
     public void dispose() {
         super.dispose();
+    }
+
+    public class CollapseCellAction extends FloatAction {
+        Cell c;
+
+        public CollapseCellAction(Cell c, float x, float duration) {
+            super(x, 0);
+            setDuration(duration);
+            this.c = c;
+        }
+
+        @Override
+        public boolean act(float delta) {
+            boolean rv = super.act(delta);
+            c.width(getValue());
+            gameTable.invalidate();
+            return rv;
+        }
     }
 }
