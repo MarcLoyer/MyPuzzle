@@ -58,21 +58,12 @@ public class LoadScreen extends Stage implements Screen {
     }
 
     public void loadGameTable() {
-        // TODO: implement
         FileHandle dir = Gdx.files.local(".");
-        Gdx.app.error("debug", "dir path = " + dir.path());
-        Gdx.app.error("debug", "dir is directory = " + dir.isDirectory());
-        Gdx.app.error("debug", "dir children:");
         for (FileHandle fh: dir.list()) {
-            Gdx.app.error("debug", "  " + fh.name() + " (" + fh.isDirectory() + ")");
             if (fh.isDirectory()) {
                 loadGame(fh.name());
-                for (FileHandle fh2: fh.list()) {
-                    Gdx.app.error("debug", "    " + fh2.name() + " (" + fh2.isDirectory() + ")");
-                }
             }
         }
-
 
         loadGame("game #1");
         loadGame("game #2");

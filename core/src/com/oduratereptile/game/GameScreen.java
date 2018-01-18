@@ -238,6 +238,7 @@ public class GameScreen extends HudScreen {
 
     @Override
     public void dispose() {
+        puzzle.dispose();
         super.dispose();
     }
 }

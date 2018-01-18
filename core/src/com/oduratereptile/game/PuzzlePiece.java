@@ -74,7 +74,6 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
 
     @Override
     public void setOrigin(float x, float y) {
-        // TODO: set the origin for the group
         if (mid==null) { // don't know why I have to do this - mid was already allocated. It throws an error if I don't though
             mid = new Vector2(x,y);
         } else {

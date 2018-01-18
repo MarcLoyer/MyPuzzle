@@ -17,7 +17,6 @@ public class GameData {
     public String puzzleName = "undefined";
     public int rows = 0;
     public int cols = 0;
-    // TODO: save the Texture instead of just these two fields?
     public int puzzleImageWidth;
     public int puzzleImageHeight;
     public ObjectMap<String, PuzzlePiece> puzzlePieces;
@@ -132,8 +131,8 @@ public class GameData {
         return gameData;
     }
 
-    // TODO: when should this get called?
     public void dispose() {
+        if (thumbnail != null) thumbnail.dispose();
         if (atlas != null) atlas.dispose();
     }
 }

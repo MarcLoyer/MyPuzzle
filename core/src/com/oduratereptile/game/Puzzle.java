@@ -208,9 +208,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         return true;
     }
 
-
-    // TODO: save and restore functions
-
     public void dispose() {
+        gameData.dispose();
     }
 }
