@@ -35,6 +35,23 @@ public class GameScreen extends HudScreen {
 
     public GameScreen(final MyPuzzle game, Pixmap image, String name, int rows, int cols) {
         super(game);
+        setupGameScreen();
+
+        GameData gameData = makePuzzle(image, name, rows, cols);
+        puzzle = new Puzzle(this, gameData);
+        addInputController(new GestureDetector(puzzle));
+    }
+
+    public GameScreen(final MyPuzzle game, String basename) {
+        super(game);
+        setupGameScreen();
+
+        GameData gameData = GameData.restoreGameData(basename);
+        puzzle = new Puzzle(this, gameData);
+        addInputController(new GestureDetector(puzzle));
+    }
+
+    public void setupGameScreen() {
         camera = new OrthographicCamera();
 
         debugHUD(false);
@@ -156,9 +173,6 @@ public class GameScreen extends HudScreen {
         });
         stage.addActor(popup);
 
-        GameData gameData = makePuzzle(image, name, rows, cols);
-        puzzle = new Puzzle(this, gameData);
-        addInputController(new GestureDetector(puzzle));
     }
 
     public float worldWidth = 1000;
@@ -177,7 +191,7 @@ public class GameScreen extends HudScreen {
         }
 
         PuzzleMaker puzzleMaker = new PuzzleMaker(this);
-        puzzleMaker.setPicture(image);
+        puzzleMaker.setPicture(image, name);
         puzzleMaker.createPieces(rows, cols);
         puzzleMaker.gameData.puzzleName = name;
 

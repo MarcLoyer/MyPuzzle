@@ -488,6 +488,11 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
         setRegion(region);
         setColor(1, 1, 1, 1);
         setSize(region.getRegionWidth(), region.getRegionHeight());
+        flip(false, true);
+
+        // regenerate the highlight
+        // TODO: implement
+
     }
 
     @Override

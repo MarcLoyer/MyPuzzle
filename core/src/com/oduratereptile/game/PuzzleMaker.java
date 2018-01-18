@@ -31,11 +31,11 @@ public class PuzzleMaker {
     public Pixmap puzzleImg;
     public Texture puzzleImgTex;
 
-    public void setPicture(FileHandle fh) {
-        setPicture(new Pixmap(fh));
+    public void setPicture(FileHandle fh, String name) {
+        setPicture(new Pixmap(fh), name);
     }
 
-    public void setPicture(Pixmap pixmap) {
+    public void setPicture(Pixmap pixmap, String name) {
         puzzleImg = pixmap;
 
         IntBuffer buffer = BufferUtils.newIntBuffer(16);
@@ -49,6 +49,7 @@ public class PuzzleMaker {
         gameData.puzzleImageWidth = pixmap.getWidth();
         gameData.puzzleImageHeight = pixmap.getHeight();
         gameData.createThumbnail(pixmap);
+        gameData.puzzleName = name;
     }
 
     public int controlsPerPiece = 6;

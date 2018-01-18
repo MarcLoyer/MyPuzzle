@@ -85,11 +85,13 @@ public class LoadScreen extends Stage implements Screen {
     private static final int WIDTH = 200;
 
     public void loadGame(String basename) {
-        FileHandle fh = Gdx.files.local(basename);
-        GameData gameData;
-        if (fh.child("savedGame.json").exists()) {
+        final FileHandle baseDir = Gdx.files.local(basename);
+        final GameData gameData;
+
+        if (baseDir.child("savedGame.json").exists()) {
             gameData = GameData.restoreGameHeader(basename);
         } else {
+//            return;
             // TODO DEBUG: make up some phony data
             gameData = new GameData();
             gameData.puzzleName = basename;
@@ -97,7 +99,7 @@ public class LoadScreen extends Stage implements Screen {
             gameData.cols = 12;
         }
 
-        final TextButton t = new TextButton(gameData.getBasename(), game.skin);
+        TextButton t = new TextButton(gameData.getBasename(), game.skin);
         t.getLabelCell().expand(true, false);
 
         t.row();
@@ -109,7 +111,6 @@ public class LoadScreen extends Stage implements Screen {
         t.add(image).center().width(WIDTH).height(WIDTH);
 
         t.row();
-        // TODO: the small font is TOO small - regenerate the skin with a bigger small font
         Label label = new Label("size = " + gameData.rows + "x" + gameData.cols + " (" + gameData.rows*gameData.cols + ")", game.skin, "small");
         t.add(label).width(WIDTH).height(40.0f);
 
@@ -118,7 +119,8 @@ public class LoadScreen extends Stage implements Screen {
         b.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.error("debug", "click detected on " + t.getLabel().getText() + ".delete");
+                if (baseDir.exists()) baseDir.deleteDirectory();
+                // TODO: remove this panel from the table
                 event.stop();
             }
         });
@@ -131,7 +133,8 @@ public class LoadScreen extends Stage implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (event.isStopped()) return;
-                Gdx.app.error("debug", "click detected on " + t.getLabel().getText());
+                game.setScreen(new GameScreen(game, gameData.getBasename()));
+                dispose();
             }
         });
     }
