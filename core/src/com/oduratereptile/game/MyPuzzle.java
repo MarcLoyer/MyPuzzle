@@ -19,7 +19,6 @@ public class MyPuzzle extends Game {
 	Skin skin;
     AssetManager manager;
 
-	OutlineShader outlineShader;
     GalleryOpener galleryOpener;
 
     final static public int SCREENSIZEX = 800;
@@ -33,12 +32,10 @@ public class MyPuzzle extends Game {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
+		OutlineShader.setBatch(batch);
 		shapeRenderer = new ShapeRenderer();
 		img = new Texture("badlogic.jpg");
         manager = new AssetManager();
-
-		outlineShader = new OutlineShader();
-
 
 		setScreen(new SplashScreen(this));
 	}

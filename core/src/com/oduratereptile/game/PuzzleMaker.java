@@ -127,8 +127,8 @@ public class PuzzleMaker {
     }
 
     public void generateHighlight(PuzzlePiece p) {
-        gameScreen.game.outlineShader.setup(p);
-        p.highlight = gameScreen.game.outlineShader.renderToTexture(gameScreen.game.batch);
+        OutlineShader.setup(p);
+        p.highlight = OutlineShader.renderToTexture();
     }
 
     public float rowSpacing(int row) {

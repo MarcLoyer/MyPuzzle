@@ -491,8 +491,8 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
         flip(false, true);
 
         // regenerate the highlight
-        // TODO: implement
-
+        OutlineShader.setup(this);
+        highlight = OutlineShader.renderToTexture();
     }
 
     @Override

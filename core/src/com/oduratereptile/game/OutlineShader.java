@@ -16,40 +16,37 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
  * Created by Marc on 11/1/2017.
  */
 
-public class OutlineShader extends ShaderProgram {
+public class OutlineShader {
     public static final int PAD = 10;
 
-    OrthographicCamera camera;
-    TextureRegion tex;
-
-    public OutlineShader() {
-        super(
+    public static OrthographicCamera camera = new OrthographicCamera();
+    public static TextureRegion tex;
+    public static ShaderProgram shader = new ShaderProgram(
             Gdx.files.internal("shaders/outline.vert"),
             Gdx.files.internal("shaders/outline.frag")
-        );
-        //Good idea to log any warnings if they exist
-        if (getLog().length()!=0)
-            Gdx.app.error("debug", getLog());
+    );
+    public static SpriteBatch batch;
 
-        camera = new OrthographicCamera();
+    public static int bufferWidth;
+    public static int bufferHeight;
+    public static FrameBuffer blurTargetA, blurTargetB;
+    public static TextureRegion fboRegionA, fboRegionB;
+
+    public static void setBatch(SpriteBatch b) {
+        batch = b;
     }
 
-    public int bufferWidth;
-    public int bufferHeight;
-    public FrameBuffer blurTargetA, blurTargetB;
-    public TextureRegion fboRegionA, fboRegionB;
-
-    public void setup(TextureRegion tex) {
-        this.tex = tex;
+    public static void setup(TextureRegion t) {
+        tex = t;
         bufferWidth = tex.getRegionWidth() + 2*PAD;
         bufferHeight = tex.getRegionHeight() + 2*PAD;
 
-        begin();
-        setUniformf("width", bufferWidth);
-        setUniformf("height", bufferHeight);
-        setUniformf("radius", 1f);
-        setUniformf("color", new Vector3(1.0f, 1.0f, 1.0f));
-        end();
+        shader.begin();
+        shader.setUniformf("width", bufferWidth);
+        shader.setUniformf("height", bufferHeight);
+        shader.setUniformf("radius", 1f);
+        shader.setUniformf("color", new Vector3(1.0f, 1.0f, 1.0f));
+        shader.end();
 
         blurTargetA = new FrameBuffer(RGBA8888, bufferWidth, bufferHeight, false);
         blurTargetB = new FrameBuffer(RGBA8888, bufferWidth, bufferHeight, false);
@@ -59,7 +56,7 @@ public class OutlineShader extends ShaderProgram {
         fboRegionB.flip(false, true);
     }
 
-    public TextureRegion renderToTexture(SpriteBatch batch) {
+    public static TextureRegion renderToTexture() {
         camera.setToOrtho(false, bufferWidth, bufferHeight);
         batch.setProjectionMatrix(camera.combined);
 
@@ -73,13 +70,13 @@ public class OutlineShader extends ShaderProgram {
         batch.flush();
         blurTargetA.end();
 
-        batch.setShader(this);
+        batch.setShader(shader);
 
         // setup edgedetection
-        begin();
-        setUniformi("mode", 1);
-        setUniformf("radius", 1.0f);
-        end();
+        shader.begin();
+        shader.setUniformi("mode", 1);
+        shader.setUniformf("radius", 1.0f);
+        shader.end();
 
         // draw from FBO A to FBO B
         blurTargetB.begin();
@@ -92,10 +89,10 @@ public class OutlineShader extends ShaderProgram {
         blurTargetB.end();
 
         // setup H-blur / 2D blur
-        begin();
-        setUniformi("mode", 0); // turn on blur
-        setUniformf("radius", 1.0f);
-        end();
+        shader.begin();
+        shader.setUniformi("mode", 0); // turn on blur
+        shader.setUniformf("radius", 1.0f);
+        shader.end();
 
         // draw from FBO B to FBO A
         blurTargetA.begin();
@@ -112,11 +109,5 @@ public class OutlineShader extends ShaderProgram {
 
         return fboRegionA;
 //        return fboRegionB;
-    }
-
-    public void dispose() {
-        blurTargetA.dispose();
-        blurTargetB.dispose();
-        super.dispose();
     }
 }
