@@ -98,7 +98,7 @@ public class LoadScreen extends Stage implements Screen {
 
         t.row();
         Image image = (gameData.thumbnail==null) ?
-                new Image(new Texture(Gdx.files.internal("badlogic.jpg"))):
+                new Image(game.skin, "cancel"):
                 new Image(new Texture(gameData.thumbnail));
         image.setScaling(Scaling.fit);
         image.setAlign(Align.top);

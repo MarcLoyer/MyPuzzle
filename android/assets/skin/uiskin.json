@@ -103,6 +103,10 @@ com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 		up: btnRedTrashcan
 		down: btnPressedRedTrashcan
 	}
+	reverse: {
+		up: btnRedReverse
+		down: btnPressedRedReverse
+	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: {
@@ -138,11 +142,20 @@ com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
 }
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 	default: {
-		background: default-rect
 		hScroll: default-scroll
 		hScrollKnob: default-round-large
 		vScroll: default-scroll
 		vScrollKnob: default-round-large
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
+	default-horizontal: {
+		background: default-scroll
+		knob: btnRedDefault
+	}
+	default-vertical: {
+		background: default-scroll
+		knob: btnRedDefault
 	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
@@ -152,6 +165,7 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 		downFontColor: grey
 		up: btnredtext
 		down: btnpressedredtext
+		disabled: btngreytext
 	}
 	checked: {
 		font: medium
@@ -161,6 +175,7 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 		up: btnredtext
 		down: btnpressedredtext
 		checked: btnpressedredtext
+		disabled: btngreytext
 	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
@@ -177,6 +192,13 @@ com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {
 	default: {
 		label: default
+	}
+}
+com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
+	default: {
+		titleFont: large
+		titleFontColor: black
+		stageBackground: outline
 	}
 }
 }

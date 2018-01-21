@@ -34,6 +34,7 @@ public class MainMenuScreen extends Stage implements Screen {
     public Table table;
     public float buttonWidth = 200f;
 
+    private boolean waitingForImage=false;
 
     public MainMenuScreen(final MyPuzzle game) {
         super(new FitViewport(MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY));
@@ -66,19 +67,33 @@ public class MainMenuScreen extends Stage implements Screen {
         table.add(textbutton).width(buttonWidth);
 
         table.row();
+        textbutton = new TextButton("New Game", game.skin);
+        textbutton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y){
+                game.setScreen(new NewGameScreen(game));
+                dispose();
+            }
+        });
+        table.add(textbutton).width(buttonWidth);
+
+        table.row();
         textbutton = new TextButton("Load image", game.skin);
         textbutton.setWidth(150f);
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
                 game.galleryOpener.openGallery();
+                waitingForImage = true;
             }
         });
         table.add(textbutton).width(buttonWidth);
         game.galleryOpener.addListener(new GalleryOpener.GalleryListener() {
             @Override
             public void gallerySelection(FileDescriptor fd) {
+                if (!waitingForImage) return;
                 image = loadPixmapFromFileDescriptor(fd);
+                waitingForImage = false;
             }
         });
 
@@ -186,5 +201,6 @@ public class MainMenuScreen extends Stage implements Screen {
     @Override
     public void dispose() {
         super.dispose();
+        if (image != null) image.dispose();
     }
 }
