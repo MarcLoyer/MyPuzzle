@@ -134,7 +134,7 @@ public class NewGameScreen extends Stage implements Screen {
                 checkSetupComplete();
             }
         });
-        table.add(puzzleNameTextField).pad(5);
+        table.add(puzzleNameTextField).width(300).pad(5);
         table.setBackground(game.skin.getDrawable("outline"));
         table.pad(5);
         rootTable.add(table);

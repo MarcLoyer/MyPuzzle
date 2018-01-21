@@ -67,13 +67,6 @@ public class LoadScreen extends Stage implements Screen {
                 loadGame(fh.name());
             }
         }
-
-        loadGame("game #1");
-        loadGame("game #2");
-        loadGame("game #3");
-        loadGame("game #4");
-        loadGame("game #5");
-        loadGame("game #6");
     }
 
     private static final float WIDTH = 200.0f;
@@ -85,12 +78,7 @@ public class LoadScreen extends Stage implements Screen {
         if (baseDir.child("savedGame.json").exists()) {
             gameData = GameData.restoreGameHeader(basename);
         } else {
-//            return;
-            // TODO DEBUG: make up some phony data
-            gameData = new GameData();
-            gameData.puzzleName = basename;
-            gameData.rows = 10;
-            gameData.cols = 12;
+            return;
         }
 
         final TextButton t = new TextButton(gameData.getBasename(), game.skin);
