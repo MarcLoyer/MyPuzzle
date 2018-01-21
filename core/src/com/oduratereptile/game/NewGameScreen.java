@@ -68,6 +68,7 @@ public class NewGameScreen extends Stage implements Screen {
         this.game = game;
 
         sliderValues = new Array<GridPoint3>();
+        sliderValues.add(new GridPoint3(3,3,9));
 
         rootTable = new Table();
         rootTable.setFillParent(true);
@@ -141,7 +142,7 @@ public class NewGameScreen extends Stage implements Screen {
         // a slider for rows, cols
         rootTable.row();
         table = new Table();
-        puzzleSizeLabel = new Label("Puzzle Size: 0x0", game.skin, "small");
+        puzzleSizeLabel = new Label("Puzzle Size: 3x3", game.skin, "small");
         puzzleSizeLabel.setAlignment(Align.left);
         table.add(puzzleSizeLabel).colspan(3).pad(5);
         table.row();
@@ -157,7 +158,7 @@ public class NewGameScreen extends Stage implements Screen {
         });
         button.align(Align.right);
         table.add(button).width(50).pad(5);
-        puzzleSlider = new Slider(0,100, 1, false, game.skin, "default-horizontal");
+        puzzleSlider = new Slider(0,0, 1, false, game.skin, "default-horizontal");
         puzzleSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
