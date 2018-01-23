@@ -138,7 +138,7 @@ public class GameScreen extends HudScreen {
         button = new TextButton("shuffle", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
-                puzzle.manager.shuffle();
+                puzzle.animations.get("shuffle").start();
             }
         });
         popup.add(button).expandX().fillX().row();
@@ -146,7 +146,8 @@ public class GameScreen extends HudScreen {
         button = new TextButton("unshuffle", game.skin);
         button.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
-                puzzle.manager.restoreInitialState();
+                Shuffle sh = (Shuffle)puzzle.animations.get("shuffle");
+                sh.restoreInitialState();
             }
         });
         popup.add(button).expandX().fillX().row();

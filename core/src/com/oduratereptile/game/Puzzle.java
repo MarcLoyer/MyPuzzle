@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
 
@@ -21,7 +22,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
     public Json json = new Json();
 
     public GameData gameData;
-    public PuzzlePieceManager manager;
+    public ObjectMap<String, PuzzleAnimation> animations = new ObjectMap<String, PuzzleAnimation>();
 
     public boolean displayEvenPieces = false;
     public boolean displayAllPieces = true;
@@ -31,20 +32,20 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         super(gameScreen.camera);
         this.gameScreen = gameScreen;
         sr = gameScreen.game.shapeRenderer;
-        manager = new PuzzlePieceManager(this);
         PuzzleGroup.addListener(this);
 
         this.gameData = gameData;
+        animations.put("shuffle", new Shuffle(this));
     }
 
     public Puzzle(GameScreen gameScreen, String basename) {
         super(gameScreen.camera);
         this.gameScreen = gameScreen;
         sr = gameScreen.game.shapeRenderer;
-        manager = new PuzzlePieceManager(this);
         PuzzleGroup.addListener(this);
 
         this.gameData = GameData.restoreGameData(basename);
+        animations.put("shuffle", new Shuffle(this));
     }
 
     public void onCreate(PuzzleGroup group) {
@@ -84,7 +85,10 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
 
     public void render(SpriteBatch batch, float delta) {
 
-        manager.act(delta);
+        for (PuzzleAnimation pa: animations.values()) {
+            if (pa.isRunning()) pa.act(delta);
+        }
+
         if (isAutopanning) autopan(delta);
 
         for (PuzzlePiece p : gameData.puzzlePieces.values()) {

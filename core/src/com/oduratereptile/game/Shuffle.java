@@ -8,19 +8,31 @@ import java.util.Iterator;
 import java.util.Random;
 
 /**
- * Created by Marc on 12/24/2017.
+ * Created by Marc on 1/23/2018.
  */
 
-public class PuzzlePieceManager {
-    public Puzzle puzzle;
-    public Random rand = new Random();
+public class Shuffle implements PuzzleAnimation {
+    Puzzle puzzle;
+    boolean enabled = false;
+    float animationDuration;
+    float animationDelta;
 
-    public PuzzlePieceManager(Puzzle puzzle) {
-        this.puzzle = puzzle;
+    Random rand = new Random();
+    Interpolation interp = new Interpolation.SwingOut(0);
+
+    ObjectMap<String, Vector2> locs = new ObjectMap<String, Vector2>();
+    ObjectMap<String, Float> degs = new ObjectMap<String, Float>();
+
+
+    Shuffle(Puzzle puzzle) {
+        this(puzzle, 4);
     }
 
-    public ObjectMap<String, Vector2> locs = new ObjectMap<String, Vector2>();
-    public ObjectMap<String, Float> degs = new ObjectMap<String, Float>();
+    Shuffle(Puzzle puzzle, float duration) {
+        this.puzzle = puzzle;
+
+        setup(duration);
+    }
 
     /**
      * Moves all puzzle pieces back to their solved locations,
@@ -50,10 +62,7 @@ public class PuzzlePieceManager {
         }
     }
 
-    /**
-     * Shuffles the pieces across the screen
-     */
-    public void shuffle() {
+    public void setup(float duration) {
         resetGroups();
 
         // 1) create a grid of locations to send the pieces to
@@ -90,36 +99,33 @@ public class PuzzlePieceManager {
             }
         }
 
-        // 4) animate the motion
-        startAnimation(4);
+        animationDuration = duration;
+    }
+
+
+    @Override
+    public void start() {
+        enabled = true;
+        animationDelta = 0;
+    }
+
+    @Override
+    public boolean isRunning() {
+        return enabled;
     }
 
     private Vector2 tempV = new Vector2();
     private float tempF;
     private PuzzlePiece tempPP;
 
-    public boolean animateShuffle = false;
-    public float animationDuration = 0;
-    public float animationDelta = 0;
-    public Interpolation interp = new Interpolation.SwingOut(0);
-
-    public void startAnimation(float duration) {
-        animationDuration = duration;
-        animationDelta = 0;
-        animateShuffle = true;
-    }
-
+    @Override
     public void act(float deltaTime) {
-        if (animateShuffle) animateShuffle(deltaTime);
-    }
-
-    public void animateShuffle(float delta) {
         float del = 0;
 
-        animationDelta += delta;
+        animationDelta += deltaTime;
         if (animationDelta>=animationDuration) {
             del = interp.apply(1.0f);
-            animateShuffle = false;
+            enabled = false;
         } else {
             del = interp.apply(animationDelta / animationDuration);
         }
