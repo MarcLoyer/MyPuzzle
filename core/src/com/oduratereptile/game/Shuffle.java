@@ -51,7 +51,6 @@ public class Shuffle implements PuzzleAnimation {
 
     public void resetGroups() {
         for (PuzzlePiece p: puzzle.gameData.puzzlePieces.values()) {
-            // TODO: make a pool for the groups?
             p.group = null;
             p.resetOrigin();
             p.select(false);
