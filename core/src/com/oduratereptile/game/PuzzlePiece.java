@@ -68,6 +68,13 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
         return new Vector2(getX(), getY());
     }
 
+    public Vector2 getPosPlusSize() {
+        Vector2 rv = new Vector2(pos);
+        rv.x += getWidth();
+        rv.y += getHeight();
+        return rv;
+    }
+
     public void resetOrigin() {
         setOrigin(getRegionWidth()/2, getRegionHeight()/2);
     }

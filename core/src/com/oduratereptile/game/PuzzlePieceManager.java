@@ -1,11 +1,9 @@
 package com.oduratereptile.game;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -66,7 +64,7 @@ public class PuzzlePieceManager {
 
         for (int i=0; i<puzzle.gameData.cols; i++) {
             for (int j=0; j<puzzle.gameData.rows; j++) {
-                locs.put(i+","+j, new Vector2(tmp.x * (float)i, tmp.y * (float)j));
+                locs.put(j+","+i, new Vector2(tmp.x * (float)i, tmp.y * (float)j));
             }
         }
 
@@ -88,7 +86,7 @@ public class PuzzlePieceManager {
         // 3) randomly assign a rotation to each piece
         for (int i=0; i<puzzle.gameData.cols; i++) {
             for (int j=0; j<puzzle.gameData.rows; j++) {
-                degs.put(i+","+j, (360.0f * 4.0f) + 360.0f*rand.nextFloat());
+                degs.put(j+","+i, (360.0f * 4.0f) + 360.0f*rand.nextFloat());
             }
         }
 
@@ -100,7 +98,7 @@ public class PuzzlePieceManager {
     private float tempF;
     private PuzzlePiece tempPP;
 
-    public boolean animate = false;
+    public boolean animateShuffle = false;
     public float animationDuration = 0;
     public float animationDelta = 0;
     public Interpolation interp = new Interpolation.SwingOut(0);
@@ -108,32 +106,34 @@ public class PuzzlePieceManager {
     public void startAnimation(float duration) {
         animationDuration = duration;
         animationDelta = 0;
-        animate = true;
+        animateShuffle = true;
     }
 
     public void act(float deltaTime) {
+        if (animateShuffle) animateShuffle(deltaTime);
+    }
+
+    public void animateShuffle(float delta) {
         float del = 0;
-        if (animate) {
-            animationDelta += deltaTime;
-            if (animationDelta>=animationDuration) {
-                del = interp.apply(1.0f);
-                animate = false;
-            } else {
-                del = interp.apply(animationDelta / animationDuration);
-            }
-            for (String k: puzzle.gameData.puzzlePieces.keys()) {
-                tempPP = puzzle.gameData.puzzlePieces.get(k);
-                tempV.set(locs.get(k))
-                        .sub(tempPP.posInitial)
-                        .scl(del)
-                        .add(tempPP.posInitial);
 
-                tempF = degs.get(k)*del;
+        animationDelta += delta;
+        if (animationDelta>=animationDuration) {
+            del = interp.apply(1.0f);
+            animateShuffle = false;
+        } else {
+            del = interp.apply(animationDelta / animationDuration);
+        }
+        for (String k: puzzle.gameData.puzzlePieces.keys()) {
+            tempPP = puzzle.gameData.puzzlePieces.get(k);
+            tempV.set(locs.get(k))
+                    .sub(tempPP.posInitial)
+                    .scl(del)
+                    .add(tempPP.posInitial);
 
-                tempPP.setRotation(tempF, false);
-                tempPP.moveTo(tempV.x, tempV.y, false);
-            }
+            tempF = degs.get(k)*del;
 
+            tempPP.setRotation(tempF, false);
+            tempPP.moveTo(tempV.x, tempV.y, false);
         }
     }
 }

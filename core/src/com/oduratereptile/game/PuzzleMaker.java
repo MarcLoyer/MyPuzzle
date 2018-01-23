@@ -41,10 +41,10 @@ public class PuzzleMaker {
         IntBuffer buffer = BufferUtils.newIntBuffer(16);
         Gdx.gl.glGetIntegerv(GL20.GL_MAX_TEXTURE_SIZE, buffer);
         int maxImageSize = buffer.get(0);
-        Gdx.app.error("debug", "Max image size for this device = " + maxImageSize);
+//        Gdx.app.error("debug", "Max image size for this device = " + maxImageSize);
 
-        puzzleImgTex = new Texture(puzzleImg); //TODO: split into regions if the Pixmap is too big, or maybe mipmaps?
-        Gdx.app.error("debug", "Current image size = (" + pixmap.getWidth() + ", " + pixmap.getHeight() + ")");
+        puzzleImgTex = new Texture(puzzleImg);
+//        Gdx.app.error("debug", "Current image size = (" + pixmap.getWidth() + ", " + pixmap.getHeight() + ")");
 
         gameData.puzzleImageWidth = pixmap.getWidth();
         gameData.puzzleImageHeight = pixmap.getHeight();
@@ -211,8 +211,8 @@ public class PuzzleMaker {
                 colControlPoints[i][5+j*controlsPerPiece] = new Vector2(offset+sign*C + randC(Br), rowOffset(j) + (0.5f + B)*rowSpacing(j) + randC(Br));
                 colControlPoints[i][6+j*controlsPerPiece] = new Vector2(offset        + randC(Ar), rowOffset(j) + (0.5f + A)*rowSpacing(j) + randC(Ar));
             }
-            colControlPoints[i][1+numCols*controlsPerPiece] = new Vector2(offset + randC(Fr), (float)rowOffset(numRows));
-            colControlPoints[i][2+numCols*controlsPerPiece] = new Vector2(offset, (float)rowOffset(numRows+1));
+            colControlPoints[i][1+numRows*controlsPerPiece] = new Vector2(offset + randC(Fr), (float)rowOffset(numRows));
+            colControlPoints[i][2+numRows*controlsPerPiece] = new Vector2(offset, (float)rowOffset(numRows+1));
 
             colSpline[i] = new CatmullRomSpline<Vector2>(colControlPoints[i], false);
 

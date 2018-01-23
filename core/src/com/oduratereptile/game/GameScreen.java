@@ -7,7 +7,9 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -49,6 +51,19 @@ public class GameScreen extends HudScreen {
         GameData gameData = GameData.restoreGameData(basename);
         puzzle = new Puzzle(this, gameData);
         addInputController(new GestureDetector(puzzle));
+
+        // set the camera to something reasonable.
+        Rectangle rect = puzzle.getBounds();
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
+        float aspectRatio = h/w;
+        if ((rect.getWidth()*aspectRatio)>rect.getHeight()) {
+            worldWidth = rect.getWidth();
+        } else {
+            worldWidth = rect.getHeight()/aspectRatio;
+        }
+        camera.position.set(rect.getX()+rect.getWidth()/2f, rect.getY()+rect.getHeight()/2f, 0);
+        updateCameraViewport();
     }
 
     public void setupGameScreen() {
@@ -192,7 +207,12 @@ public class GameScreen extends HudScreen {
 
         PuzzleMaker puzzleMaker = new PuzzleMaker(this);
         puzzleMaker.setPicture(image, name);
+
+        // TODO: can I run this step in different thread, so that I can show the
+        // puzzle pieces as they are created? Also, maybe show a progress bar?
+        // Everything after this could be placed in Gdx.app.postRunnable
         puzzleMaker.createPieces(rows, cols);
+
         puzzleMaker.gameData.puzzleName = name;
 
         worldWidth = image.getWidth();
@@ -234,6 +254,23 @@ public class GameScreen extends HudScreen {
         float h = Gdx.graphics.getHeight();
         float aspectRatio = h/w;
         camera.setToOrtho(false, worldWidth, worldWidth * aspectRatio);
+    }
+
+    @Override
+    public void pause() {
+        super.pause();
+        // save the game, and put the basename in prefs
+        puzzle.gameData.saveGameData();
+        game.prefs.putString("gameInProgress", puzzle.gameData.getBasename());
+        game.prefs.flush();
+    }
+
+    @Override
+    public void resume() {
+        super.resume();
+        // the constructor restores the game for us. We just need to clean up prefs.
+        game.prefs.putString("gameInProgress", "");
+        game.prefs.flush();
     }
 
     @Override

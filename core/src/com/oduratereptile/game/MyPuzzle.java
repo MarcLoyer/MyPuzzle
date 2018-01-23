@@ -2,6 +2,7 @@ package com.oduratereptile.game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -18,11 +19,14 @@ public class MyPuzzle extends Game {
     TextureAtlas atlas;
 	Skin skin;
     AssetManager manager;
+    Preferences prefs;
 
     GalleryOpener galleryOpener;
 
     final static public int SCREENSIZEX = 800;
     final static public int SCREENSIZEY = 480;
+
+    final static private String PREFERENCES = "com.obduratereptile.game.mypuzzle.settings";
 
 	public MyPuzzle(GalleryOpener galleryOpener) {
 		super();
@@ -36,6 +40,7 @@ public class MyPuzzle extends Game {
 		shapeRenderer = new ShapeRenderer();
 		img = new Texture("badlogic.jpg");
         manager = new AssetManager();
+        prefs = Gdx.app.getPreferences(PREFERENCES);
 
 		setScreen(new SplashScreen(this));
 	}
@@ -44,7 +49,15 @@ public class MyPuzzle extends Game {
 	public void render () {
 		super.render();
 	}
-	
+
+	@Override
+	public void resume() {
+		super.resume();
+		String basename = prefs.getString("gameInProgress", "");
+		if (basename.equals("")) return;
+		setScreen(new GameScreen(this, basename));
+	}
+
 	@Override
 	public void dispose () {
 		batch.dispose();

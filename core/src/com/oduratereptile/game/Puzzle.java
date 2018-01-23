@@ -1,8 +1,10 @@
 package com.oduratereptile.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
@@ -61,10 +63,29 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         // TODO: implement
     }
 
+    public Rectangle getBounds() {
+        Rectangle rect = new Rectangle();
+        Vector2 min = new Vector2(gameData.puzzlePieces.get("0,0").pos);
+        Vector2 max = new Vector2(gameData.puzzlePieces.get("0,0").getPosPlusSize());
+        Vector2 t;
+        for (PuzzlePiece p : gameData.puzzlePieces.values()) {
+            if (p.pos.x < min.x) min.x = p.pos.x;
+            if (p.pos.y < min.y) min.y = p.pos.y;
+            t = p.getPosPlusSize();
+            if (t.x > max.x) max.x = t.x;
+            if (t.y > max.y) max.y = t.y;
+        }
+        max.sub(min);
+        rect.setPosition(min);
+        rect.setSize(max.x, max.y);
+
+        return rect;
+    }
 
     public void render(SpriteBatch batch, float delta) {
 
         manager.act(delta);
+        if (isAutopanning) autopan(delta);
 
         for (PuzzlePiece p : gameData.puzzlePieces.values()) {
             boolean isEven = ((p.col + p.row)%2 == 0);
@@ -141,18 +162,72 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         return true;
     }
 
-    // use this to move the selected piece (or maybe drag and drop?)
+    public boolean isAutopanning = false;
+    public Vector2 autopanVelocity = new Vector2();
+
+    // use this to move the selected piece
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
         if (selectedPiece.size()==1) {
             PuzzlePiece p = selectedPiece.get(0);
             Vector3 c = cam.unproject(new Vector3(deltaX, deltaY, 0)).sub(cam.unproject(new Vector3(0, 0, 0)));
             p.moveBy(c.x,c.y);
+            // start panning if the touch is close to the edge of the screen
+            isAutopanning = isAtEdge(x,y);
         } else {
             return super.pan(x,y,deltaX,deltaY);
         }
 
         return true;
+    }
+
+    public void autopan(float deltaTime) {
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        float dx = autopanVelocity.x * deltaTime;
+        float dy = autopanVelocity.y * deltaTime;
+
+        if (isAtEdge(x,y)) {
+            super.pan(x,y,dx,dy);
+            if (selectedPiece.size()==1) {
+                PuzzlePiece p = selectedPiece.get(0);
+                Vector3 c = cam.unproject(new Vector3(-dx, -dy, 0)).sub(cam.unproject(new Vector3(0, 0, 0)));
+                p.moveBy(c.x,c.y);
+            }
+            isAutopanning = true;
+        } else {
+            isAutopanning = false;
+        }
+    }
+
+    public boolean isAtEdge(float x, float y) {
+        float w = cam.viewportWidth;
+        float h = cam.viewportHeight;
+
+        Vector3 pos = cam.unproject(new Vector3(x,y,0));
+        pos.sub(cam.position);
+        pos.x = (pos.x/w)+0.5f;
+        pos.y = (pos.y/h)+0.5f;
+
+        boolean atEdge = false;
+        autopanVelocity.set(0,0);
+        if (pos.x < 0.05f) {
+            autopanVelocity.x = 2f*w;
+            atEdge = true;
+        }
+        if (pos.x > 0.95f) {
+            autopanVelocity.x = -2f*w;
+            atEdge = true;
+        }
+        if (pos.y < 0.05f) {
+            autopanVelocity.y = -2f*h;
+            atEdge = true;
+        }
+        if (pos.y > 0.95f) {
+            autopanVelocity.y = 2f*h;
+            atEdge = true;
+        }
+        return atEdge;
     }
 
     public float initialRotation;
@@ -168,6 +243,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
 
     @Override
     public boolean panStop(float x, float y, int pointer, int button) {
+        isAutopanning = false;
         if (selectedPiece.size()==1) {
             PuzzlePiece p = selectedPiece.get(0);
             if (p.snapsWith>0) {
@@ -200,6 +276,9 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
             v2.sub(pointer1);
 
             float angle = ((float)Math.atan2(v1.x, v1.y) - (float)Math.atan2(v2.x, v2.y)) * MathUtils.radiansToDegrees;
+            // magnify the angle - it takes too long to turn a piece otherwise
+            angle *= 3f;
+
             p.setRotation(initialRotation - angle);
         } else {
             return super.pinch(initialPointer1, initialPointer2, pointer1, pointer2);

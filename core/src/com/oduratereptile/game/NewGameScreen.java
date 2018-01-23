@@ -167,10 +167,6 @@ public class NewGameScreen extends Stage implements Screen {
                 if ((int)puzzleSlider.getValue() <  0) return;
 
                 updateSliderLabel();
-//                Gdx.app.error("debug", "value          = " + slider.getValue());
-//                Gdx.app.error("debug", "percent        = " + slider.getPercent());
-//                Gdx.app.error("debug", "visual value   = " + slider.getVisualValue());
-//                Gdx.app.error("debug", "visual percent = " + slider .getVisualPercent());
             }
         });
         table.add(puzzleSlider).width(WIDTH).padLeft(10).padRight(10);
@@ -234,6 +230,10 @@ public class NewGameScreen extends Stage implements Screen {
 
     public final static float PIECESIZE = 300.0f;
 
+
+    /**
+     * The goal is to ensure that puzzle pieces are fairly square (40-60%)
+     */
     public void generateSliderValues() {
         int maxCols = (int)(puzzleImage.getWidth() / (PIECESIZE * 0.2f));
         int maxRows = (int)(puzzleImage.getHeight() / (PIECESIZE * 0.2f));
@@ -247,10 +247,15 @@ public class NewGameScreen extends Stage implements Screen {
         sliderValues.clear();
 
         for (int i=minCols; i<=maxCols; i++) {
-            int minJ = Math.max(minRows, (int)(0.8f*(float)i));
-            int maxJ = Math.min(maxRows, (int)(1.2f*(float)i));
+            float colSize = puzzleImage.getWidth() / (float)i;
+            float rowSizeMin = 0.67f * colSize;
+            float rowSizeMax = 1.50f * colSize;
+
+            int minJ = Math.max(minRows, (int)(puzzleImage.getHeight()/rowSizeMax) + 1);
+            int maxJ = Math.min(maxRows, (int)(puzzleImage.getHeight()/rowSizeMin));
+
             for (int j = minJ; j<=maxJ; j++) {
-                GridPoint3 gp = new GridPoint3(i, j, i*j);
+                GridPoint3 gp = new GridPoint3(j, i, i*j);
                 if (!sliderValues.contains(gp, false)) sliderValues.add(gp);
             }
         }
@@ -297,7 +302,7 @@ public class NewGameScreen extends Stage implements Screen {
     }
 
     /**
-     * Resamples puzzleImage based on the number of rows, cols so that the peices are
+     * Resamples puzzleImage based on the number of rows, cols so that the pieces are
      * reasonably sized. This speeds up the puzzle generation process.
      */
     public void resampleImage() {
@@ -322,7 +327,6 @@ public class NewGameScreen extends Stage implements Screen {
     public final float THUMBNAIL_WIDTH = 300.0f;
 
     public void createThumbnail() {
-        Gdx.app.error("debug", "Creating thumbnail...");
         float scale = THUMBNAIL_WIDTH / (float)puzzleImage.getWidth();
         thumbnail = new Pixmap(
                 (int)(puzzleImage.getWidth() * scale),
@@ -334,7 +338,6 @@ public class NewGameScreen extends Stage implements Screen {
                 puzzleImage.getWidth(), puzzleImage.getHeight(),
                 0, 0,
                 thumbnail.getWidth(), thumbnail.getHeight());
-        Gdx.app.error("debug", "  size = (" + thumbnail.getWidth() + ", " + thumbnail.getHeight() + ")");
     }
 
     @Override
