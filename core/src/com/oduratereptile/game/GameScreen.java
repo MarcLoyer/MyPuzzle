@@ -166,16 +166,6 @@ public class GameScreen extends HudScreen {
         });
         popup.add(button).expandX().fillX().row();
 
-        button = new TextButton("load", game.skin);
-        button.addListener(new ClickListener(){
-            public void clicked(InputEvent event, float x, float y){
-                GameData gameData = GameData.restoreGameData(puzzle.gameData.getBasename());
-                Gdx.app.error("load", "number of pieces = " + gameData.puzzlePieces.size);
-                Gdx.app.error("load", "number of groups = " + gameData.puzzleGroups.size);
-            }
-        });
-        popup.add(button).expandX().fillX().row();
-
         popup.setVisible(false);
 
         // Create a button to bring up the popup menu

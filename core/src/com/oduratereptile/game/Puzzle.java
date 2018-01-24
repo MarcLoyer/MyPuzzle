@@ -47,6 +47,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
 
         this.gameData = GameData.restoreGameData(basename);
         animations.put("shuffle", new Shuffle(this));
+        animations.put("fireworks", new Fireworks(this));
     }
 
     public void onModify(PuzzleGroup group) {

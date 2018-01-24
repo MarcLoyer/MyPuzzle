@@ -56,15 +56,17 @@ public class MainMenuScreen extends Stage implements Screen {
         table.setFillParent(true);
         addActor(table);
 
-        TextButton textbutton = new TextButton("Play", game.skin);
-        textbutton.addListener(new ClickListener(){
-            @Override
-            public void clicked(InputEvent event, float x, float y){
-                game.setScreen(new GameScreen(game, image, "undetermined", 10, 10));
-                dispose();
-            }
-        });
-        table.add(textbutton).width(buttonWidth);
+        TextButton textbutton;
+
+//        textbutton = new TextButton("Play", game.skin);
+//        textbutton.addListener(new ClickListener(){
+//            @Override
+//            public void clicked(InputEvent event, float x, float y){
+//                game.setScreen(new GameScreen(game, image, "undetermined", 10, 10));
+//                dispose();
+//            }
+//        });
+//        table.add(textbutton).width(buttonWidth);
 
         table.row();
         textbutton = new TextButton("New Game", game.skin);
@@ -78,24 +80,36 @@ public class MainMenuScreen extends Stage implements Screen {
         table.add(textbutton).width(buttonWidth);
 
         table.row();
-        textbutton = new TextButton("Load image", game.skin);
+        textbutton = new TextButton("Load screen", game.skin);
         textbutton.setWidth(150f);
         textbutton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
-                game.galleryOpener.openGallery();
-                waitingForImage = true;
+                game.setScreen(new LoadScreen(game));
+                dispose();
             }
         });
         table.add(textbutton).width(buttonWidth);
-        game.galleryOpener.addListener(new GalleryOpener.GalleryListener() {
-            @Override
-            public void gallerySelection(FileDescriptor fd) {
-                if (!waitingForImage) return;
-                image = loadPixmapFromFileDescriptor(fd);
-                waitingForImage = false;
-            }
-        });
+
+//        table.row();
+//        textbutton = new TextButton("Load image", game.skin);
+//        textbutton.setWidth(150f);
+//        textbutton.addListener(new ClickListener(){
+//            @Override
+//            public void clicked(InputEvent event, float x, float y){
+//                game.galleryOpener.openGallery();
+//                waitingForImage = true;
+//            }
+//        });
+//        table.add(textbutton).width(buttonWidth);
+//        game.galleryOpener.addListener(new GalleryOpener.GalleryListener() {
+//            @Override
+//            public void gallerySelection(FileDescriptor fd) {
+//                if (!waitingForImage) return;
+//                image = loadPixmapFromFileDescriptor(fd);
+//                waitingForImage = false;
+//            }
+//        });
 
         table.row();
         textbutton = new TextButton("Connect to server", game.skin);
@@ -111,18 +125,6 @@ public class MainMenuScreen extends Stage implements Screen {
         table.row();
         textbutton = new FacebookLoginButton(facebook, game.skin);
         textbutton.setWidth(150f);
-        table.add(textbutton).width(buttonWidth);
-
-        table.row();
-        textbutton = new TextButton("Load screen", game.skin);
-        textbutton.setWidth(150f);
-        textbutton.addListener(new ClickListener(){
-            @Override
-            public void clicked(InputEvent event, float x, float y){
-                game.setScreen(new LoadScreen(game));
-                dispose();
-            }
-        });
         table.add(textbutton).width(buttonWidth);
 
     }
