@@ -148,6 +148,9 @@ public class GameScreen extends HudScreen {
             public void clicked(InputEvent event, float x, float y){
                 Shuffle sh = (Shuffle)puzzle.animations.get("shuffle");
                 sh.restoreInitialState();
+                puzzle.selectedPiece.clear();
+                Fireworks fw = (Fireworks)puzzle.animations.get("fireworks");
+                fw.start();
             }
         });
         popup.add(button).expandX().fillX().row();

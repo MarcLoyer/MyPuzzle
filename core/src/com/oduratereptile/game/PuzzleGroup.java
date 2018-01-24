@@ -57,6 +57,7 @@ public class PuzzleGroup implements Json.Serializable {
         highlightColor.set(p.highlightColor);
         isSelected = true;
         updateCenter();
+        notifyModify(this);
     }
 
     public String getId() { return id; }
@@ -196,6 +197,13 @@ public class PuzzleGroup implements Json.Serializable {
         groupListeners.add(listener);
     }
 
+    public static void notifyModify(PuzzleGroup group) {
+        ListIterator<PuzzleGroupListener> iter = groupListeners.listIterator();
+        while (iter.hasNext()) {
+            iter.next().onModify(group);
+        }
+    }
+
     public static void notifyCreation(PuzzleGroup group) {
         ListIterator<PuzzleGroupListener> iter = groupListeners.listIterator();
         while (iter.hasNext()) {
@@ -211,6 +219,7 @@ public class PuzzleGroup implements Json.Serializable {
     }
 
     public interface PuzzleGroupListener {
+        void onModify(PuzzleGroup group);
         void onCreate(PuzzleGroup group);
         void onDestroy(PuzzleGroup group);
     }

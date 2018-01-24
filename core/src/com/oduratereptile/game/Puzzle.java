@@ -36,6 +36,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
 
         this.gameData = gameData;
         animations.put("shuffle", new Shuffle(this));
+        animations.put("fireworks", new Fireworks(this));
     }
 
     public Puzzle(GameScreen gameScreen, String basename) {
@@ -46,6 +47,12 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
 
         this.gameData = GameData.restoreGameData(basename);
         animations.put("shuffle", new Shuffle(this));
+    }
+
+    public void onModify(PuzzleGroup group) {
+        if (group.size()>=(gameData.rows*gameData.cols)) {
+            win(group);
+        }
     }
 
     public void onCreate(PuzzleGroup group) {
@@ -61,7 +68,8 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
     }
 
     public void win(PuzzleGroup group) {
-        // TODO: implement
+        Fireworks fw = (Fireworks)animations.get("fireworks");
+        fw.start();
     }
 
     public Rectangle getBounds() {
@@ -92,10 +100,10 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         if (isAutopanning) autopan(delta);
 
         for (PuzzlePiece p : gameData.puzzlePieces.values()) {
-            boolean isEven = ((p.col + p.row)%2 == 0);
             if (displayAllPieces) {
                 if(!p.isSelected()) p.draw(batch, 1);
             } else {
+                boolean isEven = ((p.col + p.row)%2 == 0);
                 if ((displayEvenPieces && isEven) || (!displayEvenPieces && !isEven))
                     if (!p.isSelected()) p.draw(batch, 1);
             }
@@ -103,6 +111,8 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
 
         for (PuzzlePiece p: selectedPiece) {
             p.draw(batch, 1.0f);
+        }
+        for (PuzzlePiece p: selectedPiece) {
             p.drawHighlight(batch, 1.0f);
         }
 

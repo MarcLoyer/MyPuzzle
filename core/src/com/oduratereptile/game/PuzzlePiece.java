@@ -174,6 +174,8 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
     }
 
     public boolean checkForFit(boolean checkForGroup) {
+        // TODO: bug - does not catch if a group member fits
+        // TODO: bug - fit behavior is different if new game vs loaded game
         if (checkForGroup && (group!=null)) {
             return group.checkForFit();
         }
@@ -204,7 +206,7 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
         v2.set(pos);
         v2.add(neighborFit[i]);
 
-        epsilon = 5.0f;
+        epsilon = 0.05f * getWidth();
         if (v1.dst2(v2)>epsilon) return false;
 
         return true;
@@ -360,15 +362,25 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
     }
 
     public void setHighlightColor(Color c) {
-        if (group!=null) {
+        if ((group!=null)&&(useGroupColor)) {
             group.highlightColor.set(c);
         } else {
             highlightColor.set(c);
         }
     }
 
+    private boolean useGroupColor = true;
+
+    public void useGroupColor() {
+        useGroupColor(true);
+    }
+
+    public void useGroupColor(boolean b) {
+        useGroupColor = b;
+    }
+
     public Color getHighlightColor() {
-        return (group==null)? highlightColor: group.highlightColor;
+        return ((group==null)||(!useGroupColor)) ? highlightColor: group.highlightColor;
     }
 
     public void select(boolean sel) {
@@ -443,7 +455,7 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
     }
 
     public void drawHighlight(SpriteBatch batch, float parentAlpha, boolean checkForGroup) {
-        if (checkForGroup && (group!=null)) {
+        if (checkForGroup && (group!=null) && (useGroupColor)) {
             group.drawHighlight(batch, parentAlpha);
             return;
         }
