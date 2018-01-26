@@ -36,6 +36,7 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
     public PuzzlePiece[] neighbor = new PuzzlePiece[4];
     public Vector2[] neighborFit = new Vector2[4];
     public int snapsWith = 0;
+    public boolean fits = false;
 
     public PuzzleGroup group = null;
 
@@ -142,8 +143,10 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
     }
 
     public void fitReport() {
-        if (!neighborMask[0] && !neighborMask[1] &&
-            !neighborMask[2] && !neighborMask[3]) return;
+        if (!neighborMask[0] && !neighborMask[1] && !neighborMask[2] && !neighborMask[3]) {
+            Gdx.app.error("fitReport", "fit report for ("+row+","+col+") aborted - neighbor mask is all zero");
+            return;
+        }
 
         Gdx.app.error("fitReport", "fit report for ("+row+","+col+")");
         Gdx.app.error("fitReport", "  rotation:");
@@ -162,7 +165,7 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
             if (!neighborMask[i]) continue;
             v1.set(neighbor[i].posRotated);
             v1.sub(neighborFit[i]);
-            float epsilon = 5.0f;
+            float epsilon = 0.05f * getWidth();
             float dst2 = v1.dst2(v2);
             String status = (dst2>epsilon)? " (FAIL)": "(pass)";
             Gdx.app.error("fitReport", "    neighbor[" + i + "]: " + v1.toString() + "("+dst2+")"+status);
@@ -174,8 +177,6 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
     }
 
     public boolean checkForFit(boolean checkForGroup) {
-        // TODO: bug - does not catch if a group member fits
-        // TODO: bug - fit behavior is different if new game vs loaded game
         if (checkForGroup && (group!=null)) {
             return group.checkForFit();
         }
@@ -308,8 +309,10 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
             rotatePoint(v, deg-currentDegrees);
         }
         if (checkForFit()) {
+            fits = true;
             setHighlightColor(Color.LIME);
         } else {
+            fits = false;
             setHighlightColor(Color.WHITE);
         }
 
@@ -350,8 +353,10 @@ class PuzzlePiece extends Sprite implements Json.Serializable {
         setPosition(pos.x, pos.y);
 
         if (checkForFit()) {
+            fits = true;
             setHighlightColor(Color.LIME);
         } else {
+            fits = false;
             setHighlightColor(Color.WHITE);
         }
     }

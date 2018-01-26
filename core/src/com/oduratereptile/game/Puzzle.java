@@ -261,7 +261,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         isAutopanning = false;
         if (selectedPiece.size()==1) {
             PuzzlePiece p = selectedPiece.get(0);
-            if (p.snapsWith>0) {
+            if (p.fits) {
                 p.snapIn();
             }
         }
@@ -272,7 +272,7 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
     public void pinchStop() {
         if (selectedPiece.size()==1) {
             PuzzlePiece p = selectedPiece.get(0);
-            if (p.snapsWith>0) {
+            if (p.fits) {
                 p.snapIn();
             }
         }
