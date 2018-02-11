@@ -34,17 +34,11 @@ public class AndroidLauncher extends AndroidApplication {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK && requestCode == AndroidGalleryOpener.SELECT_PICTURE) {
             Uri imageUri = data.getData();
-            ParcelFileDescriptor pfd;
             try {
-                pfd = getContentResolver().openFileDescriptor(imageUri, "r");
-
+                galleryOpener.openImage(getContentResolver().openInputStream(imageUri));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                Log.e("AndroidGalleryOpener", "File not found.");
-                return;
             }
-            FileDescriptor fd = pfd.getFileDescriptor();
-            galleryOpener.setFileDescriptor(fd);
 
 //            userImagePath = getPath(imageUri);
 //            if(userImagePath!=null){

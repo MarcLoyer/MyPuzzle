@@ -1,5 +1,7 @@
 package com.oduratereptile.game;
 
+import com.badlogic.gdx.graphics.Pixmap;
+
 import java.io.FileDescriptor;
 
 /**
@@ -11,13 +13,13 @@ public interface GalleryOpener {
 
     public String getSelectedFilePath();
 
-    public FileDescriptor getFileDescriptor();
+    public Pixmap getPixmap();
 
     public boolean resultIsReady();
 
     public void addListener(GalleryListener listener);
 
     public interface GalleryListener {
-        public void gallerySelection(FileDescriptor fd);
+        public void gallerySelection(GalleryOpener galleryOpener);
     }
 }

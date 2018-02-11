@@ -28,6 +28,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.StreamUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import java.io.FileDescriptor;
@@ -95,13 +96,13 @@ public class NewGameScreen extends Stage implements Screen {
         });
         game.galleryOpener.addListener(new GalleryOpener.GalleryListener() {
             @Override
-            public void gallerySelection(final FileDescriptor fd) {
+            public void gallerySelection(final GalleryOpener galleryOpener) {
                 if (!waitingForImage) return;
 
                 Gdx.app.postRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        puzzleImage = loadPixmapFromFileDescriptor(fd);
+                        puzzleImage = galleryOpener.getPixmap();
                         if (puzzleImage != null) {
                             generateSliderValues();
                             updateSlider();
@@ -281,26 +282,6 @@ public class NewGameScreen extends Stage implements Screen {
         puzzleSizeLabel.setText("Puzzle Size: " + gp.x + "x" + gp.y);
     }
 
-
-    public Pixmap loadPixmapFromFileDescriptor(FileDescriptor fd) {
-        if (fd==null) return null;
-        FileInputStream stream = new FileInputStream(fd);
-        Pixmap pixmap=null;
-        try {
-            long size = stream.getChannel().size();
-            if (size >= 0x80000000L) {
-                Gdx.app.error("loadPixmap", "File is too big: " + size);
-            }
-            byte [] bytes = new byte[(int)size];
-            stream.read(bytes);
-            pixmap = new Pixmap(new Gdx2DPixmap(bytes, 0, (int)size, 0));
-        } catch (Exception e) {
-            e.printStackTrace();
-            Gdx.app.error("loadPixmap", "Failed to read image file");
-        }
-        return pixmap;
-    }
-
     /**
      * Resamples puzzleImage based on the number of rows, cols so that the pieces are
      * reasonably sized. This speeds up the puzzle generation process.
@@ -383,7 +364,6 @@ public class NewGameScreen extends Stage implements Screen {
     @Override
     public void dispose() {
         super.dispose();
-        if (puzzleImage != null) puzzleImage.dispose();
         if (thumbnail != null) thumbnail.dispose();
     }
 }

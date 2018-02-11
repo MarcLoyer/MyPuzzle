@@ -1,12 +1,16 @@
 package com.oduratereptile.game.desktop;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
+import com.badlogic.gdx.utils.StreamUtils;
 import com.oduratereptile.game.GalleryOpener;
 
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
@@ -19,7 +23,8 @@ import javax.swing.JFrame;
 public class DesktopGalleryOpener implements GalleryOpener {
     public JFileChooser fileChooser;
     public File file = null;
-    public FileDescriptor fd = null;
+    public boolean isReady = false;
+    public Pixmap pixmap;
 
     private ArrayList<GalleryListener> listeners;
 
@@ -36,6 +41,7 @@ public class DesktopGalleryOpener implements GalleryOpener {
 
     @Override
     public void openGallery() {
+        isReady = false;
         JFrame f = new JFrame();
         f.setVisible(true);
         f.toFront();
@@ -46,14 +52,14 @@ public class DesktopGalleryOpener implements GalleryOpener {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             file = fileChooser.getSelectedFile();
             try {
-                FileInputStream fis = new FileInputStream(file);
-                fd = fis.getFD();
+                openImage(new FileInputStream(file));
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             for (GalleryListener gl: listeners) {
-                gl.gallerySelection(fd);
+                gl.gallerySelection(this);
             }
         }
     }
@@ -63,14 +69,29 @@ public class DesktopGalleryOpener implements GalleryOpener {
         return file.getName();
     }
 
-    @Override
-    public FileDescriptor getFileDescriptor() {
-        return fd;
+    public void openImage(InputStream stream) {
+        byte [] bytes = new byte[0];
+        try {
+            bytes = StreamUtils.copyStreamToByteArray(stream);
+            pixmap = new Pixmap(new Gdx2DPixmap(bytes, 0, bytes.length, 0));
+            stream.close();
+        } catch (IOException e) {
+            Gdx.app.error("loadPixmap", "Failed to read image file");
+            e.printStackTrace();
+        }
+
+        isReady = true;
+        for (GalleryListener gl: listeners) {
+            gl.gallerySelection(this);
+        }
     }
 
     @Override
+    public Pixmap getPixmap() { return pixmap; }
+
+    @Override
     public boolean resultIsReady() {
-        return (file != null);
+        return isReady;
     }
 
     @Override
