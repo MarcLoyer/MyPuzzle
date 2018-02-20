@@ -11,6 +11,8 @@ import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.Json;
 
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
@@ -38,18 +40,42 @@ public class PuzzleMaker {
     public void setPicture(Pixmap pixmap, String name) {
         puzzleImg = pixmap;
 
-        IntBuffer buffer = BufferUtils.newIntBuffer(16);
-        Gdx.gl.glGetIntegerv(GL20.GL_MAX_TEXTURE_SIZE, buffer);
-        int maxImageSize = buffer.get(0);
+//        IntBuffer buffer = BufferUtils.newIntBuffer(16);
+//        Gdx.gl.glGetIntegerv(GL20.GL_MAX_TEXTURE_SIZE, buffer);
+//        int maxImageSize = buffer.get(0);
 //        Gdx.app.error("debug", "Max image size for this device = " + maxImageSize);
 
-        puzzleImgTex = new Texture(puzzleImg);
+//        puzzleImgTex = new Texture(puzzleImg);
+        if (Thread.currentThread().getName().startsWith("GLThread")) {
+            createPuzzleTextureRenderThread();
+        } else {
+            createPuzzleTextureNonrenderThread();
+        }
 //        Gdx.app.error("debug", "Current image size = (" + pixmap.getWidth() + ", " + pixmap.getHeight() + ")");
 
         gameData.puzzleImageWidth = pixmap.getWidth();
         gameData.puzzleImageHeight = pixmap.getHeight();
         gameData.createThumbnail(pixmap);
         gameData.puzzleName = name;
+    }
+
+    private synchronized void createPuzzleTextureNonrenderThread() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                createPuzzleTextureRenderThread();
+            }
+        });
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private synchronized void createPuzzleTextureRenderThread() {
+        puzzleImgTex = new Texture(puzzleImg);
+        notifyAll();
     }
 
     public int controlsPerPiece = 6;
@@ -100,17 +126,34 @@ public class PuzzleMaker {
     public PuzzlePacker puzzlePacker;
     public PuzzlePacker.MeshPiece[][] meshPieces;  // save the meshPieces for debugging
 
+    private float progressValue = 0;
+    private ArrayList<ProgressListener> progressListeners = new ArrayList<ProgressListener>();
+
+    public void addProgressListener(ProgressListener p) {
+        progressListeners.add(p);
+    }
+
+    private void updateProgress(float v) {
+        progressValue = v;
+        Iterator<ProgressListener> iter = progressListeners.iterator();
+        while (iter.hasNext()) {
+            iter.next().onUpdate(progressValue);
+        }
+    }
+
     public void createMeshPieceAtlas() {
         puzzlePacker = new PuzzlePacker(this, 1024);
         meshPieces = new PuzzlePacker.MeshPiece[numRows][numCols];
         for (int i=0; i<numRows; i++) {
             for (int j=0; j<numCols; j++) {
                 meshPieces[i][j] = puzzlePacker.pack(i,j);
+                updateProgress(0.5f * (float)(i*numCols + j + 1) / (float)(numRows*numCols));
             }
         }
 
         gameData.textureAtlasFilename = gameData.getBasename() + "/" + gameData.getBasename() + ".atlas";
         puzzlePacker.createAtlas();
+        // TODO: this step takes a REEEEALLLY LOOOONNNGG TIME
         puzzlePacker.save(Gdx.files.local(gameData.textureAtlasFilename));
     }
 
@@ -121,14 +164,40 @@ public class PuzzleMaker {
             for (int j=0; j<numCols; j++) {
                 p = new PuzzlePiece(i, j, puzzlePacker.getData(i,j), puzzlePacker.findRegion(i,j), true);
                 gameData.puzzlePieces.put(p.getID(), p);
+                Gdx.app.error("debug", "  generating highlight for ("+i+","+j+")");
                 generateHighlight(p);
+                updateProgress(0.5f + 0.5f * (float)(i*numCols + j + 1) / (float)(numRows*numCols));
             }
         }
     }
 
     public void generateHighlight(PuzzlePiece p) {
+        if (Thread.currentThread().getName().startsWith("GLThread")) {
+            generateHighlightRenderThread(p);
+            return;
+        }
+        generateHighlightNonRenderThread(p);
+    }
+
+    private synchronized void generateHighlightNonRenderThread(final PuzzlePiece p) {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                generateHighlightRenderThread(p);
+            }
+        });
+
+        try {
+            while (p.highlight==null) wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private synchronized void generateHighlightRenderThread(PuzzlePiece p) {
         OutlineShader.setup(p);
         p.highlight = OutlineShader.renderToTexture();
+        notifyAll();
     }
 
     public float rowSpacing(int row) {
@@ -230,10 +299,6 @@ public class PuzzleMaker {
     public float randC(float max) {
         return ((rand.nextFloat() * 2.0f * max) - max) * colSpacing(0);
     }
-
-    public Pixmap pieceImg;
-    public Texture pieceImgTex;
-    public Vector2 pieceImgTexLocation = new Vector2();
 
     public void dispose() {
         puzzleImg.dispose();

@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * Created by Marc on 10/7/2017.
  */
 
-public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGroupListener {
+public class Puzzle extends OrthoGestureListener {
     public GameScreen gameScreen;
     public ShapeRenderer sr;
     public Json json = new Json();
@@ -32,40 +32,48 @@ public class Puzzle extends OrthoGestureListener implements PuzzleGroup.PuzzleGr
         super(gameScreen.camera);
         this.gameScreen = gameScreen;
         sr = gameScreen.game.shapeRenderer;
-        PuzzleGroup.addListener(this);
 
         this.gameData = gameData;
-        animations.put("shuffle", new Shuffle(this));
-        animations.put("fireworks", new Fireworks(this));
+
+        setup();
     }
 
     public Puzzle(GameScreen gameScreen, String basename) {
         super(gameScreen.camera);
         this.gameScreen = gameScreen;
         sr = gameScreen.game.shapeRenderer;
-        PuzzleGroup.addListener(this);
 
         this.gameData = GameData.restoreGameData(basename);
+
+        setup();
+    }
+
+    private void setup() {
+        PuzzleGroup.addListener(new PuzzleGroup.PuzzleGroupListener() {
+            @Override
+            public void onModify(PuzzleGroup group) {
+                if (group.size()>=(gameData.rows*gameData.cols)) {
+                    win(group);
+                }
+            }
+
+            @Override
+            public void onCreate(PuzzleGroup group) {
+                gameData.puzzleGroups.put(group.getId(), group);
+                if (group.size()>=(gameData.rows*gameData.cols)) {
+                    win(group);
+                }
+                gameData.groupCount = PuzzleGroup.count;
+            }
+
+            @Override
+            public void onDestroy(PuzzleGroup group) {
+                gameData.puzzleGroups.remove(group.getId());
+            }
+        });
+
         animations.put("shuffle", new Shuffle(this));
         animations.put("fireworks", new Fireworks(this));
-    }
-
-    public void onModify(PuzzleGroup group) {
-        if (group.size()>=(gameData.rows*gameData.cols)) {
-            win(group);
-        }
-    }
-
-    public void onCreate(PuzzleGroup group) {
-        gameData.puzzleGroups.put(group.getId(), group);
-        if (group.size()>=(gameData.rows*gameData.cols)) {
-            win(group);
-        }
-        gameData.groupCount = PuzzleGroup.count;
-    }
-
-    public void onDestroy(PuzzleGroup group) {
-        gameData.puzzleGroups.remove(group.getId());
     }
 
     public void win(PuzzleGroup group) {

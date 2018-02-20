@@ -6,12 +6,15 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
+import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -31,18 +34,33 @@ public class GameScreen extends HudScreen {
 
     public Button menu;
     public Table popup;
+    public boolean displayProgressBar = false;
+    public ProgressBar progressBar;
 
     public GameScreen(final MyPuzzle game) {
         this(game, null, "undetermined", 10, 10);
     }
 
-    public GameScreen(final MyPuzzle game, Pixmap image, String name, int rows, int cols) {
+    public GameScreen(MyPuzzle game, final Pixmap image, final String name, final int rows, final int cols) {
         super(game);
+        displayProgressBar = true;
         setupGameScreen();
 
-        GameData gameData = makePuzzle(image, name, rows, cols);
-        puzzle = new Puzzle(this, gameData);
-        addInputController(new GestureDetector(puzzle));
+        final GameScreen gs = this;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GameData gameData = makePuzzle(image, name, rows, cols);
+                Gdx.app.error("debug", "makePuzzle Thread is creating a Puzzle object...");
+                puzzle = new Puzzle(gs, gameData);
+                addInputController(new GestureDetector(puzzle));
+                Gdx.app.error("debug", "makePuzzle Thread is ending");
+            }
+        }).start();
+
+//        GameData gameData = makePuzzle(image, name, rows, cols);
+//        puzzle = new Puzzle(this, gameData);
+//        addInputController(new GestureDetector(puzzle));
     }
 
     public GameScreen(final MyPuzzle game, String basename) {
@@ -77,6 +95,8 @@ public class GameScreen extends HudScreen {
         button.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y){
+                game.prefs.putString("gameInProgress", "");
+                game.prefs.flush();
                 game.setScreen(new MainMenuScreen(game));
                 dispose();
             }
@@ -183,6 +203,13 @@ public class GameScreen extends HudScreen {
         });
         stage.addActor(popup);
 
+        progressBar = new ProgressBar(0,1,0.01f,false, game.skin, "progress-horizontal");
+        progressBar.setVisible(displayProgressBar);
+        progressBar.setTouchable(Touchable.disabled);
+        progressBar.setX((stage.getWidth() - progressBar.getWidth())/2.0f);
+        progressBar.setY((stage.getHeight() - progressBar.getHeight())/2.0f);
+        progressBar.setValue(0);
+        stage.addActor(progressBar);
     }
 
     public float worldWidth = 1000;
@@ -201,18 +228,29 @@ public class GameScreen extends HudScreen {
         }
 
         PuzzleMaker puzzleMaker = new PuzzleMaker(this);
+        puzzleMaker.addProgressListener(new ProgressListener() {
+            @Override
+            public void onUpdate(float value) {
+                progressBar.setValue(value);
+                progressBar.setVisible(value<1.0f);
+            }
+        });
+
         puzzleMaker.setPicture(image, name);
 
         // TODO: can I run this step in different thread, so that I can show the
         // puzzle pieces as they are created? Also, maybe show a progress bar?
         // Everything after this could be placed in Gdx.app.postRunnable
+        Gdx.app.error("debug", "makePuzzle Thread is creating pieces...");
         puzzleMaker.createPieces(rows, cols);
 
         puzzleMaker.gameData.puzzleName = name;
 
+        Gdx.app.error("debug", "makePuzzle Thread is updating the camera...");
         worldWidth = image.getWidth();
         updateCameraViewport();
 
+        Gdx.app.error("debug", "makePuzzle Thread is saving the game...");
         puzzleMaker.gameData.saveGameData();
 
         return puzzleMaker.gameData;
@@ -231,9 +269,12 @@ public class GameScreen extends HudScreen {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
-        game.batch.begin();
-        puzzle.render(game.batch, delta);
-        game.batch.end();
+        if (puzzle != null) {
+            game.batch.begin();
+            puzzle.render(game.batch, delta);
+            game.batch.end();
+        }
+
         super.render(delta);
     }
 
@@ -249,12 +290,15 @@ public class GameScreen extends HudScreen {
         float h = Gdx.graphics.getHeight();
         float aspectRatio = h/w;
         camera.setToOrtho(false, worldWidth, worldWidth * aspectRatio);
+        progressBar.setX((stage.getWidth() - progressBar.getWidth())/2.0f);
+        progressBar.setY((stage.getHeight() - progressBar.getHeight())/2.0f);
     }
 
     @Override
     public void pause() {
         super.pause();
         // save the game, and put the basename in prefs
+        if (puzzle==null) return;
         puzzle.gameData.saveGameData();
         game.prefs.putString("gameInProgress", puzzle.gameData.getBasename());
         game.prefs.flush();
@@ -270,7 +314,7 @@ public class GameScreen extends HudScreen {
 
     @Override
     public void dispose() {
-        puzzle.dispose();
+        if (puzzle != null) puzzle.dispose();
         super.dispose();
     }
 }

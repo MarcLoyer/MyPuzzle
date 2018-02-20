@@ -36,6 +36,9 @@ public class LoadScreen extends Stage implements Screen {
 
         this.game = game;
 
+        game.prefs.putString("gameInProgress", "");
+        game.prefs.flush();
+
         rootTable = new Table();
         rootTable.setFillParent(true);
         addActor(rootTable);

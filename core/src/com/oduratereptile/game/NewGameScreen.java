@@ -90,6 +90,7 @@ public class NewGameScreen extends Stage implements Screen {
         button.addListener(new ClickListener() {
            @Override
            public void clicked(InputEvent event, float x, float y) {
+               // TODO: bug - sometimes this button causes the last loaded game to reload (pause/resume code?)
                game.galleryOpener.openGallery();
                waitingForImage = true;
            }
@@ -287,6 +288,7 @@ public class NewGameScreen extends Stage implements Screen {
      * reasonably sized. This speeds up the puzzle generation process.
      */
     public void resampleImage() {
+        // TODO: need to be more aggressive with this, otherwise too many atlas pages!
         float scale = ((float)puzzleCols * PIECESIZE) / (float)puzzleImage.getWidth();
         if (scale>0.7f) return;
 

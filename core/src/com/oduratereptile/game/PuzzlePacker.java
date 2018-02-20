@@ -38,11 +38,11 @@ import static com.badlogic.gdx.graphics.Texture.TextureFilter.Nearest;
 public class PuzzlePacker {
     public OrthographicCamera camera;
     public SpriteBatch batch;
-    public ShaderProgram shader;
+    public ShaderProgram shader=null;
 
     public PuzzleMaker puzzleMaker;
     public int pageSize;
-    public PixmapPacker packer;
+    public MyPixmapPacker packer;
     public TextureAtlas atlas=null;
 
     public ObjectMap<String, PieceData> pieceData = new ObjectMap<String, PieceData>();
@@ -53,14 +53,8 @@ public class PuzzlePacker {
 
         camera = new OrthographicCamera();
         batch = puzzleMaker.gameScreen.game.batch;
-        shader = new ShaderProgram(
-                Gdx.files.internal("shaders/mesh.vert"),
-                Gdx.files.internal("shaders/mesh.frag")
-        );
-        if (shader.getLog().length()!=0)
-            Gdx.app.error("debug", shader.getLog());
 
-        packer = new PixmapPacker(pageSize, pageSize, Pixmap.Format.RGBA8888, 0, false,
+        packer = new MyPixmapPacker(pageSize, pageSize, Pixmap.Format.RGBA8888, 0, false,
                 new PixmapPacker.GuillotineStrategy());
     }
 
@@ -118,6 +112,29 @@ public class PuzzlePacker {
     }
 
     public void save(FileHandle fh) {
+        if (Thread.currentThread().getName().startsWith("GLThread")) {
+            saveRenderThread(fh);
+            return;
+        }
+        saveNonRenderThread(fh);
+    }
+
+    private synchronized void saveNonRenderThread(final FileHandle fh) {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                saveRenderThread(fh);
+            }
+        });
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private synchronized void saveRenderThread(FileHandle fh) {
+        Gdx.app.error("debug", "Saving atlas. Number of pages = " + packer.getPages().size);
         PixmapPackerIO packerIO = new PixmapPackerIO();
         try {
             packerIO.save(fh, packer);
@@ -125,6 +142,7 @@ public class PuzzlePacker {
             Gdx.app.error("Packer", "Failed to write TextureAtlas");
             e.printStackTrace();
         }
+        notifyAll();
     }
 
 
@@ -331,6 +349,12 @@ public class PuzzlePacker {
                 indices[i] = tris.get(i);
             }
 
+            if (Thread.currentThread().getName().startsWith("GLThread")) {
+                createMeshRenderThread(numVerts, numInds, vertices, indices);
+            } else {
+                createMeshNonRenderThread(numVerts, numInds, vertices, indices);
+            }
+
             mesh = new Mesh(true, numVerts, numInds,
                     new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
                     new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE+"0")
@@ -345,8 +369,67 @@ public class PuzzlePacker {
             return mesh;
         }
 
+        private synchronized void createMeshNonRenderThread(final int numVerts, final int numInds, final float [] vertices, final short [] indices) {
+            Gdx.app.postRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    createMeshRenderThread(numVerts, numInds, vertices, indices);
+                }
+            });
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private synchronized void createMeshRenderThread(int numVerts, int numInds, float [] vertices, short [] indices) {
+            mesh = new Mesh(true, numVerts, numInds,
+                    new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
+                    new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE+"0")
+            );
+            mesh.setVertices(vertices);
+            mesh.setIndices(indices);
+            notifyAll();
+        }
+
         public Texture getTexture() {
-            if (tex!=null) return tex;
+            if (tex != null) return tex;
+
+            Gdx.app.error("debug", "  creating piece ("+row+","+col+")");
+            if (Thread.currentThread().getName().startsWith("GLThread")) {
+                return getTextureRenderThread();
+            }
+            return getTextureNonRenderThread();
+        }
+
+        private synchronized Texture getTextureNonRenderThread() {
+            Gdx.app.postRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    getTextureRenderThread();
+                }
+            });
+
+            try {
+                while (tex==null) wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            return tex;
+        }
+
+        private synchronized Texture getTextureRenderThread() {
+            if (shader==null) {
+                shader = new ShaderProgram(
+                        Gdx.files.internal("shaders/mesh.vert"),
+                        Gdx.files.internal("shaders/mesh.frag")
+                );
+                Gdx.app.error("shaderdebug", "isCompiled() = " + shader.isCompiled());
+                if (shader.getLog().length() != 0)
+                    Gdx.app.error("shaderdebug", shader.getLog());
+            }
 
             int bufferWidth = getWidth();
             int bufferHeight = getHeight();
@@ -362,7 +445,7 @@ public class PuzzlePacker {
             fbo.begin();
             Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-            Gdx.gl20.glEnable(GL20.GL_TEXTURE_2D);
+//            Gdx.gl20.glEnable(GL20.GL_TEXTURE_2D); // this causes invalid enum message
             Gdx.gl20.glDisable(GL20.GL_BLEND);
             Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -376,6 +459,7 @@ public class PuzzlePacker {
             fbo.end();
 
             tex = fboTex.getTexture();
+            notifyAll();
             return tex;
         }
 
@@ -383,19 +467,35 @@ public class PuzzlePacker {
             if (pix!=null) return pix;
             if (tex==null) tex = getTexture();
 
-//            Gdx.gl20.glBindFramebuffer(GL20.GL_READ_FRAMEBUFFER, fbo.getFramebufferHandle());
-//            Gdx.gl20.glReadBuffer(GL20.GL_COLOR_ATTACHMENT0);
+            if (Thread.currentThread().getName().startsWith("GLThread")) {
+                return getPixmapRenderThread();
+            }
+            return getPixmapNonRenderThread();
+        }
+
+        private synchronized Pixmap getPixmapNonRenderThread() {
+            Gdx.app.postRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    getPixmapRenderThread();
+                }
+            });
+
+            try {
+                while (pix==null) wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            return pix;
+        }
+
+        private synchronized Pixmap getPixmapRenderThread() {
             fbo.begin();
             pix = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
             fbo.end();
-//            Gdx.gl20.glBindFramebuffer(GL20.GL_READ_FRAMEBUFFER, 0);
-//            Gdx.gl20.glReadBuffer(GL20.GL_BACK);
+            notifyAll();
             return pix;
-
-
-            // This code had a runtime error: This TextureData implementation does not return a Pixmap
-//            if (!tex.getTextureData().isPrepared()) tex.getTextureData().prepare();
-//            return tex.getTextureData().consumePixmap();
         }
 
         public int getWidth() { return (int)(bounds.max.x - bounds.min.x); }
