@@ -230,7 +230,7 @@ public class NewGameScreen extends Stage implements Screen {
         playButton.setDisabled(false);
     }
 
-    public final static float PIECESIZE = 300.0f;
+    public final static float PIECESIZE = 100.0f;
 
 
     /**
@@ -292,6 +292,7 @@ public class NewGameScreen extends Stage implements Screen {
         float scale = ((float)puzzleCols * PIECESIZE) / (float)puzzleImage.getWidth();
         if (scale>0.7f) return;
 
+        Gdx.app.error("debug", "Resampling image (factor = "+scale+")");
         Pixmap pixmap = new Pixmap(
                 (int)(puzzleImage.getWidth() * scale),
                 (int)(puzzleImage.getHeight() * scale),

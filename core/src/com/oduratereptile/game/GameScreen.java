@@ -227,6 +227,11 @@ public class GameScreen extends HudScreen {
             image = new Pixmap(Gdx.files.internal(name + ".JPG")); // small: 500x300
         }
 
+        Gdx.app.error("debug", "Building puzzle...");
+        Gdx.app.error("debug", "  pieces = ("+rows+", "+cols+")");
+        Gdx.app.error("debug", "  image size = ("+image.getHeight()+", "+image.getWidth()+")");
+        Gdx.app.error("debug", "  piece size = ("+(image.getHeight()/(float)(rows))+", "+(image.getWidth()/(float)cols)+")");
+
         PuzzleMaker puzzleMaker = new PuzzleMaker(this);
         puzzleMaker.addProgressListener(new ProgressListener() {
             @Override
