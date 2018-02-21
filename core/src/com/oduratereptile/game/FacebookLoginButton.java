@@ -69,7 +69,7 @@ public class FacebookLoginButton extends TextButton {
 
             @Override
             public void onCancel() {
-                Gdx.app.debug("debug", "SIGN IN (read permissions): User canceled login process");
+                Gdx.app.debug("debug", "SIGN IN (read permissions): User cancelled login process");
             }
 
             @Override
