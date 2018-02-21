@@ -58,16 +58,6 @@ public class MainMenuScreen extends Stage implements Screen {
 
         TextButton textbutton;
 
-//        textbutton = new TextButton("Play", game.skin);
-//        textbutton.addListener(new ClickListener(){
-//            @Override
-//            public void clicked(InputEvent event, float x, float y){
-//                game.setScreen(new GameScreen(game, image, "undetermined", 10, 10));
-//                dispose();
-//            }
-//        });
-//        table.add(textbutton).width(buttonWidth);
-
         table.row();
         textbutton = new TextButton("New Game", game.skin);
         textbutton.addListener(new ClickListener(){
@@ -90,26 +80,6 @@ public class MainMenuScreen extends Stage implements Screen {
             }
         });
         table.add(textbutton).width(buttonWidth);
-
-//        table.row();
-//        textbutton = new TextButton("Load image", game.skin);
-//        textbutton.setWidth(150f);
-//        textbutton.addListener(new ClickListener(){
-//            @Override
-//            public void clicked(InputEvent event, float x, float y){
-//                game.galleryOpener.openGallery();
-//                waitingForImage = true;
-//            }
-//        });
-//        table.add(textbutton).width(buttonWidth);
-//        game.galleryOpener.addListener(new GalleryOpener.GalleryListener() {
-//            @Override
-//            public void gallerySelection(FileDescriptor fd) {
-//                if (!waitingForImage) return;
-//                image = loadPixmapFromFileDescriptor(fd);
-//                waitingForImage = false;
-//            }
-//        });
 
         table.row();
         textbutton = new TextButton("Connect to server", game.skin);
@@ -163,27 +133,6 @@ public class MainMenuScreen extends Stage implements Screen {
 
     }
 
-    public Pixmap image = null;
-
-    public Pixmap loadPixmapFromFileDescriptor(FileDescriptor fd) {
-        if (fd==null) return null;
-        FileInputStream stream = new FileInputStream(fd);
-        Pixmap pixmap=null;
-        try {
-            long size = stream.getChannel().size();
-            if (size >= 0x80000000L) {
-                Gdx.app.error("loadPixmap", "File is too big: " + size);
-            }
-            byte [] bytes = new byte[(int)size];
-            stream.read(bytes);
-            pixmap = new Pixmap(new Gdx2DPixmap(bytes, 0, (int)size, 0));
-        } catch (Exception e) {
-            e.printStackTrace();
-            Gdx.app.error("loadPixmap", "Failed to read image file");
-        }
-        return pixmap;
-    }
-
     public boolean isConnected = false;
 
     public void connectToServer(String userName) {
@@ -203,6 +152,5 @@ public class MainMenuScreen extends Stage implements Screen {
     @Override
     public void dispose() {
         super.dispose();
-        if (image != null) image.dispose();
     }
 }
