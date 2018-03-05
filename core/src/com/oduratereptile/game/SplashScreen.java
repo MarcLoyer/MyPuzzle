@@ -23,14 +23,10 @@ public class SplashScreen implements Screen {
         this.game = game;
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
-        x = (MyPuzzle.SCREENSIZEX - game.img.getWidth())/2.0f;
-        y = (MyPuzzle.SCREENSIZEY - game.img.getHeight())/2.0f;
     }
 
     @Override
     public void show() {
-//        game.manager.load("atlas.atlas", TextureAtlas.class);
         game.manager.load("skin/uiskin.json", Skin.class);
     }
 
@@ -43,7 +39,6 @@ public class SplashScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
 
         if (game.manager.update()) {
-//            game.atlas = game.manager.get("atlas.atlas", TextureAtlas.class);
             game.skin = game.manager.get("skin/uiskin.json", Skin.class);
 
             game.setScreen(new MainMenuScreen(game));
@@ -56,7 +51,15 @@ public class SplashScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        float aspectRatio = (float)height / (float)width;
+        if (aspectRatio > 1f) { // portrait
+            camera.setToOrtho(false, MyPuzzle.SCREENSIZEY, MyPuzzle.SCREENSIZEX);
+        } else { // landscape
+            camera.setToOrtho(false, MyPuzzle.SCREENSIZEX, MyPuzzle.SCREENSIZEY);
+        }
+        camera.update();
+        x = (camera.viewportWidth - game.img.getWidth())/2.0f;
+        y = (camera.viewportHeight - game.img.getHeight())/2.0f;
     }
 
     @Override

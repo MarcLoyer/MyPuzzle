@@ -38,7 +38,7 @@ public class MyPuzzle extends Game {
 		batch = new SpriteBatch();
 		OutlineShader.setBatch(batch);
 		shapeRenderer = new ShapeRenderer();
-		img = new Texture("badlogic.jpg");
+		img = new Texture("mypuzzle.png");
         manager = new AssetManager();
         prefs = Gdx.app.getPreferences(PREFERENCES);
 
